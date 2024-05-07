@@ -1,0 +1,185 @@
+import os
+import random
+from collections import defaultdict
+from typing import Union
+
+from torch.utils.data import Dataset
+
+from utils.operators_concepts import operator_dict
+from utils.text_utils import add_space_after_chinese, find_long_string_in_list
+
+
+class PreliminaryDataset(Dataset):
+    def __init__(self, expression: list, natural_sentence: list):
+        super().__init__()
+
+        assert len(expression) == len(natural_sentence), "Lists must be of the same length"
+        self.expression = expression
+        self.natural_sentence = natural_sentence
+
+    def __getitem__(self, i):
+        return self.expression[i], self.natural_sentence[i]
+
+    def __setitem__(self, key, value):
+        self.expression[key], self.natural_sentence[key] = value
+
+    def __delitem__(self, key):
+        del self.expression[key]
+        del self.natural_sentence[key]
+
+    def __len__(self):
+        return len(self.expression)
+
+    def append(self, expression, natural_sentence):
+        self.expression.append(expression)
+        self.natural_sentence.append(natural_sentence)
+
+    def map(self, func, *args, **kwargs):
+        return PreliminaryDataset(*zip(*[func(e, *args, **kwargs) for e in self]))
+
+    def filter(self, func, *args, **kwargs):
+        return PreliminaryDataset(*zip(*[e for e in self if func(e, *args, **kwargs)]))
+
+    def shuffle(self):
+        zipped = list(zip(self.expression, self.natural_sentence))
+        random.shuffle(zipped)
+        self.expression, self.natural_sentence = zip(*zipped)
+
+
+def split_dataset(dataset: Union[list, Dataset], split_ratio: Union[float, list]) -> tuple:
+    """
+    :param dataset: 数据集
+    :param split_ratio: 划分比例，如果是列表，要求必须够3个
+    :return: 划分后的数据集
+    """
+    random.shuffle(dataset)
+
+    if isinstance(split_ratio, float):
+        split_index = int(len(dataset) * split_ratio)
+        return dataset[:split_index], None, dataset[split_index:]
+    elif isinstance(split_ratio, list):
+        assert len(split_ratio) == 3
+        split_index = [int(len(dataset) * ratio) for ratio in split_ratio]
+        return dataset[:split_index[0]], dataset[split_index[0]:split_index[1]], dataset[split_index[1]:]
+    else:
+        raise ValueError("Invalid split ratio type.")
+
+def read_dataset_construct(directory_path: str) -> Dataset:
+    """
+    :param directory_path: 读入目录内所有的文件
+    :return:
+    """
+    dataset = PreliminaryDataset([], [])
+
+    # 遍历目录下的所有文件
+    for filename in os.listdir(directory_path):
+        file_path = os.path.join(directory_path, filename)
+        if os.path.isfile(file_path):
+            with open(file_path, encoding='utf8') as f:
+                line = eval(f.readlines()[0])
+
+                for e in line:
+                    expression, natural_sentence = e['表达式'], random.choice(e['自然语句'])
+                    if expression == "None":
+                        continue
+
+                    dataset.append(expression=expression, natural_sentence=natural_sentence)
+
+    return dataset
+
+
+def select_dataset(dataset: Dataset, args) -> dict:
+    """
+    从数据集中筛选一定量算子和一定量的数据，纯粹为了实验的平衡
+    """
+    data_by_label = defaultdict(list)
+    for data in dataset:
+        expression = data.expression
+        first_operator = expression.split("(")[0].strip()
+        data_by_label[first_operator].append(data)
+
+    if args.seed:
+        random.seed(args.seed)
+
+    selected_operators = random.sample(list(data_by_label.keys()), args.num_operators) if args.num_operators \
+        else list(data_by_label.keys())
+
+    selected_dataset = {}
+    for operator in selected_operators:
+        selected_dataset[operator] = random.sample(data_by_label[operator], args.num_examples)
+
+    return selected_dataset
+
+def unify_format(text):
+    text = text.replace("(", "（")
+    text = text.replace(")", "）")
+    text = text.replace(",", "，")
+    return text
+
+def ptr_change(examples):
+    e = examples
+    e = {k: unify_format(v) for k, v in e.items()}
+    e.natural_sentence = add_space_after_chinese(e.natural_sentence.replace("得到", ""))
+    # encode = tokenizer.encode(e.natural_sentence)
+    word_list = e.natural_sentence.split()
+    new_structural_tokens = []
+    if e.expression != "None":
+        result_list = []
+        expression_list = e.expression.split(" ，")
+        for expression in expression_list:
+            word_list = e.natural_sentence.split()
+            # for enc in encode:
+            #     word_list.append(tokenizer.decode(enc))
+
+            st = expression
+            nl = e.natural_sentence
+            st = st.replace(' ', '')
+            lhs, rhs = st.strip().split('=')
+            assert lhs.strip().endswith('）')
+
+            import re
+
+            text = lhs.strip()[:-1]
+            result = text.split('（')
+
+            predicate = result[0]
+            predicate = predicate.replace("得到", "")
+            predicate1 = f"\"谓词：{predicate}\""
+            variables = result[1]
+            # predicate, variables = lhs.strip()[:-1].
+
+            variables = variables.split('，')
+
+            rhs_indexes = find_long_string_in_list(word_list, rhs)
+
+            rhs_ptr = f"[{operator_dict[predicate][-1]}：" + "".join(
+                ["@ptr_" + str(item + 1) for item in rhs_indexes]) + "]"
+            variable_list = []
+            # print("variables", variables)
+            new_structural_tokens.append(f"[{operator_dict[predicate][-1]}：")
+            for concept, variable in zip(operator_dict[predicate], variables):
+                variable_indexes = find_long_string_in_list(word_list, variable)
+                result = "".join(["@ptr_" + str(item + 1) for item in variable_indexes])
+                variable_list.append(f"[{concept}：{result}]")
+                new_structural_tokens.append(f"[{concept}：")
+
+            combined_list = ','.join(variable_list)
+
+            result = f'{predicate1}({combined_list})={rhs_ptr}'
+            result_list.append(result)
+        Result = ""
+        for i, result in enumerate(result_list):
+            Result += result
+            if i < len(result_list) - 1:
+                Result += " , "
+        e.expression = Result
+    return e, new_structural_tokens
+
+def filter_function(example):
+    return example.expression.find("：]") == -1
+
+def preprocess_dataset(dataset):
+    dataset = dataset.map(ptr_change)
+    dataset = dataset.filter(filter_function)
+
+    return dataset
