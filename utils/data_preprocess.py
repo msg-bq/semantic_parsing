@@ -102,12 +102,13 @@ def select_dataset(dataset: Dataset, args) -> dict:
     if args.seed:
         random.seed(args.seed)
 
-    selected_operators = random.sample(list(data_by_label.keys()), args.operator_num) if args.operator_num \
-        else list(data_by_label.keys())
+    selected_operators = random.sample(list(data_by_label.keys()), min(args.operator_num, len(data_by_label)))\
+        if args.operator_num else list(data_by_label.keys())
 
     selected_dataset = {}
     for operator in selected_operators:
-        selected_dataset[operator] = random.sample(data_by_label[operator], args.example_num)
+        example_num = min(args.example_num, len(data_by_label[operator]))
+        selected_dataset[operator] = random.sample(data_by_label[operator], example_num)
 
     return selected_dataset
 
