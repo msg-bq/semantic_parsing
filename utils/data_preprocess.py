@@ -1,7 +1,7 @@
 import os
 import random
 from collections import defaultdict
-from typing import Union
+from typing import Union, List
 
 from torch.utils.data import Dataset
 
@@ -9,41 +9,42 @@ from utils.operators_concepts import operator_dict
 from utils.text_utils import add_space_after_chinese, find_long_string_in_list
 
 
-class PreliminaryDataset(Dataset):
-    def __init__(self, expression: list, natural_sentence: list):
-        super().__init__()
-
-        assert len(expression) == len(natural_sentence), "Lists must be of the same length"
+class PreliminaryExample:
+    def __init__(self, expression, natural_sentence):
         self.expression = expression
         self.natural_sentence = natural_sentence
 
+    def __repr__(self):
+        return f"Expression: {self.expression}\nNatural Sentence: {self.natural_sentence}"
+
+class PreliminaryDataset(Dataset):
+    def __init__(self, dataset: List[PreliminaryExample]):
+        super().__init__()
+        self.examples = dataset if dataset else [] # 用默认参数的话，会导致所有实例共享同一个list
+
     def __getitem__(self, i):
-        return self.expression[i], self.natural_sentence[i]
+        return self.examples[i]
 
     def __setitem__(self, key, value):
-        self.expression[key], self.natural_sentence[key] = value
+        self.examples[key] = value
 
     def __delitem__(self, key):
-        del self.expression[key]
-        del self.natural_sentence[key]
+        del self.examples[key]
 
     def __len__(self):
-        return len(self.expression)
+        return len(self.examples)
 
     def append(self, expression, natural_sentence):
-        self.expression.append(expression)
-        self.natural_sentence.append(natural_sentence)
+        self.examples.append(PreliminaryExample(expression, natural_sentence))
 
     def map(self, func, *args, **kwargs):
-        return PreliminaryDataset(*zip(*[func(e, *args, **kwargs) for e in self]))
+        return PreliminaryDataset([func(e, *args, **kwargs) for e in self])
 
     def filter(self, func, *args, **kwargs):
-        return PreliminaryDataset(*zip(*[e for e in self if func(e, *args, **kwargs)]))
+        return PreliminaryDataset([e for e in self if func(e, *args, **kwargs)])
 
     def shuffle(self):
-        zipped = list(zip(self.expression, self.natural_sentence))
-        random.shuffle(zipped)
-        self.expression, self.natural_sentence = zip(*zipped)
+        random.shuffle(self.examples)
 
 
 def split_dataset(dataset: Union[list, Dataset], split_ratio: Union[float, list]) -> tuple:
@@ -69,7 +70,7 @@ def read_dataset_construct(directory_path: str) -> Dataset:
     :param directory_path: 读入目录内所有的文件
     :return:
     """
-    dataset = PreliminaryDataset([], [])
+    dataset = []
 
     # 遍历目录下的所有文件
     for filename in os.listdir(directory_path):
@@ -83,9 +84,9 @@ def read_dataset_construct(directory_path: str) -> Dataset:
                     if expression == "None":
                         continue
 
-                    dataset.append(expression=expression, natural_sentence=natural_sentence)
+                    dataset.append(PreliminaryExample(expression, natural_sentence))
 
-    return dataset
+    return PreliminaryDataset(dataset)
 
 
 def select_dataset(dataset: Dataset, args) -> dict:
@@ -110,19 +111,19 @@ def select_dataset(dataset: Dataset, args) -> dict:
 
     return selected_dataset
 
-def unify_format(text):
-    text = text.replace("(", "（")
-    text = text.replace(")", "）")
-    text = text.replace(",", "，")
-    return text
+def unify_format(example: PreliminaryExample):
+    replace_map = {"(": "（", ")": "）", ",": "，"}
+    for key, value in replace_map.items():
+        example.expression = example.expression.replace(key, value)
+        example.natural_sentence = example.natural_sentence.replace(key, value)
 
-def ptr_change(examples):
-    e = examples
-    e = {k: unify_format(v) for k, v in e.items()}
+    return example
+
+def ptr_change(example: PreliminaryExample):
+    e = unify_format(example)
     e.natural_sentence = add_space_after_chinese(e.natural_sentence.replace("得到", ""))
     # encode = tokenizer.encode(e.natural_sentence)
     word_list = e.natural_sentence.split()
-    new_structural_tokens = []
     if e.expression != "None":
         result_list = []
         expression_list = e.expression.split(" ，")
@@ -132,7 +133,7 @@ def ptr_change(examples):
             #     word_list.append(tokenizer.decode(enc))
 
             st = expression
-            nl = e.natural_sentence
+            nl = e['NL']
             st = st.replace(' ', '')
             lhs, rhs = st.strip().split('=')
             assert lhs.strip().endswith('）')
@@ -156,6 +157,7 @@ def ptr_change(examples):
                 ["@ptr_" + str(item + 1) for item in rhs_indexes]) + "]"
             variable_list = []
             # print("variables", variables)
+            new_structural_tokens = []
             new_structural_tokens.append(f"[{operator_dict[predicate][-1]}：")
             for concept, variable in zip(operator_dict[predicate], variables):
                 variable_indexes = find_long_string_in_list(word_list, variable)
@@ -165,6 +167,9 @@ def ptr_change(examples):
 
             combined_list = ','.join(variable_list)
 
+            # 往词表中加入词
+            # tokenizer.add_tokens(list(set(new_structural_tokens)))
+
             result = f'{predicate1}({combined_list})={rhs_ptr}'
             result_list.append(result)
         Result = ""
@@ -173,7 +178,7 @@ def ptr_change(examples):
             if i < len(result_list) - 1:
                 Result += " , "
         e.expression = Result
-    return e, new_structural_tokens
+    return e
 
 def filter_function(example):
     return example.expression.find("：]") == -1
