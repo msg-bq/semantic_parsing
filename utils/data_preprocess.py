@@ -14,6 +14,8 @@ class PreliminaryExample:
         self.expression = expression
         self.natural_sentence = natural_sentence
 
+        self.__dict__.update({"expression": expression, "natural_sentence": natural_sentence})
+
     def __repr__(self):
         return f"Expression: {self.expression}\nNatural Sentence: {self.natural_sentence}"
 
@@ -23,13 +25,24 @@ class PreliminaryDataset(Dataset):
         self.examples = dataset if dataset else [] # 用默认参数的话，会导致所有实例共享同一个list
 
     def __getitem__(self, i):
-        return self.examples[i]
+        if isinstance(i, int):
+            return self.examples[i]
+        elif isinstance(i, slice):
+            return PreliminaryDataset(self.examples[i])
+
+        raise ValueError("Invalid index type {}.".format(type(i)))
 
     def __setitem__(self, key, value):
-        self.examples[key] = value
+        if isinstance(key, slice) or isinstance(key, int):
+            self.examples[key] = value
+        else:
+            raise ValueError("Invalid index type {}.".format(type(key)))
 
     def __delitem__(self, key):
-        del self.examples[key]
+        if isinstance(key, slice) or isinstance(key, int):
+            del self.examples[key]
+        else:
+            raise ValueError("Invalid index type {}.".format(type(key)))
 
     def __len__(self):
         return len(self.examples)
@@ -110,6 +123,9 @@ def select_dataset(dataset: Dataset, args) -> dict:
         example_num = min(args.example_num, len(data_by_label[operator]))
         selected_dataset[operator] = random.sample(data_by_label[operator], example_num)
 
+    if isinstance(dataset, PreliminaryDataset):
+        selected_dataset = {k: PreliminaryDataset(v) for k, v in selected_dataset.items()}
+
     return selected_dataset
 
 def unify_format(example: PreliminaryExample):
@@ -134,7 +150,7 @@ def ptr_change(example: PreliminaryExample):
             #     word_list.append(tokenizer.decode(enc))
 
             st = expression
-            nl = e['NL']
+            nl = e.natural_sentence
             st = st.replace(' ', '')
             lhs, rhs = st.strip().split('=')
             assert lhs.strip().endswith('）')

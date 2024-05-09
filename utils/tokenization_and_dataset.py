@@ -33,6 +33,8 @@ def tokenize_function(examples, tokenizer):
     tokenized_labels = tokenizer(examples.expression, padding='max_length', truncation=True, max_length=512, return_tensors="pt")
 
     tokenized_inputs['labels'] = tokenized_labels['input_ids']
+    tokenized_inputs['expression'] = examples.expression
+    tokenized_inputs['natural_sentence'] = examples.natural_sentence
 
     return tokenized_inputs
 

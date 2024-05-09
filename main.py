@@ -11,6 +11,8 @@ from utils.data_preprocess import read_dataset_construct, select_dataset, prepro
     PreliminaryDataset
 from utils.tokenization_and_dataset import tokenizer_dataset, mycollate
 
+import higher
+
 
 def args_parse():
     parser = argparse.ArgumentParser(description="semantic_parser")
@@ -122,7 +124,7 @@ def train_model_preliminary(model, optimizer, tokenized_dataset, args):
     test_split_num = int(len(tokenized_dataset) * 0.8)
     sub_dataset, sub_test_dataset = tokenized_dataset[:test_split_num], tokenized_dataset[test_split_num:]
     dev_loss_for_example = defaultdict(list)  # 记录每个样例的测试loss
-    example_to_data = {data.expression: data for data in sub_dataset} # 因为dev_loss_for_example是按照样例来记录的
+    example_to_data = {data["expression"]: data for data in sub_dataset} # 因为dev_loss_for_example是按照样例来记录的
 
     sub_dataset.shuffle()
     def get_sub_dataloader():
@@ -131,7 +133,7 @@ def train_model_preliminary(model, optimizer, tokenized_dataset, args):
         train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, collate_fn=mycollate)
         dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size, collate_fn=mycollate)
 
-        return train_dataloader, dev_dataloader, test_dataloader
+        return train_dataloader, dev_dataloader
 
     # 训练的时候不希望更改模型的初始参数
     def inner_train(dataloader1, dataloader2) -> float:
@@ -158,7 +160,7 @@ def train_model_preliminary(model, optimizer, tokenized_dataset, args):
 
     # 这里开始执行训练
     for _ in range(args.iterations_per_subset):
-        train_dataloader, dev_dataloader, test_dataloader = get_sub_dataloader()
+        train_dataloader, dev_dataloader = get_sub_dataloader()
         whole_loss = inner_train(train_dataloader, dev_dataloader)
         for i, batch in enumerate(dev_dataloader):
             # 遍历每个样例，记录测试loss
@@ -206,4 +208,7 @@ def main():
     if args.task == "preliminary":
         for op in dataset:
             print("算子是", op)
-            train_model_preliminary(model, optimizer, dataset[op]['train'], args)
+            train_model_preliminary(model, optimizer, dataset[op], args)
+
+if __name__ == '__main__':
+    main()
