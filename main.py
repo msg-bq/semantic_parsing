@@ -147,7 +147,7 @@ def train_model_preliminary(model, optimizer, tokenized_dataset, args):
         ) as (fmodel, diffopt):
             for epoch in range(args.epoch):
                 for batch in dataloader1:
-                    batch = {k: v.to(args.device) for k, v in batch.items()}
+                    batch = {k: v.to(args.device) for k, v in batch.items() if isinstance(v, torch.Tensor)}
                     diffopt.step(fmodel(**batch)["loss"])
 
             with torch.no_grad():

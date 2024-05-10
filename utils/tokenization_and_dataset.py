@@ -67,7 +67,9 @@ def tokenizer_dataset_selfTrain(tokenizer, dataset):
 def mycollate(examples):
     for example in examples:
         for key in example:
-            example[key] = torch.tensor(example[key])
+            if not isinstance(example[key], str):
+                example[key] = torch.tensor(example[key])
+
 
     batch = {}
     for key in examples[0]:
