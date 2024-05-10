@@ -106,7 +106,7 @@ def get_dataset(tokenizer, args) -> dict:
         dataset['unlabeled'] = tokenizer_dataset(tokenizer, preprocess_dataset(unlabeled_dataset))
         # 然后self train还有个保存和读入topk的环节，但这个应该也是边训边存
 
-
+        return dataset
 
     raise ValueError(f"Unknown task: {args.task}")
 
