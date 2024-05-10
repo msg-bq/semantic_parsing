@@ -103,7 +103,7 @@ def get_dataset(tokenizer, args) -> dict:
         # 非预实验的时候，有个拆分或者按某个实验标准进行分割的过程，不过这个放在别处也行
         # self train需要正常训练测试+一个无标签数据集，所以需要额外一个读入或者无标签的读入是从训练集or验证集里拆出来的
         unlabeled_dataset = read_unlabeled_dataset(args.unlabel_dataset_dir)
-
+        dataset['unlabeled'] = tokenizer_dataset(tokenizer, preprocess_dataset(unlabeled_dataset))
         # 然后self train还有个保存和读入topk的环节，但这个应该也是边训边存
 
 
