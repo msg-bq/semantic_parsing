@@ -3,8 +3,11 @@ import random
 from collections import defaultdict
 from typing import Union, List
 
+from datasets import load_dataset
 from torch.utils.data import Dataset
+from datasets.dataset_dict import DatasetDict
 
+from utils.ExtraNameSpace import DatasetsReaderNameSpace, DatasetsProcessorNameSpace
 from utils.operators_concepts import operator_dict
 from utils.text_utils import add_space_after_chinese, find_long_string_in_list
 
@@ -19,7 +22,7 @@ class PreliminaryExample:
     def __repr__(self):
         return f"Expression: {self.expression}\nNatural Sentence: {self.natural_sentence}"
 
-class PreliminaryDataset(Dataset):
+class PreliminaryDataset(Dataset): # 这个类虽然名字叫了个预实验，但本身是指自建数据。因为自建数据没想到啥好名字
     def __init__(self, dataset: List[PreliminaryExample]):
         super().__init__()
         self.examples = dataset if dataset else [] # 用默认参数的话，会导致所有实例共享同一个list
@@ -60,12 +63,17 @@ class PreliminaryDataset(Dataset):
         random.shuffle(self.examples)
 
 
-def split_dataset(dataset: Union[list, Dataset], split_ratio: Union[float, list]) -> tuple:
+@DatasetsProcessorNameSpace.register("Default")
+def split_dataset(dataset: Union[list, Dataset, DatasetDict], split_ratio: Union[float, list]) -> tuple:
     """
     :param dataset: 数据集
     :param split_ratio: 划分比例，如果是列表，要求必须够3个
     :return: 划分后的数据集
     """
+    if isinstance(dataset, DatasetDict): # 这个的话，就默认已经是拆分过的数据了
+        # 先假设key是train, eval/dev, test。如果还有其他的，就先认了
+        return dataset["train"], dataset["eval"] if "eval" in dataset else dataset["dev"], dataset["test"]
+
     random.shuffle(dataset)
 
     if isinstance(split_ratio, float):
@@ -78,10 +86,13 @@ def split_dataset(dataset: Union[list, Dataset], split_ratio: Union[float, list]
     else:
         raise ValueError("Invalid split ratio type.")
 
-def read_dataset_construct(directory_path: str) -> Dataset:
+
+@DatasetsReaderNameSpace.register("ours")
+def read_dataset(directory_path: str) -> Union[Dataset, DatasetDict]:
     """
     :param directory_path: 读入目录内所有的文件
     :return:
+    本函数指代常规的训练、测试集的那些读入
     """
     dataset = []
 
@@ -101,6 +112,15 @@ def read_dataset_construct(directory_path: str) -> Dataset:
 
     return PreliminaryDataset(dataset)
 
+@DatasetsReaderNameSpace.register("topv2")
+def read_unlabeled_dataset(directory_path: str):
+    dataset = load_dataset(directory_path)
+    return dataset["eval"]
+
+@DatasetsReaderNameSpace.register("topv2")
+def read_dataset(directory_path: str) -> Dataset:
+    dataset = load_dataset(directory_path)
+    return dataset
 
 def select_dataset(dataset: Dataset, args) -> dict:
     """
@@ -136,6 +156,7 @@ def unify_format(example: PreliminaryExample):
 
     return example
 
+@DatasetsReaderNameSpace.register("ours")
 def ptr_change(example: PreliminaryExample):
     e = unify_format(example)
     e.natural_sentence = add_space_after_chinese(e.natural_sentence.replace("得到", ""))
@@ -196,6 +217,30 @@ def ptr_change(example: PreliminaryExample):
                 Result += " , "
         e.expression = Result
     return e
+
+@DatasetsReaderNameSpace.register("topv2")
+def ptr_change(examples):
+    """
+    将semantic_parse里面的的词，换成utterance里对应的ptr_x
+    """
+    for i, st in enumerate(examples["semantic_parse"]):
+        changed_item = []
+        # ut_list = ut.split(' ')
+        cnt = 1
+        # print(st)
+        for s in st.split(' '):
+            if s.startswith('[') or s == ']':
+                # print(s)
+                # exit()
+                changed_item.append(s)
+            else:
+                # print(s)
+                # print(f"@ptr_{cnt}")
+                changed_item.append(f"@ptr_{cnt}")
+                cnt += 1
+
+        examples["semantic_parse"][i] = ' '.join(changed_item)
+    return examples
 
 def filter_function(example):
     return example.expression.find("：]") == -1

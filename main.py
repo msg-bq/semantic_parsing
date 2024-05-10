@@ -7,8 +7,9 @@ from torch import optim
 from torch.utils.data import DataLoader
 from transformers import MT5ForConditionalGeneration, AutoTokenizer
 
-from utils.data_preprocess import read_dataset_construct, select_dataset, preprocess_dataset, split_dataset, \
-    PreliminaryDataset
+from utils.data_preprocess import read_dataset, select_dataset, preprocess_dataset, split_dataset, \
+    PreliminaryDataset, read_unlabeled_dataset
+import utils.tokenization_and_dataset
 from utils.tokenization_and_dataset import tokenizer_dataset, mycollate
 
 import higher
@@ -17,11 +18,14 @@ import higher
 def args_parse():
     parser = argparse.ArgumentParser(description="semantic_parser")
 
+    parser.add_argument("--dataset", type=str, default="ours",
+                        choices=["ours", "topv2"])
+
     parser.add_argument("--train_dataset_dir", type=str, default="./data/dev",
                     help="train dataset dir")
 
-    parser.add_argument("--test_dataset_dir", type=str, default="./data/dev",
-                    help="test dataset dir")
+    parser.add_argument("--unlabel_dataset_dir", type=str, default="./data/dev",
+                    help="unlabel dataset dir")
 
     parser.add_argument("--task", type=str, default="preliminary", choices=["preliminary", "self-train"],
                     help="省得分文件了")
@@ -31,6 +35,9 @@ def args_parse():
 
     parser.add_argument("--save_dir", type=str, default="/home/lzx/T5-base-lora/model/mt5-base-trained-10",
                     help="save dir")
+
+    parser.add_argument("--experiment_name", type=str, default="Default", choices=["Default"], # 这个比如10样例、100样例等
+                    help="experiment name")
 
     parser.add_argument("--optimizer", type=str, default="Adam",
                     help="optimizer")
@@ -68,6 +75,7 @@ def args_parse():
     parser.add_argument("--seed", type=int, default=192,
                     help="random seed")
 
+
     args = parser.parse_args()
 
     return args
@@ -78,9 +86,9 @@ def get_dataset(tokenizer, args) -> dict:
     我有点纠结的是，一般来说返回Dataloader足够了，但预实验最多只能到tokenized_dataset这一步，是不是有必要把self-train也回退到这步呢？
     虽然看着整齐点但好像意义不大，先就这样错开吧
     """
+    dataset = read_dataset(args.train_dataset_dir)
 
-    if args.task == "preliminary":
-        dataset = read_dataset_construct(args.train_dataset_dir) # 预实验时候默认没有测试集
+    if args.task == "preliminary":# 预实验时候默认没有测试集
         selected_dataset: dict = select_dataset(dataset, args) # 只有预实验需要区分训练集和测试集，并且每个operator单独
         # 维护一个dataloader
         final_dataset = {}
@@ -92,7 +100,13 @@ def get_dataset(tokenizer, args) -> dict:
         return final_dataset
 
     elif args.task == "self-train":
-        raise NotImplementedError("Not implemented yet.")
+        # 非预实验的时候，有个拆分或者按某个实验标准进行分割的过程，不过这个放在别处也行
+        # self train需要正常训练测试+一个无标签数据集，所以需要额外一个读入或者无标签的读入是从训练集or验证集里拆出来的
+        unlabeled_dataset = read_unlabeled_dataset(args.unlabel_dataset_dir)
+
+        # 然后self train还有个保存和读入topk的环节，但这个应该也是边训边存
+
+
 
     raise ValueError(f"Unknown task: {args.task}")
 
@@ -209,6 +223,9 @@ def main():
         for op in dataset:
             print("算子是", op)
             train_model_preliminary(model, optimizer, dataset[op], args)
+
+    elif args.task == "self-train":
+        raise NotImplementedError("Not implemented yet.")
 
 if __name__ == '__main__':
     main()
