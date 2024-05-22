@@ -3,20 +3,31 @@ from collections import defaultdict
 from typing import Union, Tuple
 
 import torch
+import yaml
 from torch import optim
 from torch.utils.data import DataLoader
-from transformers import MT5ForConditionalGeneration, AutoTokenizer
+from transformers import AutoTokenizer
 
+from train.preliminary import train_model_preliminary
 from utils.data_preprocess import read_dataset, select_dataset, preprocess_dataset, split_dataset, \
     PreliminaryDataset, read_unlabeled_dataset
-import utils.tokenization_and_dataset
-from utils.tokenization_and_dataset import tokenizer_dataset, mycollate
+import utils.tokenization
+from module.MT5 import MT5ForConditionalGeneration
+# from transformers import MT5ForConditionalGeneration, AutoTokenizer
+# from transformers import AutoModel
+
+from utils.tokenization import tokenizer_dataset
+
+from utils.ExtraNameSpace import NameSpace
 
 import higher
 
 
 def args_parse():
     parser = argparse.ArgumentParser(description="semantic_parser")
+
+    parser.add_argument('--config', type=str, default='config.yaml',
+                    help='config file, 只使用单层的嵌套')
 
     parser.add_argument("--dataset", type=str, default="ours",
                         choices=["ours", "topv2"])
@@ -30,10 +41,10 @@ def args_parse():
     parser.add_argument("--task", type=str, default="preliminary", choices=["preliminary", "self-train"],
                     help="省得分文件了")
 
-    parser.add_argument("--model_dir", type=str, default="/home/lzx/T5-base-lora/model/mt5-base-trained-9",
+    parser.add_argument("--model_dir", type=str, default="/hy-tmp/mt5_small",
                     help="model dir")
 
-    parser.add_argument("--save_dir", type=str, default="/home/lzx/T5-base-lora/model/mt5-base-trained-10",
+    parser.add_argument("--save_dir", type=str, default="/hy-tmp/t5",
                     help="save dir")
 
     parser.add_argument("--experiment_name", type=str, default="Default", choices=["Default"], # 这个比如10样例、100样例等
@@ -54,7 +65,7 @@ def args_parse():
     parser.add_argument("--epoch", type=int, default=3,
                     help="epoch")
 
-    parser.add_argument("--batch_size", type=int, default=16,
+    parser.add_argument("--batch_size", type=int, default=1,
                     help="batch size")
 
     parser.add_argument("--operator_num", type=int, default=5,
@@ -77,6 +88,15 @@ def args_parse():
 
 
     args = parser.parse_args()
+
+    if args.config:
+        yaml_config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
+        # 合并yaml到args里面
+        for key, value in yaml_config.items():
+            setattr(args, key, value)
+    #         parser.add_argument(f'--{key}', default=value, help=f'{key} from YAML config')
+
+    NameSpace._args = args
 
     return args
 
@@ -102,9 +122,11 @@ def get_dataset(tokenizer, args) -> dict:
     elif args.task == "self-train":
         # 非预实验的时候，有个拆分或者按某个实验标准进行分割的过程，不过这个放在别处也行
         # self train需要正常训练测试+一个无标签数据集，所以需要额外一个读入或者无标签的读入是从训练集or验证集里拆出来的
-        unlabeled_dataset = read_unlabeled_dataset(args.unlabel_dataset_dir)
-        dataset['unlabeled'] = tokenizer_dataset(tokenizer, preprocess_dataset(unlabeled_dataset))
+        dataset["unlabeled"] = read_unlabeled_dataset(args.unlabel_dataset_dir)
         # 然后self train还有个保存和读入topk的环节，但这个应该也是边训边存
+
+        for key in dataset:
+            dataset[key] = tokenizer_dataset(tokenizer, preprocess_dataset(dataset[key]))
 
         return dataset
 
@@ -125,93 +147,26 @@ def get_criterion(args):
 
     raise ValueError(f"Unknown criterion: {args.criterion}")
 
-def train_model_preliminary(model, optimizer, tokenized_dataset, args):
-    """
-    :param model:
-    :param optimizer:
-    :param criterion:
-    :param dataloader: 这个dataloader比较特殊，只是dict{op: }
-    :param args:
-    :return: 返回测试loss，或者考虑考虑别的
-    """
-    # 预留0.2的样本不参与元学习部分。这个参数比较随意，我就不放在args里了
-    test_split_num = int(len(tokenized_dataset) * 0.8)
-    sub_dataset, sub_test_dataset = tokenized_dataset[:test_split_num], tokenized_dataset[test_split_num:]
-    dev_loss_for_example = defaultdict(list)  # 记录每个样例的测试loss
-    example_to_data = {data["expression"]: data for data in sub_dataset} # 因为dev_loss_for_example是按照样例来记录的
 
-    sub_dataset.shuffle()
-    def get_sub_dataloader():
-        train_dataset, _, dev_dataset = split_dataset(sub_dataset, args.split) # test相当于此刻的dev
-
-        train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, collate_fn=mycollate)
-        dev_dataloader = DataLoader(dev_dataset, batch_size=args.batch_size, collate_fn=mycollate)
-
-        return train_dataloader, dev_dataloader
-
-    # 训练的时候不希望更改模型的初始参数
-    def inner_train(dataloader1, dataloader2) -> float:
-        whole_loss = 0
-
-        with higher.innerloop_ctx(
-                model,
-                optimizer,
-                copy_initial_weights=True,
-                track_higher_grads=False,
-        ) as (fmodel, diffopt):
-            for epoch in range(args.epoch):
-                for batch in dataloader1:
-                    batch = {k: v.to(args.device) for k, v in batch.items() if isinstance(v, torch.Tensor)}
-                    diffopt.step(fmodel(**batch)["loss"])
-
-            with torch.no_grad():
-                for i, batch in enumerate(dataloader2):
-                    batch = {k: v.to(args.device) for k, v in batch.items()}
-                    outputs = fmodel(**batch)
-                    whole_loss += outputs["loss"].detach().cpu()
-
-        return whole_loss
-
-    # 这里开始执行训练
-    for _ in range(args.iterations_per_subset):
-        train_dataloader, dev_dataloader = get_sub_dataloader()
-        whole_loss = inner_train(train_dataloader, dev_dataloader)
-        for i, batch in enumerate(dev_dataloader):
-            # 遍历每个样例，记录测试loss
-            for example in batch.expression:
-                dev_loss_for_example[example].append(whole_loss)
-
-    # 比较用全sub训练和sub的前80%训练的效果，在test上测试
-    #1. 使用sub_dataset训练，sub_test_dataset测试
-    sub_dataloader = DataLoader(sub_dataset, batch_size=args.batch_size, collate_fn=mycollate)
-    sub_test_dataloader = DataLoader(sub_test_dataset, batch_size=args.batch_size, collate_fn=mycollate)
-
-    loss_all_dataset = inner_train(sub_dataloader, sub_test_dataloader)
-
-    #2. sub前80%
-    for example in dev_loss_for_example:
-        dev_loss_for_example[example] = sum(dev_loss_for_example[example]) / len(dev_loss_for_example[example])
-
-    # 排序选loss最小的80%
-    sorted_dev_loss = sorted(dev_loss_for_example.items(), key=lambda x: x[1])
-    select_top_percentage = int(len(sorted_dev_loss) * args.select_top_percentage)
-    selected_examples = [example_to_data[example] for example, _ in sorted_dev_loss[:select_top_percentage]]
-    selected_dataset = PreliminaryDataset(*zip(*selected_examples))
-
-    selected_dataloader = DataLoader(selected_dataset, batch_size=args.batch_size, collate_fn=mycollate)
-
-    loss_select = inner_train(selected_dataloader, sub_test_dataloader)
-
-    print("全数据微调的效果是：", loss_all_dataset)
-    print("部分数据微调的效果：", loss_select)
-    print("选择比例", args.select_top_percentage)
-    print("=====================")
 
 def main():
     args = args_parse()
 
+    #=====test
+
     model = MT5ForConditionalGeneration.from_pretrained(args.model_dir)
     tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
+    article = "UN Offizier sagt, dass weiter verhandelt werden muss in Syrien."
+    summary = "Weiter Verhandlung in Syrien."
+    inputs = tokenizer(article, text_target=summary, return_tensors="pt")
+
+    outputs = model(**inputs)
+    loss = outputs.loss
+    #=====test
+
+    model = MT5ForConditionalGeneration.from_pretrained(args.model_dir)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
+    model.to(args.device)
     model.to(args.device)
 
     dataset = get_dataset(tokenizer, args)
@@ -219,13 +174,14 @@ def main():
     optimizer = get_optimizer(args.optimizer, model, args)
     criterion = get_criterion(args)
 
+
     if args.task == "preliminary":
         for op in dataset:
             print("算子是", op)
             train_model_preliminary(model, optimizer, dataset[op], args)
 
     elif args.task == "self-train":
-        raise NotImplementedError("Not implemented yet.")
+        train_model_self_train(model, optimizer, dataset, args)
 
 if __name__ == '__main__':
     main()

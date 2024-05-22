@@ -82,6 +82,7 @@ class DatasetsProcessorNameSpace(NameSpace):
     """
     原则上讲很多被放到Reader里面的函数，应该放到Processor里面更合语义。但这是个小问题，这个函数目前主要只是为了split等单独用一个args的值，无所谓
     """
+    @classmethod
     def get(self, fn: Callable) -> Callable:
         cls = DatasetsReaderNameSpace.get_instance()
 

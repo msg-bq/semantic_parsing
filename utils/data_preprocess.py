@@ -12,57 +12,6 @@ from utils.operators_concepts import operator_dict
 from utils.text_utils import add_space_after_chinese, find_long_string_in_list
 
 
-class PreliminaryExample:
-    def __init__(self, expression, natural_sentence):
-        self.expression = expression
-        self.natural_sentence = natural_sentence
-
-        self.__dict__.update({"expression": expression, "natural_sentence": natural_sentence})
-
-    def __repr__(self):
-        return f"Expression: {self.expression}\nNatural Sentence: {self.natural_sentence}"
-
-class PreliminaryDataset(Dataset): # 这个类虽然名字叫了个预实验，但本身是指自建数据。因为自建数据没想到啥好名字
-    def __init__(self, dataset: List[PreliminaryExample]):
-        super().__init__()
-        self.examples = dataset if dataset else [] # 用默认参数的话，会导致所有实例共享同一个list
-
-    def __getitem__(self, i):
-        if isinstance(i, int):
-            return self.examples[i]
-        elif isinstance(i, slice):
-            return PreliminaryDataset(self.examples[i])
-
-        raise ValueError("Invalid index type {}.".format(type(i)))
-
-    def __setitem__(self, key, value):
-        if isinstance(key, slice) or isinstance(key, int):
-            self.examples[key] = value
-        else:
-            raise ValueError("Invalid index type {}.".format(type(key)))
-
-    def __delitem__(self, key):
-        if isinstance(key, slice) or isinstance(key, int):
-            del self.examples[key]
-        else:
-            raise ValueError("Invalid index type {}.".format(type(key)))
-
-    def __len__(self):
-        return len(self.examples)
-
-    def append(self, expression, natural_sentence):
-        self.examples.append(PreliminaryExample(expression, natural_sentence))
-
-    def map(self, func, *args, **kwargs):
-        return PreliminaryDataset([func(e, *args, **kwargs) for e in self])
-
-    def filter(self, func, *args, **kwargs):
-        return PreliminaryDataset([e for e in self if func(e, *args, **kwargs)])
-
-    def shuffle(self):
-        random.shuffle(self.examples)
-
-
 @DatasetsProcessorNameSpace.register("Default")
 def split_dataset(dataset: Union[list, Dataset, DatasetDict], split_ratio: Union[float, list]) -> tuple:
     """
@@ -108,7 +57,7 @@ def read_dataset(directory_path: str) -> Union[Dataset, DatasetDict]:
                     if expression == "None":
                         continue
 
-                    dataset.append(PreliminaryExample(expression, natural_sentence))
+                    dataset.append(AssertionExample(expression, natural_sentence))
 
     return PreliminaryDataset(dataset)
 
@@ -119,6 +68,9 @@ def read_unlabeled_dataset(directory_path: str):
 
 @DatasetsReaderNameSpace.register("topv2")
 def read_dataset(directory_path: str) -> Dataset:
+    """
+    一般情况下，read的时候就改成train eval test
+    """
     dataset = load_dataset(directory_path)
     return dataset
 
@@ -148,7 +100,7 @@ def select_dataset(dataset: Dataset, args) -> dict:
 
     return selected_dataset
 
-def unify_format(example: PreliminaryExample):
+def unify_format(example: AssertionExample):
     replace_map = {"(": "（", ")": "）", ",": "，"}
     for key, value in replace_map.items():
         example.expression = example.expression.replace(key, value)
@@ -157,7 +109,7 @@ def unify_format(example: PreliminaryExample):
     return example
 
 @DatasetsReaderNameSpace.register("ours")
-def ptr_change(example: PreliminaryExample):
+def ptr_change(example: AssertionExample):
     e = unify_format(example)
     e.natural_sentence = add_space_after_chinese(e.natural_sentence.replace("得到", ""))
     # encode = tokenizer.encode(e.natural_sentence)
