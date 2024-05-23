@@ -142,7 +142,6 @@ def self_train_collate(examples):
     """
     和mycollate一样，主要是每四个要单独处理一个y^
     """
-
     for topk_examples in examples:
         weights_sum = sum([example.weight for example in topk_examples])
 
@@ -156,3 +155,13 @@ def self_train_collate(examples):
                 except Exception as e:
                     pass
 
+    examples = [e for topk_examples in examples for e in topk_examples]
+
+    batch = {}
+    for key in examples[0]:
+        try:
+            batch[key] = torch.stack([example[key] for example in examples])
+        except:
+            batch[key] = [example[key] for example in examples]
+
+    return batch

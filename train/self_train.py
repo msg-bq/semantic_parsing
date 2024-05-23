@@ -1,10 +1,12 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import heapq
 
+from torch import device
 from transformers import TrainingArguments, Trainer
 
-from utils.dataset import mycollate
+from utils.dataset import mycollate, self_train_collate, AssertionExample
 
 
 class SelfTrainingArguments(TrainingArguments):
@@ -29,9 +31,8 @@ class CustomLoss(nn.Module):
 class SelfTrainTrainer(Trainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.unlabeled_dataset = kwargs.get("unlabeled_dataset")
+        self.unlabeled_dataset = kwargs.get("unlabeled_dataset") # 这里不需要dataloader，只要一个dataset就行
         self.args = kwargs.get("args")
-        self.trainer = kwargs.get("trainer") # 我们把正常的trainer传进来，这样就不用重复写train了
 
     def softmax_chunks(self, lst, chunk_size=4):
         """Apply softmax to chunks of size chunk_size in lst."""
@@ -44,27 +45,32 @@ class SelfTrainTrainer(Trainer):
         # Flatten the result back to a 1D array if desired
         return softmaxed_chunks.flatten() if chunk_size == 1 else softmaxed_chunks
 
+    def get_beam_search_score(self, example):
+        input_ids = self.tokenizer("translate English to German: The house is wonderful.", return_tensors="pt").input_ids
+
+        outputs = self.model.generate(input_ids, num_beams=self.args.selftrain_topk, max_length=512,
+                                 num_return_sequences=self.args.selftrain_topk, return_dict_in_generate=True, output_scores=True)
+
+        transition_scores = self.model.compute_transition_scores(
+            outputs.sequences, outputs.scores, outputs.beam_indices, normalize_logits=False
+        )
+
+        transition_scores.sum(dim=1).exp()
+
+        return [AssertionExample(expression=example.expression, natural_sentence=example.natural_sentence, weight=score)
+                for score in transition_scores.sum(dim=1).exp()]
+
     def get_soft_label_dataloader(self):
-        # beamsearch
-        device = self.trainer.device
-        model = self.trainer.model
+        # beam search
+        device = self.device
+        model = self.model
         selftrain_topk = self.args.selftrain_topk
         unlabeled_dataset = self.unlabeled_dataset
 
         soft_labeled_dataset = []
 
-        for i, batch in enumerate(unlabeled_dataset):
-            batch = {k: v.to(device) for k, v in batch.items()}
-            out = model.generate(batch['input_ids'], num_beams=selftrain_topk, max_length=512,
-                                 num_return_sequences=selftrain_topk, return_dict_in_generate=True, output_scores=True)
-            sequences = out.sequences # logits区别
-
-            top_k_scores = self.softmax_chunks(out.sequences_scores)
-
-            soft_labeled_dataset.append({"input": })
-
-    def train(self):
-        super(SelfTrainTrainer, self).train()
+        for example in unlabeled_dataset:
+            self.get_beam_search_score(example)
 
     def compute_loss(self, model, inputs, return_outputs=False):  ## compute loss这个步骤实际上定义了 forward和loss的计算过程
         labels = inputs.get("labels")
@@ -109,19 +115,13 @@ def train_model_self_train(model, optimizer, dataset, args):
 
     # 2. 用基础模型预测unlabeled数据集
     unlabeled_dataset = dataset["unlabeled"]
-    unlabeled_loader = DataLoader(unlabeled_dataset, batch_size=args.batch_size, collate_fn=mycollate)
+    # unlabeled_dataset 还是没有标签的
 
-    model.eval()
-    with torch.no_grad():
-        for batch in unlabeled_loader:
-            input_ids = batch["input_ids"]
-            attention_mask = batch["attention_mask"]
-            outputs = model(input_ids, attention_mask=attention_mask)
-            lm_logits = outputs.logits
-            # 3. 选择topk数据集
-            # 4. 用topk数据集fine-tune基础模型
-            # 5. 重复2-4
-            # TODO
-            break
+    def give_x_y_score():
+        pass
+
+    # unlabeled_loader = DataLoader(unlabeled_dataset, batch_size=args.batch_size, collate_fn=self_train_collate)
+
+
 
 
