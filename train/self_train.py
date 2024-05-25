@@ -50,9 +50,9 @@ class SelfTrainTrainer(Trainer):
         # Flatten the result back to a 1D array if desired
         return softmaxed_chunks.flatten() if chunk_size == 1 else softmaxed_chunks
 
-    def get_beam_search_score(self, example) -> dict:
-        input_ids = self.tokenizer(example.question, return_tensors="pt").input_ids \
-            if isinstance(example.question, str) else example.question # 可以接收tokenize前后的情况
+    def get_beam_search_score(self, question) -> dict:
+        input_ids = self.tokenizer(question, return_tensors="pt").input_ids \
+            if isinstance(question, str) else question # 可以鲁棒地接纳tokenize前后的情况
 
         outputs = self.model.generate(input_ids=input_ids, num_beams=self.args.selftrain_topk, max_length=512,
                     num_return_sequences=self.args.selftrain_topk, return_dict_in_generate=True, output_scores=True)
@@ -67,12 +67,12 @@ class SelfTrainTrainer(Trainer):
 
         return sentence_score
 
-    def get_fixed_output_score(self, example, natural_sentence) -> float:
+    def get_fixed_output_score(self, example) -> float:
         input_ids = self.tokenizer(example.question, return_tensors="pt").input_ids \
             if isinstance(example.question, str) else example.question
 
-        output_ids = self.tokenizer(natural_sentence, return_tensors="pt").input_ids \
-            if isinstance(natural_sentence, str) else natural_sentence
+        output_ids = self.tokenizer(example.natural_sentence, return_tensors="pt").input_ids \
+            if isinstance(example.natural_sentence, str) else example.natural_sentence
 
         score = 1
 
@@ -93,15 +93,29 @@ class SelfTrainTrainer(Trainer):
 
     def get_soft_label_dataloader(self):
         # beam search
-        device = self.device
-        model = self.model
-        selftrain_topk = self.args.selftrain_topk
-        unlabeled_dataset = self.unlabeled_dataset
+        self.unlabeled_dataset.topk = self.args.selftrain_topk
+        dataset = self.unlabeled_dataset
 
-        soft_labeled_dataset = []
+        for question in dataset.key_to_index.keys():
+            last_examples = len(dataset.unlabeled_dataset[dataset.key_to_index[question]])
 
-        for example in unlabeled_dataset:
-            self.get_beam_search_score(example)
+            sentence_score = self.get_beam_search_score(question)
+            for sentence, score in sentence_score.items():
+                if (question, sentence) not in self.unlabeled_dataset: # 如果beam search和原来的重叠率高会有点浪费，但这小问题了
+                    self.unlabeled_dataset.append(question, sentence, score)
+
+            new_examples = dataset.unlabeled_dataset[dataset.key_to_index[question]]
+            sum_scores = sum([example.score for example in dataset.unlabeled_dataset[dataset.key_to_index[question]]])
+
+            for example in new_examples[:last_examples]:
+                new_score = self.get_fixed_output_score(example)
+                alpha = 0.5 # 这里有一个被固定进代码的变量
+                example.score = (1-alpha) * example.score / sum_scores + alpha * new_score
+
+            # 归一化
+            sum_scores = sum([example.score for example in new_examples])
+            for example in new_examples:
+                example.score /= sum_scores
 
     def compute_loss(self, model, inputs, return_outputs=False):  ## compute loss这个步骤实际上定义了 forward和loss的计算过程
         labels = inputs.get("labels")

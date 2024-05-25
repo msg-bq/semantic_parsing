@@ -70,7 +70,7 @@ class PreliminaryDataset(Dataset): # 这个类虽然名字叫了个预实验，�
 
 
 class SelfTrainDataset(Dataset):
-    def __init__(self, unlabeled_dataset: List[List[AssertionExample]]=None, topk=5):
+    def __init__(self, question_list: str, topk=5):#unlabeled_dataset: List[List[AssertionExample]]=None, topk=5):
         """
         这个地方用堆的复杂度仍然是nlogn，主要瓶颈是每轮存在一次整个数组重新打分的过程
         O(n)的策略也有，就每次遍历前转list再重新建堆，但这个就太没必要了，且数量少那常数项大也不合适
@@ -80,19 +80,19 @@ class SelfTrainDataset(Dataset):
         综上所述，暂定还是list
         """
         super().__init__()
-        self.unlabeled_dataset = unlabeled_dataset if unlabeled_dataset else []
+        self.key_to_index = {q: i for i, q in enumerate(question_list)}
+        # for i, data_list in enumerate(self.unlabeled_dataset):  # 这里list没关系，因为每次都是更新所有的score，所以每次整个把data_list删掉重建
+        #     # 因为即便用dict，修改方便但每次还要排序
+        #     key = data_list[0].expression
+        #     self.key_to_index[key] = i
+
+        self.unlabeled_dataset = [[]] * len(question_list)
         self.sent_to_instance_list = [] # 用于避免重复
         for i, data_list in enumerate(self.unlabeled_dataset):
             sent_to_instance = {data.natural_sentence: data for data in data_list}# 这个地方就不应该有重复
             self.sent_to_instance_list.append(sent_to_instance)
 
-        self.key_to_index = {}
-        for i, data_list in enumerate(self.unlabeled_dataset): # 这里list没关系，因为每次都是更新所有的score，所以每次整个把data_list删掉重建
-            # 因为即便用dict，修改方便但每次还要排序
-            key = data_list[0].expression
-            self.key_to_index[key] = i
-
-        self.sorted_sign = [False] * len(self.unlabeled_dataset) # 用于减少排序开销
+        self.sorted_sign = [False] * len(question_list) # 用于减少排序开销
 
         self.topk = topk
 
