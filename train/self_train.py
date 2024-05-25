@@ -37,7 +37,7 @@ class SelfTrainTrainer(Trainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.unlabeled_dataset = kwargs.get("unlabeled_dataset") # 这里不需要dataloader，只要一个dataset就行
-        self.args = kwargs.get("args")
+        self.train_args = kwargs.get("train_args")
 
     # def softmax_chunks(self, lst, chunk_size=4):
     #     """Apply softmax to chunks of size chunk_size in lst."""
@@ -166,20 +166,20 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
         unlabeled_dataset = dataset["unlabeled"]
         # 转一下
 
-        selftrain_args = SelfTrainTrainer(output_dir=args.save_dir,
-                                          num_train_epochs=args.selftrain_iteration, # 这个指每个self_train里面的epoch
-                                          per_device_train_batch_size=args.batch_size,
-                                          save_steps=1000,
-                                          learning_rate=args.lr,
-                                          evaluation_strategy="epoch",
-                                          selftrain_topk=4)
+        selftrain_args = SelfTrainingArguments(output_dir=args.save_dir,
+                                              num_train_epochs=args.selftrain_iteration, # 这个指每个self_train里面的epoch
+                                              per_device_train_batch_size=args.batch_size,
+                                              save_steps=1000,
+                                              learning_rate=args.lr,
+                                              evaluation_strategy="epoch",
+                                              selftrain_topk=4)
 
         self_trainer = SelfTrainTrainer(model=model,
-                                   args=selftrain_args,
-                                   data_collator=self_train_collate,
-                                   train_dataset=unlabeled_dataset,
-                                   tokenizer=tokenizer,
-                                   optimizers=(optimizer, None))
+                                       train_args=selftrain_args,
+                                       data_collator=self_train_collate,
+                                       train_dataset=unlabeled_dataset,
+                                       tokenizer=tokenizer,
+                                       optimizers=(optimizer, None))
 
         self_trainer.train()
 
