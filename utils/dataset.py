@@ -81,13 +81,15 @@ class SelfTrainDataset(Dataset):
         """
         super().__init__()
         self.unlabeled_dataset = unlabeled_dataset if unlabeled_dataset else []
-        self.sent_to_instance = {} # 用于避免重复
+        self.sent_to_instance_list = [] # 用于避免重复
         for i, data_list in enumerate(self.unlabeled_dataset):
+            sent_to_instance = {data.natural_sentence: data for data in data_list}# 这个地方就不应该有重复
+            self.sent_to_instance_list.append(sent_to_instance)
 
         self.key_to_index = {}
         for i, data_list in enumerate(self.unlabeled_dataset): # 这里list没关系，因为每次都是更新所有的score，所以每次整个把data_list删掉重建
             # 因为即便用dict，修改方便但每次还要排序
-            key = data_list[0].natural_sentence
+            key = data_list[0].expression
             self.key_to_index[key] = i
 
         self.sorted_sign = [False] * len(self.unlabeled_dataset) # 用于减少排序开销
@@ -119,14 +121,27 @@ class SelfTrainDataset(Dataset):
     def __len__(self):
         return len(self.unlabeled_dataset)
 
+    def __contains__(self, item):
+        expression, natural_sentence = item
+
+        sent_to_instance = self.sent_to_instance_list[self.key_to_index[expression]]
+        if natural_sentence in sent_to_instance:
+            return True
+
+        return False
+
+
     def append(self, expression, natural_sentence, score=-1):
-        key = natural_sentence
+        """
+        判断新旧再append，这里面不控制
+        """
+        key = expression
         if key in self.key_to_index:
-            self.unlabeled_dataset[self.key_to_index[key]].append(AssertionExample(expression, natural_sentence))
+            self.unlabeled_dataset[self.key_to_index[key]].append(AssertionExample(expression, natural_sentence, score))
             self.sorted_sign[self.key_to_index[key]] = False
         else:
             self.key_to_index[key] = len(self.unlabeled_dataset)
-            self.unlabeled_dataset.append([AssertionExample(expression, natural_sentence)])
+            self.unlabeled_dataset.append([AssertionExample(expression, natural_sentence, score)])
             self.sorted_sign.append(False)
 
 
