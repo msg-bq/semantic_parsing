@@ -1,3 +1,5 @@
+from typing import Dict
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -8,12 +10,15 @@ from transformers import TrainingArguments, Trainer
 
 from utils.dataset import mycollate, self_train_collate, AssertionExample
 
+import torch.nn.functional as F
+
+
 
 class SelfTrainingArguments(TrainingArguments):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.selftrain_iteration = kwargs.get("selftrain_iteration", 3) # self train的epoch
-        self.selftrain_topk = # 这个值用于决定每轮获取软标注的topk
+        self.selftrain_topk = kwargs.get("selftrain_topk", 4)# 这个值用于决定每轮获取软标注的topk
 
 class CustomLoss(nn.Module):
     def __init__(self, weight=None, size_average=None, reduce=None, reduction='mean'):
@@ -45,20 +50,46 @@ class SelfTrainTrainer(Trainer):
         # Flatten the result back to a 1D array if desired
         return softmaxed_chunks.flatten() if chunk_size == 1 else softmaxed_chunks
 
-    def get_beam_search_score(self, example):
-        input_ids = self.tokenizer("translate English to German: The house is wonderful.", return_tensors="pt").input_ids
+    def get_beam_search_score(self, example) -> dict:
+        input_ids = self.tokenizer(example.question, return_tensors="pt").input_ids \
+            if isinstance(example.question, str) else example.question # 可以接收tokenize前后的情况
 
-        outputs = self.model.generate(input_ids, num_beams=self.args.selftrain_topk, max_length=512,
-                                 num_return_sequences=self.args.selftrain_topk, return_dict_in_generate=True, output_scores=True)
+        outputs = self.model.generate(input_ids=input_ids, num_beams=self.args.selftrain_topk, max_length=512,
+                    num_return_sequences=self.args.selftrain_topk, return_dict_in_generate=True, output_scores=True)
 
         transition_scores = self.model.compute_transition_scores(
             outputs.sequences, outputs.scores, outputs.beam_indices, normalize_logits=False
         )
 
-        transition_scores.sum(dim=1).exp()
+        transition_scores = transition_scores.sum(dim=1).exp()
+        sequences = outputs.sequences[:, input_ids.shape[-1]:]
+        sentence_score = {sent: score for sent, score in zip(sequences, transition_scores)} # 每个sent是ids，即[356,  481,  307, 1498,  284]
 
-        return [AssertionExample(expression=example.expression, natural_sentence=example.natural_sentence, weight=score)
-                for score in transition_scores.sum(dim=1).exp()]
+        return sentence_score
+
+    def get_fixed_output_score(self, example, natural_sentence) -> float:
+        input_ids = self.tokenizer(example.question, return_tensors="pt").input_ids \
+            if isinstance(example.question, str) else example.question
+
+        output_ids = self.tokenizer(natural_sentence, return_tensors="pt").input_ids \
+            if isinstance(natural_sentence, str) else natural_sentence
+
+        score = 1
+
+        for ids in output_ids:
+            tmp_output_ids = torch.cat((input_ids, ids.unsqueeze(0)), dim=1).unsqueeze(0) # [356,  481,  307, 1498,  284]
+            # 后面再拼个3，然后转成2维
+
+            tmp_output = self.model.generate(input_ids=input_ids, max_new_tokens=1, return_dict_in_generate=True, output_scores=True)
+            transition_scores = self.model.compute_transition_scores(
+                tmp_output_ids, tmp_output.scores, normalize_logits=True
+            )
+
+            score *= transition_scores.exp()
+
+            input_ids = tmp_output_ids.squeeze(0)
+
+        return score
 
     def get_soft_label_dataloader(self):
         # beam search

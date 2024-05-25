@@ -22,6 +22,12 @@ class AssertionExample:
     def __lt__(self, other):
         return self.weight < other.weight
 
+    def __hash__(self):
+        return hash((self.expression, self.natural_sentence))
+
+    def __eq__(self, other):
+        return self.expression == other.expression and self.natural_sentence == other.natural_sentence
+
 class PreliminaryDataset(Dataset): # 这个类虽然名字叫了个预实验，但本身是指自建数据。因为自建数据没想到啥好名字
     def __init__(self, dataset: List[AssertionExample]=None):
         super().__init__()
@@ -75,6 +81,9 @@ class SelfTrainDataset(Dataset):
         """
         super().__init__()
         self.unlabeled_dataset = unlabeled_dataset if unlabeled_dataset else []
+        self.sent_to_instance = {} # 用于避免重复
+        for i, data_list in enumerate(self.unlabeled_dataset):
+
         self.key_to_index = {}
         for i, data_list in enumerate(self.unlabeled_dataset): # 这里list没关系，因为每次都是更新所有的score，所以每次整个把data_list删掉重建
             # 因为即便用dict，修改方便但每次还要排序
@@ -110,7 +119,7 @@ class SelfTrainDataset(Dataset):
     def __len__(self):
         return len(self.unlabeled_dataset)
 
-    def append(self, expression, natural_sentence):
+    def append(self, expression, natural_sentence, score=-1):
         key = natural_sentence
         if key in self.key_to_index:
             self.unlabeled_dataset[self.key_to_index[key]].append(AssertionExample(expression, natural_sentence))
