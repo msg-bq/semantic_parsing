@@ -8,7 +8,7 @@ import heapq
 from torch import device
 from transformers import TrainingArguments, Trainer
 
-from utils.dataset import mycollate, self_train_collate, AssertionExample
+from utils.dataset import mycollate, self_train_collate, AssertionExample, SelfTrainDataset
 
 import torch.nn.functional as F
 
@@ -140,16 +140,26 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     4. 用topk数据集fine-tune基础模型
     5. 重复2-4
     """
+    train_args = TrainingArguments(output_dir=args.save_dir,
+                                   num_train_epochs=args.epoch,  # 这个指每个self_train里面的epoch
+                                   per_device_train_batch_size=args.batch_size,
+                                   save_steps=1000,
+                                   learning_rate=args.lr,
+                                   evaluation_strategy="epoch")
+
+    unlabeled_dataset = dataset["unlabeled"]  # 我们假设这里是个question_list
+    unlabeled_dataset = SelfTrainDataset(question_list=unlabeled_dataset)
+
+    selftrain_args = SelfTrainingArguments(output_dir=args.save_dir,
+                                           num_train_epochs=args.selftrain_iteration,  # 这个指每个self_train里面的epoch
+                                           per_device_train_batch_size=args.batch_size,
+                                           save_steps=1000,
+                                           learning_rate=args.lr,
+                                           evaluation_strategy="epoch",
+                                           selftrain_topk=4)
 
     for _ in range(3):
         # 1. 先训练基础模型
-        train_args = TrainingArguments(output_dir=args.save_dir,
-                                       num_train_epochs=args.epoch, # 这个指每个self_train里面的epoch
-                                       per_device_train_batch_size=args.batch_size,
-                                       save_steps=1000,
-                                       learning_rate=args.lr,
-                                       evaluation_strategy="epoch")
-
         trainer = Trainer(model=model,
                           args=train_args,
                           data_collator=mycollate, # 要么给自己的，要么在定义trainer后面单独写一个data_collator=None，不然代码里有默认collate
@@ -159,30 +169,16 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                           optimizers=(optimizer, None)) # 缺了学习率调度器
 
         trainer.train()
-
         model = trainer.model
 
         # 2. 用基础模型预测unlabeled数据集
-        unlabeled_dataset = dataset["unlabeled"]
-        # 转一下
-
-        selftrain_args = SelfTrainingArguments(output_dir=args.save_dir,
-                                              num_train_epochs=args.selftrain_iteration, # 这个指每个self_train里面的epoch
-                                              per_device_train_batch_size=args.batch_size,
-                                              save_steps=1000,
-                                              learning_rate=args.lr,
-                                              evaluation_strategy="epoch",
-                                              selftrain_topk=4)
-
         self_trainer = SelfTrainTrainer(model=model,
-                                       train_args=selftrain_args,
-                                       data_collator=self_train_collate,
-                                       train_dataset=unlabeled_dataset,
-                                       tokenizer=tokenizer,
-                                       optimizers=(optimizer, None))
+                                        train_args=selftrain_args,
+                                        data_collator=self_train_collate,
+                                        train_dataset=unlabeled_dataset,
+                                        tokenizer=tokenizer,
+                                        optimizers=(optimizer, None))
 
         self_trainer.train()
-
-    # save
-    
+        model = self_trainer.model
 

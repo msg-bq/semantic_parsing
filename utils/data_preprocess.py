@@ -8,6 +8,7 @@ from torch.utils.data import Dataset
 from datasets.dataset_dict import DatasetDict
 
 from utils.ExtraNameSpace import DatasetsReaderNameSpace, DatasetsProcessorNameSpace
+from utils.dataset import AssertionExample, PreliminaryDataset
 from utils.operators_concepts import operator_dict
 from utils.text_utils import add_space_after_chinese, find_long_string_in_list
 
@@ -64,7 +65,7 @@ def read_dataset(directory_path: str) -> Union[Dataset, DatasetDict]:
 @DatasetsReaderNameSpace.register("topv2")
 def read_unlabeled_dataset(directory_path: str):
     dataset = load_dataset(directory_path)
-    return dataset["eval"]
+    return dataset["eval"]["utterance"]
 
 @DatasetsReaderNameSpace.register("topv2")
 def read_dataset(directory_path: str) -> Dataset:

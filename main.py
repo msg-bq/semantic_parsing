@@ -128,6 +128,8 @@ def get_dataset(tokenizer, args) -> dict:
         for key in dataset:
             dataset[key] = tokenizer_dataset(tokenizer, preprocess_dataset(dataset[key]))
 
+        dataset["unlabeled"] = dataset["unlabeled"]["input_ids"]
+
         return dataset
 
     raise ValueError(f"Unknown task: {args.task}")

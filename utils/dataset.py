@@ -137,7 +137,7 @@ class SelfTrainDataset(Dataset):
         """
         key = expression
         if key in self.key_to_index:
-            self.unlabeled_dataset[self.key_to_index[key]].append(AssertionExample(expression, natural_sentence, score))
+            self.unlabeled_dataset[self.key_to_index[key]].append(AssertionExample(expression, natural_sentence, score)) #?
             self.sorted_sign[self.key_to_index[key]] = False
         else:
             self.key_to_index[key] = len(self.unlabeled_dataset)
