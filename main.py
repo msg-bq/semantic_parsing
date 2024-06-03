@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 
 from train.preliminary import train_model_preliminary
+from train.self_train import train_model_self_train
 from utils.data_preprocess import read_dataset, select_dataset, preprocess_dataset, split_dataset, \
     PreliminaryDataset, read_unlabeled_dataset
 import utils.tokenization
@@ -38,13 +39,16 @@ def args_parse():
     parser.add_argument("--unlabel_dataset_dir", type=str, default="./data/dev",
                     help="unlabel dataset dir")
 
-    parser.add_argument("--task", type=str, default="preliminary", choices=["preliminary", "self-train"],
+    parser.add_argument("--test_dataset_dir", type=str, default="./data/dev",
+                        help="test dataset dir")
+
+    parser.add_argument("--task", type=str, default="self-train", choices=["preliminary", "self-train"],
                     help="省得分文件了")
 
-    parser.add_argument("--model_dir", type=str, default="/hy-tmp/mt5_small",
+    parser.add_argument("--model_dir", type=str, default="/data/lbq/models/mt5-base",
                     help="model dir")
 
-    parser.add_argument("--save_dir", type=str, default="/hy-tmp/t5",
+    parser.add_argument("--save_dir", type=str, default="/data/lbq/models/mt5-base",
                     help="save dir")
 
     parser.add_argument("--experiment_name", type=str, default="Default", choices=["Default"], # 这个比如10样例、100样例等
@@ -86,16 +90,22 @@ def args_parse():
     parser.add_argument("--seed", type=int, default=192,
                     help="random seed")
 
+    parser.add_argument("--selftrain_iteration", type=int, default=3,
+                        help="self train的迭代次数")
+
+    parser.add_argument("--selftrain_topk", type=int, default=5,
+                        help="self train的topk")
+
 
     args = parser.parse_args()
 
-    if args.config:
-        yaml_config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
-        # 合并yaml到args里面
-        for key, value in yaml_config.items():
-            setattr(args, key, value)
-    #         parser.add_argument(f'--{key}', default=value, help=f'{key} from YAML config')
-
+    # if args.config:
+    #     yaml_config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
+    #     # 合并yaml到args里面
+    #     for key, value in yaml_config.items():
+    #         setattr(args, key, value)
+    # #         parser.add_argument(f'--{key}', default=value, help=f'{key} from YAML config')
+    #
     NameSpace._args = args
 
     return args
@@ -112,6 +122,7 @@ def get_dataset(tokenizer, args) -> dict:
         selected_dataset: dict = select_dataset(dataset, args) # 只有预实验需要区分训练集和测试集，并且每个operator单独
         # 维护一个dataloader
         final_dataset = {}
+
         for op in selected_dataset:
             # 先不划分训练测试，因为要多轮迭代着拆分
             final_dataset[op] = tokenizer_dataset(tokenizer,
@@ -121,14 +132,15 @@ def get_dataset(tokenizer, args) -> dict:
 
     elif args.task == "self-train":
         # 非预实验的时候，有个拆分或者按某个实验标准进行分割的过程，不过这个放在别处也行
-        # self train需要正常训练测试+一个无标签数据集，所以需要额外一个读入或者无标签的读入是从训练集or验证集里拆出来的
-        dataset["unlabeled"] = read_unlabeled_dataset(args.unlabel_dataset_dir)
-        # 然后self train还有个保存和读入topk的环节，但这个应该也是边训边存
 
         for key in dataset:
             dataset[key] = tokenizer_dataset(tokenizer, preprocess_dataset(dataset[key]))
 
-        dataset["unlabeled"] = dataset["unlabeled"]["input_ids"]
+        # self train需要正常训练测试+一个无标签数据集，所以需要额外一个读入或者无标签的读入是从训练集or验证集里拆出来的
+        dataset["unlabeled"] = read_unlabeled_dataset(args.unlabel_dataset_dir)
+        # 然后self train还有个保存和读入topk的环节，但这个应该也是边训边存
+
+        # dataset["unlabeled"] = dataset["unlabeled"]["input_ids"]
 
         return dataset
 
@@ -168,8 +180,7 @@ def main():
 
     model = MT5ForConditionalGeneration.from_pretrained(args.model_dir)
     tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
-    model.to(args.device)
-    model.to(args.device)
+    # model.to(args.device)
 
     dataset = get_dataset(tokenizer, args)
 
@@ -183,7 +194,7 @@ def main():
             train_model_preliminary(model, optimizer, dataset[op], args)
 
     elif args.task == "self-train":
-        train_model_self_train(model, optimizer, dataset, args)
+        train_model_self_train(model, tokenizer, optimizer, dataset, args)
 
 if __name__ == '__main__':
     main()

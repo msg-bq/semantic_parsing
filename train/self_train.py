@@ -8,7 +8,7 @@ import heapq
 from torch import device
 from transformers import TrainingArguments, Trainer
 
-from utils.dataset import mycollate, self_train_collate, AssertionExample, SelfTrainDataset
+from utils.dataset import mycollate_trainer, self_train_collate, AssertionExample, SelfTrainDataset
 
 import torch.nn.functional as F
 
@@ -16,9 +16,9 @@ import torch.nn.functional as F
 
 class SelfTrainingArguments(TrainingArguments):
     def __init__(self, *args, **kwargs):
+        self.selftrain_iteration = kwargs.pop("selftrain_iteration", 3)  # self train的epoch
+        self.selftrain_topk = kwargs.pop("selftrain_topk", 4)  # 这个值用于决定每轮获取软标注的topk
         super().__init__(*args, **kwargs)
-        self.selftrain_iteration = kwargs.get("selftrain_iteration", 3) # self train的epoch
-        self.selftrain_topk = kwargs.get("selftrain_topk", 4)# 这个值用于决定每轮获取软标注的topk
 
 # class CustomLoss(nn.Module):
 #     def __init__(self, weight=None, size_average=None, reduce=None, reduction='mean'):
@@ -39,16 +39,16 @@ class SelfTrainTrainer(Trainer):
         self.unlabeled_dataset = kwargs.get("unlabeled_dataset") # 这里不需要dataloader，只要一个dataset就行
         self.train_args = kwargs.get("train_args")
 
-    # def softmax_chunks(self, lst, chunk_size=4):
-    #     """Apply softmax to chunks of size chunk_size in lst."""
-    #     # Convert list to numpy array
-    #     arr = np.array(lst)
-    #     # Reshape the array to have chunks of size chunk_size
-    #     chunked_arr = arr.reshape(-1, chunk_size)
-    #     # Apply softmax to each chunk
-    #     softmaxed_chunks = np.apply_along_axis(F.softmax, 1, chunked_arr)
-    #     # Flatten the result back to a 1D array if desired
-    #     return softmaxed_chunks.flatten() if chunk_size == 1 else softmaxed_chunks
+    def softmax_chunks(self, lst, chunk_size=4):
+        """Apply softmax to chunks of size chunk_size in lst."""
+        # Convert list to numpy array
+        arr = np.array(lst)
+        # Reshape the array to have chunks of size chunk_size
+        chunked_arr = arr.reshape(-1, chunk_size)
+        # Apply softmax to each chunk
+        softmaxed_chunks = np.apply_along_axis(F.softmax, 1, chunked_arr)
+        # Flatten the result back to a 1D array if desired
+        return softmaxed_chunks.flatten() if chunk_size == 1 else softmaxed_chunks
 
     def get_beam_search_score(self, question) -> dict:
         input_ids = self.tokenizer(question, return_tensors="pt").input_ids \
@@ -117,6 +117,20 @@ class SelfTrainTrainer(Trainer):
             for example in new_examples:
                 example.score /= sum_scores
 
+    def calc_weighted_loss(loss_fct, outputs, batch, scores):
+        inputs, labels = batch["input_ids"], batch["labels"]
+        loss_per_token = loss_fct(outputs.logits.view(-1, model.config.vocab_size), labels.view(-1))
+
+        # 由于每个样例的长度不同，需要计算每个样例的平均loss
+        loss_per_token = loss_per_token.view(inputs.size(0), -1)
+        loss_per_example = loss_per_token.sum(dim=1) / (labels != tokenizer.pad_token_id).sum(dim=1)
+
+        whole_loss = sum([l * s for l, s in zip(loss_per_example, scores)]) / len(scores)
+        # 打印每个样例的loss
+        #     for i, loss in enumerate(loss_per_example):
+        # ImportError}: {loss.item()}")
+        return whole_loss
+
     def compute_loss(self, model, inputs, return_outputs=False):  ## compute loss这个步骤实际上定义了 forward和loss的计算过程
         score = torch.tensor(inputs.get("weight"))
         return score * super(SelfTrainTrainer, self).compute_loss(model, inputs, return_outputs)
@@ -148,7 +162,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                                    evaluation_strategy="epoch")
 
     unlabeled_dataset = dataset["unlabeled"]  # 我们假设这里是个question_list
-    unlabeled_dataset = SelfTrainDataset(question_list=unlabeled_dataset)
+    # unlabeled_dataset = SelfTrainDataset(question_list=unlabeled_dataset)
 
     selftrain_args = SelfTrainingArguments(output_dir=args.save_dir,
                                            num_train_epochs=args.selftrain_iteration,  # 这个指每个self_train里面的epoch
@@ -162,9 +176,9 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
         # 1. 先训练基础模型
         trainer = Trainer(model=model,
                           args=train_args,
-                          data_collator=mycollate, # 要么给自己的，要么在定义trainer后面单独写一个data_collator=None，不然代码里有默认collate
+                          data_collator=mycollate_trainer, # 要么给自己的，要么在定义trainer后面单独写一个data_collator=None，不然代码里有默认collate
                           train_dataset=dataset["train"],
-                          eval_dataset=dataset["eval"],
+                          eval_dataset=dataset["eval"] if "eval" in dataset else None,
                           tokenizer=tokenizer,
                           optimizers=(optimizer, None)) # 缺了学习率调度器
 

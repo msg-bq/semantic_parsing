@@ -162,6 +162,28 @@ def mycollate(examples):
 
     return batch
 
+def mycollate_trainer(examples):
+    """
+    这里面不应当包含多余的key
+    """
+    remove_keys = []
+    for example in examples:
+        for key in example:
+            try:
+                example[key] = torch.tensor(example[key])
+            except Exception as e:
+                remove_keys.append(key)
+
+    for key in set(remove_keys):
+        for example in examples:
+            del example[key]
+
+    batch = {}
+    for key in examples[0]:
+        batch[key] = torch.stack([example[key][0] for example in examples])
+
+    return batch
+
 def self_train_collate(examples):
     """
     和mycollate一样，主要是每四个要单独处理一个y^

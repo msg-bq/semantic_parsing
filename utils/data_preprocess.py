@@ -1,14 +1,14 @@
 import os
 import random
 from collections import defaultdict
-from typing import Union, List
+from typing import Union, List, Dict
 
 from datasets import load_dataset
 from torch.utils.data import Dataset
 from datasets.dataset_dict import DatasetDict
 
 from utils.ExtraNameSpace import DatasetsReaderNameSpace, DatasetsProcessorNameSpace
-from utils.dataset import AssertionExample, PreliminaryDataset
+from utils.dataset import AssertionExample, PreliminaryDataset, SelfTrainDataset
 from utils.operators_concepts import operator_dict
 from utils.text_utils import add_space_after_chinese, find_long_string_in_list
 
@@ -37,13 +37,7 @@ def split_dataset(dataset: Union[list, Dataset, DatasetDict], split_ratio: Union
         raise ValueError("Invalid split ratio type.")
 
 
-@DatasetsReaderNameSpace.register("ours")
-def read_dataset(directory_path: str) -> Union[Dataset, DatasetDict]:
-    """
-    :param directory_path: 读入目录内所有的文件
-    :return:
-    本函数指代常规的训练、测试集的那些读入
-    """
+def read_ours_from_dir(directory_path: str) -> List[AssertionExample]:
     dataset = []
 
     # 遍历目录下的所有文件
@@ -60,20 +54,45 @@ def read_dataset(directory_path: str) -> Union[Dataset, DatasetDict]:
 
                     dataset.append(AssertionExample(expression, natural_sentence))
 
+    return dataset
+
+@DatasetsReaderNameSpace.register("preliminary_ours")
+def read_dataset(directory_path: str) -> Union[Dataset, DatasetDict]:
+    """
+    :param directory_path: 读入目录内所有的文件
+    :return:
+    本函数指代常规的训练、测试集的那些读入
+    """
+    dataset = read_ours_from_dir(directory_path)
+
     return PreliminaryDataset(dataset)
 
-@DatasetsReaderNameSpace.register("topv2")
-def read_unlabeled_dataset(directory_path: str):
-    dataset = load_dataset(directory_path)
-    return dataset["eval"]["utterance"]
+@DatasetsReaderNameSpace.register("self-train_ours")
+def read_dataset(directory_path: str) -> Union[Dict, DatasetDict]:
+    """
+    一般情况下，read的时候就改成train eval test
+    """
+    dataset = read_ours_from_dir(directory_path)
 
-@DatasetsReaderNameSpace.register("topv2")
-def read_dataset(directory_path: str) -> Dataset:
+    return {'train': PreliminaryDataset(dataset)}
+
+@DatasetsReaderNameSpace.register("self-train_topv2")
+def read_dataset(directory_path: str) -> DatasetDict:
     """
     一般情况下，read的时候就改成train eval test
     """
     dataset = load_dataset(directory_path)
     return dataset
+
+@DatasetsReaderNameSpace.register("ours")
+def read_unlabeled_dataset(directory_path: str):
+    dataset = load_dataset(directory_path)
+    return SelfTrainDataset(question_list=dataset["train"]["表达式"])
+
+@DatasetsReaderNameSpace.register("topv2")
+def read_unlabeled_dataset(directory_path: str):
+    dataset = load_dataset(directory_path)
+    return dataset["eval"]["utterance"]
 
 def select_dataset(dataset: Dataset, args) -> dict:
     """

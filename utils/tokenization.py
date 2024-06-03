@@ -25,10 +25,10 @@ def delete_blank(tokenized_inputs, max_seq=512):
 def tokenize_function(examples, tokenizer):
     # examples = ptr_change(examples)
     examples.natural_sentence =  [add_space_after_chinese(s.replace("得到","") ) for s in examples.natural_sentence]
-    tokenized_inputs = tokenizer(" ".join(examples.natural_sentence), padding=True, truncation=True, max_length=512, return_tensors="pt")
+    tokenized_inputs = tokenizer(" ".join(examples.natural_sentence), padding="max_length", truncation=True, max_length=512, return_tensors="pt")
     # tokenized_inputs = delete_blank(tokenized_inputs)
     # print([tokenizer.decode(i) for i in tokenized_inputs['input_ids'][0]])
-    tokenized_labels = tokenizer(examples.expression, padding=True, truncation=True, max_length=512, return_tensors="pt")
+    tokenized_labels = tokenizer(examples.expression, padding="max_length", truncation=True, max_length=512, return_tensors="pt")
 
     tokenized_inputs['labels'] = tokenized_labels['input_ids']
     tokenized_inputs['expression'] = examples.expression

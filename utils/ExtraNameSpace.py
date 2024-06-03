@@ -76,7 +76,21 @@ class Function(object):
 
 
 class DatasetsReaderNameSpace(NameSpace):
-    pass
+    @classmethod
+    def get(self, fn: Callable) -> Callable:
+        cls = DatasetsReaderNameSpace.get_instance()
+
+        func = Function(fn=fn, space_cls=self)
+        fn_name = [f"{cls._args.task}_{cls._args.dataset}", cls._args.dataset, "Default"]
+
+        for name in fn_name:
+            name = func.register_key(fn_name=name)
+            fn = cls.function_map.get(name)
+
+            if fn:
+                return fn
+
+        raise Exception("no matching function found.")
 
 class DatasetsProcessorNameSpace(NameSpace):
     """
