@@ -2,19 +2,21 @@ import argparse
 from collections import defaultdict
 from typing import Union, Tuple
 
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
 import torch
 import yaml
 from torch import optim
 from torch.utils.data import DataLoader
-from transformers import AutoTokenizer
 
 from train.preliminary import train_model_preliminary
 from train.self_train import train_model_self_train
 from utils.data_preprocess import read_dataset, select_dataset, preprocess_dataset, split_dataset, \
     PreliminaryDataset, read_unlabeled_dataset
 import utils.tokenization
-from module.MT5 import MT5ForConditionalGeneration
-# from transformers import MT5ForConditionalGeneration, AutoTokenizer
+# from module.MT5 import MT5ForConditionalGeneration
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 # from transformers import AutoModel
 
 from utils.tokenization import tokenizer_dataset
@@ -31,7 +33,7 @@ def args_parse():
                     help='config file, 只使用单层的嵌套')
 
     parser.add_argument("--dataset", type=str, default="ours",
-                        choices=["ours", "topv2"])
+                        choices=["ours", "topv2", "zcl"])
 
     parser.add_argument("--train_dataset_dir", type=str, default="./data/dev",
                     help="train dataset dir")
@@ -96,6 +98,8 @@ def args_parse():
     parser.add_argument("--selftrain_topk", type=int, default=5,
                         help="self train的topk")
 
+    parser.add_argument("--given_model", type=bool, default=False,
+                        help="是否给定模型，如果是的话就直接训self train")
 
     args = parser.parse_args()
 
@@ -166,21 +170,9 @@ def get_criterion(args):
 def main():
     args = args_parse()
 
-    #=====test
-
-    model = MT5ForConditionalGeneration.from_pretrained(args.model_dir)
+    model = AutoModelForSeq2SeqLM.from_pretrained(args.model_dir)
     tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
-    article = "UN Offizier sagt, dass weiter verhandelt werden muss in Syrien."
-    summary = "Weiter Verhandlung in Syrien."
-    inputs = tokenizer(article, text_target=summary, return_tensors="pt")
-
-    outputs = model(**inputs)
-    loss = outputs.loss
-    #=====test
-
-    model = MT5ForConditionalGeneration.from_pretrained(args.model_dir)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
-    # model.to(args.device)
+    model.to(args.device)
 
     dataset = get_dataset(tokenizer, args)
 

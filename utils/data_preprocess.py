@@ -12,6 +12,8 @@ from utils.dataset import AssertionExample, PreliminaryDataset, SelfTrainDataset
 from utils.operators_concepts import operator_dict
 from utils.text_utils import add_space_after_chinese, find_long_string_in_list
 
+import pandas as pd
+
 
 @DatasetsProcessorNameSpace.register("Default")
 def split_dataset(dataset: Union[list, Dataset, DatasetDict], split_ratio: Union[float, list]) -> tuple:
@@ -84,15 +86,38 @@ def read_dataset(directory_path: str) -> DatasetDict:
     dataset = load_dataset(directory_path)
     return dataset
 
+@DatasetsReaderNameSpace.register("self-train_zcl")
+def read_dataset(directory_path: str) -> DatasetDict:
+    dataset1000 = load_dataset("/home/lzx/old_selftrain/data/weather/1000spis", split='train')
+    dataset = dataset1000.train_test_split(test_size=0.5)
+    return dataset
+
 @DatasetsReaderNameSpace.register("ours")
 def read_unlabeled_dataset(directory_path: str):
     dataset = load_dataset(directory_path)
-    return SelfTrainDataset(question_list=dataset["train"]["表达式"])
+    return SelfTrainDataset(question_list=[l[0] for l in dataset["train"]["自然语句"]])
 
 @DatasetsReaderNameSpace.register("topv2")
 def read_unlabeled_dataset(directory_path: str):
     dataset = load_dataset(directory_path)
     return dataset["eval"]["utterance"]
+
+@DatasetsReaderNameSpace.register("zcl")
+def read_unlabeled_dataset(directory_path: str):
+    dataset = load_dataset("/home/lzx/old_selftrain/data/temp", split='train')
+
+    dataset3 = load_dataset("/home/lzx/old_selftrain/data/weather/delelte", split='train')
+    df1 = pd.DataFrame(dataset3)
+    df2 = pd.DataFrame(dataset)
+
+    # 找出df2中与df1重复的部分
+    df2_unique = df2[~df2['utterance'].isin(df1['utterance'])]
+    df2_unique = df2_unique.sample(2000, random_state=42)
+
+    # 如果需要，将处理后的数据转换回Dataset格式
+    dataset = Dataset.from_pandas(df2_unique)
+
+    return dataset
 
 def select_dataset(dataset: Dataset, args) -> dict:
     """

@@ -86,10 +86,11 @@ class SelfTrainDataset(Dataset):
         #     key = data_list[0].expression
         #     self.key_to_index[key] = i
 
-        self.unlabeled_dataset = [[]] * len(question_list)
+        self.unlabeled_dataset = [[] for _ in range(len(question_list))]
         self.sent_to_instance_list = [] # 用于避免重复
         for i, data_list in enumerate(self.unlabeled_dataset):
-            sent_to_instance = {data.natural_sentence: data for data in data_list}# 这个地方就不应该有重复
+            # sent_to_instance = {data.natural_sentence: data for data in data_list}# 这个地方就不应该有重复
+            sent_to_instance = {}
             self.sent_to_instance_list.append(sent_to_instance)
 
         self.sorted_sign = [False] * len(question_list) # 用于减少排序开销

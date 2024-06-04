@@ -35,9 +35,8 @@ class SelfTrainingArguments(TrainingArguments):
 
 class SelfTrainTrainer(Trainer):
     def __init__(self, *args, **kwargs):
+        self.train_args = kwargs.pop("train_args")
         super().__init__(*args, **kwargs)
-        self.unlabeled_dataset = kwargs.get("unlabeled_dataset") # 这里不需要dataloader，只要一个dataset就行
-        self.train_args = kwargs.get("train_args")
 
     def softmax_chunks(self, lst, chunk_size=4):
         """Apply softmax to chunks of size chunk_size in lst."""
@@ -53,32 +52,39 @@ class SelfTrainTrainer(Trainer):
     def get_beam_search_score(self, question) -> dict:
         input_ids = self.tokenizer(question, return_tensors="pt").input_ids \
             if isinstance(question, str) else question # 可以鲁棒地接纳tokenize前后的情况
+        input_ids = input_ids.to(self.train_args.device)
 
-        outputs = self.model.generate(input_ids=input_ids, num_beams=self.args.selftrain_topk, max_length=512,
-                    num_return_sequences=self.args.selftrain_topk, return_dict_in_generate=True, output_scores=True)
+        outputs = self.model.generate(input_ids=input_ids, num_beams=self.train_args.selftrain_topk, max_length=512,
+                    num_return_sequences=self.train_args.selftrain_topk, return_dict_in_generate=True, output_scores=True)
 
         transition_scores = self.model.compute_transition_scores(
             outputs.sequences, outputs.scores, outputs.beam_indices, normalize_logits=False
         )
 
         transition_scores = transition_scores.sum(dim=1).exp()
-        sequences = outputs.sequences[:, input_ids.shape[-1]:]
+        sequences = outputs.sequences  # [:, input_ids.shape[-1]:]
+        if outputs.sequences[0].shape[-1] >= input_ids.shape[-1]:
+            print("The output sequence is not longer than the input sequence.")
+            sequences = outputs.sequences[:, input_ids.shape[-1]:]
+
         sentence_score = {sent: score for sent, score in zip(sequences, transition_scores)} # 每个sent是ids，即[356,  481,  307, 1498,  284]
 
         return sentence_score
 
     def get_fixed_output_score(self, example) -> float:
-        input_ids = self.tokenizer(example.question, return_tensors="pt").input_ids \
-            if isinstance(example.question, str) else example.question
+        input_ids = self.tokenizer(example.expression, return_tensors="pt").input_ids \
+            if isinstance(example.expression, str) else example.expression
+        input_ids = input_ids.to(self.train_args.device)
 
         output_ids = self.tokenizer(example.natural_sentence, return_tensors="pt").input_ids \
             if isinstance(example.natural_sentence, str) else example.natural_sentence
+        output_ids = output_ids[output_ids != self.tokenizer.pad_token_id]
 
         score = 1
 
         for ids in output_ids:
-            tmp_output_ids = torch.cat((input_ids, ids.unsqueeze(0)), dim=1).unsqueeze(0) # [356,  481,  307, 1498,  284]
-            # 后面再拼个3，然后转成2维
+            tmp_output_ids = torch.cat((input_ids[0], ids.unsqueeze(0)), dim=0).unsqueeze(0) # [356,  481,  307, 1498,  284]
+            # 上面的列表后面再拼个3，然后转成2维
 
             tmp_output = self.model.generate(input_ids=input_ids, max_new_tokens=1, return_dict_in_generate=True, output_scores=True)
             transition_scores = self.model.compute_transition_scores(
@@ -87,35 +93,36 @@ class SelfTrainTrainer(Trainer):
 
             score *= transition_scores.exp()
 
-            input_ids = tmp_output_ids.squeeze(0)
+            input_ids = tmp_output_ids
 
         return score
 
     def get_soft_label_dataloader(self):
         # beam search
-        self.unlabeled_dataset.topk = self.args.selftrain_topk
-        dataset = self.unlabeled_dataset
+        self.train_dataset.topk = self.train_args.selftrain_topk
+        dataset = self.train_dataset
 
         for question in dataset.key_to_index.keys():
             last_examples = len(dataset.unlabeled_dataset[dataset.key_to_index[question]])
 
             sentence_score = self.get_beam_search_score(question)
             for sentence, score in sentence_score.items():
-                if (question, sentence) not in self.unlabeled_dataset: # 如果beam search和原来的重叠率高会有点浪费，但这小问题了
-                    self.unlabeled_dataset.append(question, sentence, score)
+                if (question, sentence) not in self.train_dataset: # 如果beam search和原来的重叠率高会有点浪费，但这小问题了
+                    self.train_dataset.append(question, sentence, score)
 
-            new_examples = dataset.unlabeled_dataset[dataset.key_to_index[question]]
-            sum_scores = sum([example.score for example in dataset.unlabeled_dataset[dataset.key_to_index[question]]])
+            new_examples = dataset[dataset.key_to_index[question]]
+            sum_scores = sum([example.weight for example in dataset[dataset.key_to_index[question]]])
 
             for example in new_examples[:last_examples]:
                 new_score = self.get_fixed_output_score(example)
                 alpha = 0.5 # 这里有一个被固定进代码的变量
-                example.score = (1-alpha) * example.score / sum_scores + alpha * new_score
+                example.weight = (1-alpha) * example.weight / sum_scores + alpha * new_score
 
             # 归一化
-            sum_scores = sum([example.score for example in new_examples])
+            sum_scores = sum([example.weight for example in new_examples])
+
             for example in new_examples:
-                example.score /= sum_scores
+                example.weight /= sum_scores
 
     def calc_weighted_loss(loss_fct, outputs, batch, scores):
         inputs, labels = batch["input_ids"], batch["labels"]
@@ -155,11 +162,12 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     5. 重复2-4
     """
     train_args = TrainingArguments(output_dir=args.save_dir,
-                                   num_train_epochs=args.epoch,  # 这个指每个self_train里面的epoch
+                                   num_train_epochs=1,#args.epoch,  # 这个指每个self_train里面的epoch
                                    per_device_train_batch_size=args.batch_size,
                                    save_steps=1000,
                                    learning_rate=args.lr,
-                                   evaluation_strategy="epoch")
+                                   evaluation_strategy="epoch",
+                                   do_eval=True if "eval" in dataset else False)
 
     unlabeled_dataset = dataset["unlabeled"]  # 我们假设这里是个question_list
     # unlabeled_dataset = SelfTrainDataset(question_list=unlabeled_dataset)
@@ -173,17 +181,22 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                                            selftrain_topk=4)
 
     for _ in range(3):
-        # 1. 先训练基础模型
-        trainer = Trainer(model=model,
-                          args=train_args,
-                          data_collator=mycollate_trainer, # 要么给自己的，要么在定义trainer后面单独写一个data_collator=None，不然代码里有默认collate
-                          train_dataset=dataset["train"],
-                          eval_dataset=dataset["eval"] if "eval" in dataset else None,
-                          tokenizer=tokenizer,
-                          optimizers=(optimizer, None)) # 缺了学习率调度器
+        if args.given_model: # 如果基础模型已经训过了，就先训self
+            args.given_model = False
+        else:
+            # 1. 先训练基础模型
+            trainer = Trainer(model=model,
+                              args=train_args,
+                              data_collator=mycollate_trainer, # 要么给自己的，要么在定义trainer后面单独写一个data_collator=None，不然代码里有默认collate
+                              train_dataset=dataset["train"][:10],
+                              eval_dataset=dataset["train"][:10],#dataset["eval"] if "eval" in dataset else None,
+                              tokenizer=tokenizer,
+                              optimizers=(optimizer, None)) # 缺了学习率调度器
 
-        trainer.train()
-        model = trainer.model
+            trainer.train()
+            model = trainer.model
+
+        print("初步训练完成")
 
         # 2. 用基础模型预测unlabeled数据集
         self_trainer = SelfTrainTrainer(model=model,
@@ -192,6 +205,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                                         train_dataset=unlabeled_dataset,
                                         tokenizer=tokenizer,
                                         optimizers=(optimizer, None))
+        self_trainer.get_soft_label_dataloader()
 
         self_trainer.train()
         model = self_trainer.model
