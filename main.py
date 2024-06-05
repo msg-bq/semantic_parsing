@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Union, Tuple
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 import torch
 import yaml
@@ -15,7 +15,7 @@ from train.self_train import train_model_self_train
 from utils.data_preprocess import read_dataset, select_dataset, preprocess_dataset, split_dataset, \
     PreliminaryDataset, read_unlabeled_dataset
 import utils.tokenization
-# from module.MT5 import MT5ForConditionalGeneration
+from module.MT5 import MT5ForConditionalGeneration
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 # from transformers import AutoModel
 
@@ -23,7 +23,7 @@ from utils.tokenization import tokenizer_dataset
 
 from utils.ExtraNameSpace import NameSpace
 
-import higher
+# import higher
 
 
 def args_parse():
@@ -32,8 +32,8 @@ def args_parse():
     parser.add_argument('--config', type=str, default='config.yaml',
                     help='config file, 只使用单层的嵌套')
 
-    parser.add_argument("--dataset", type=str, default="ours",
-                        choices=["ours", "topv2", "zcl"])
+    parser.add_argument("--dataset", type=str, default="zcl",
+                        choices=["ours", "topv2", "zcl", "zcl_mixed"])
 
     parser.add_argument("--train_dataset_dir", type=str, default="./data/dev",
                     help="train dataset dir")
@@ -47,7 +47,9 @@ def args_parse():
     parser.add_argument("--task", type=str, default="self-train", choices=["preliminary", "self-train"],
                     help="省得分文件了")
 
-    parser.add_argument("--model_dir", type=str, default="/data/lbq/models/mt5-base",
+    parser.add_argument("--model_dir", type=str,
+                        default="/data/lbq/models/mt5-base-trained-final-500+500-2-7_again",
+    #,"/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again"
                     help="model dir")
 
     parser.add_argument("--save_dir", type=str, default="/data/lbq/models/mt5-base",
@@ -98,7 +100,7 @@ def args_parse():
     parser.add_argument("--selftrain_topk", type=int, default=5,
                         help="self train的topk")
 
-    parser.add_argument("--given_model", type=bool, default=False,
+    parser.add_argument("--given_model", type=bool, default=True,
                         help="是否给定模型，如果是的话就直接训self train")
 
     args = parser.parse_args()
@@ -170,7 +172,7 @@ def get_criterion(args):
 def main():
     args = args_parse()
 
-    model = AutoModelForSeq2SeqLM.from_pretrained(args.model_dir)
+    model = MT5ForConditionalGeneration.from_pretrained(args.model_dir)
     tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
     model.to(args.device)
 

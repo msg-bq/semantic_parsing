@@ -1829,13 +1829,13 @@ class MT5ForConditionalGeneration(MT5PreTrainedModel):
         self.decoder = MT5Stack(decoder_config, self.shared)
         
         # -512
-        self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False) #-512
+        self.lm_head = nn.Linear(config.d_model, config.vocab_size-128, bias=False) #-512
         # Initialize weights and apply final processing
         self.post_init()
         self.pointNet = PointAttention()
         # /home/lzx/T5-base-lora/tokenizer2/
         # /home/lzx/T5-base/model_cl_multi/mt5-base-trained-final-save
-        self.tokenizer = AutoTokenizer.from_pretrained("/data/lbq/models/mt5-base")
+        self.tokenizer = AutoTokenizer.from_pretrained("/data/lbq/models/mt5-base-trained-final-500+500-2-7_again") # ("/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again")#
         # Model parallel
         self.model_parallel = False
         self.device_map = None
@@ -1940,7 +1940,7 @@ class MT5ForConditionalGeneration(MT5PreTrainedModel):
         if self.get_output_embeddings() is not None and not self.config.tie_word_embeddings:
             old_lm_head = self.get_output_embeddings()
             #512
-            new_lm_head = self._get_resized_lm_head(old_lm_head, new_num_tokens)#-512)
+            new_lm_head = self._get_resized_lm_head(old_lm_head, new_num_tokens-128)
             self.set_output_embeddings(new_lm_head)
 
         return self.get_input_embeddings()

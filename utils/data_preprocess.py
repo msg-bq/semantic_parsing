@@ -3,8 +3,8 @@ import random
 from collections import defaultdict
 from typing import Union, List, Dict
 
-from datasets import load_dataset
-from torch.utils.data import Dataset
+from datasets import load_dataset, concatenate_datasets
+from datasets import Dataset
 from datasets.dataset_dict import DatasetDict
 
 from utils.ExtraNameSpace import DatasetsReaderNameSpace, DatasetsProcessorNameSpace
@@ -88,9 +88,41 @@ def read_dataset(directory_path: str) -> DatasetDict:
 
 @DatasetsReaderNameSpace.register("self-train_zcl")
 def read_dataset(directory_path: str) -> DatasetDict:
-    dataset1000 = load_dataset("/home/lzx/old_selftrain/data/weather/1000spis", split='train')
+    dataset1000 = load_dataset("/data/lbq/datasets/1000spis", split='train')
+    # dataset1000 = load_dataset("/home/lzx/old_selftrain/data/weather/1000spis", split='train')
     dataset = dataset1000.train_test_split(test_size=0.5)
-    return dataset
+    return {"train": dataset["train"]}
+
+@DatasetsReaderNameSpace.register("self-train_zcl_mixed")
+def read_dataset(directory_path: str) -> DatasetDict:
+    def filter_function(example):
+        return example["seqlogical"].find("[IN:UNSUPPORTED_WEATHER") != -1
+
+    dataset = load_dataset("/data/lbq/datasets/1000spis", split="train")
+    dataset1 = dataset.filter(filter_function)
+    dataset1 = dataset1.train_test_split(test_size=0.5)
+
+    # 再度入一个TopV2的，取0.2
+    def filter_function(example):
+        return example["seqlogical"].find("[IN:UNSUPPORTED_WEATHER") == -1
+
+    dataset2 = dataset.filter(filter_function)
+    dataset2 = dataset2.train_test_split(test_size=0.8)
+
+    # 最后读入自建的
+    with open("/data/lbq/datasets/train_weather.json", 'r') as file:
+        dataset3 = json.load(file)
+    data_dict = {
+        "seqlogical": [item["expression"] for item in dataset3],
+        "utterance": [item["sentence"] for item in dataset3],
+    }
+
+    dataset3 = Dataset.from_dict(data_dict)
+
+    combined_train = concatenate_datasets(
+        [dataset1['train'], dataset2['train'], dataset3])
+
+    return {"train": combined_train}
 
 @DatasetsReaderNameSpace.register("ours")
 def read_unlabeled_dataset(directory_path: str):
@@ -102,11 +134,11 @@ def read_unlabeled_dataset(directory_path: str):
     dataset = load_dataset(directory_path)
     return dataset["eval"]["utterance"]
 
-@DatasetsReaderNameSpace.register("zcl")
-def read_unlabeled_dataset(directory_path: str):
-    dataset = load_dataset("/home/lzx/old_selftrain/data/temp", split='train')
+# zcl
+def read_unlabeled_dataset_zcl(directory_path: str):
+    dataset = load_dataset("/data/lbq/datasets/temp", split='train') #/home/lzx/old_selftrain/data/temp
 
-    dataset3 = load_dataset("/home/lzx/old_selftrain/data/weather/delelte", split='train')
+    dataset3 = load_dataset("/data/lbq/datasets/delelte", split='train') #   /home/lzx/old_selftrain/data/weather/delelte
     df1 = pd.DataFrame(dataset3)
     df2 = pd.DataFrame(dataset)
 
@@ -117,7 +149,15 @@ def read_unlabeled_dataset(directory_path: str):
     # 如果需要，将处理后的数据转换回Dataset格式
     dataset = Dataset.from_pandas(df2_unique)
 
-    return dataset
+    return SelfTrainDataset(question_list=dataset["utterance"])
+
+@DatasetsReaderNameSpace.register("zcl")
+def read_unlabeled_dataset(directory_path: str):
+    return read_unlabeled_dataset_zcl(directory_path)
+
+@DatasetsReaderNameSpace.register("zcl_mixed")
+def read_unlabeled_dataset(directory_path: str):
+    return read_unlabeled_dataset_zcl(directory_path)
 
 def select_dataset(dataset: Dataset, args) -> dict:
     """
@@ -153,7 +193,7 @@ def unify_format(example: AssertionExample):
 
     return example
 
-@DatasetsReaderNameSpace.register("ours")
+@DatasetsProcessorNameSpace.register("ours")
 def ptr_change(example: AssertionExample):
     e = unify_format(example)
     e.natural_sentence = add_space_after_chinese(e.natural_sentence.replace("得到", ""))
@@ -215,7 +255,7 @@ def ptr_change(example: AssertionExample):
         e.expression = Result
     return e
 
-@DatasetsReaderNameSpace.register("topv2")
+@DatasetsProcessorNameSpace.register("topv2")
 def ptr_change(examples):
     """
     将semantic_parse里面的的词，换成utterance里对应的ptr_x
@@ -239,8 +279,47 @@ def ptr_change(examples):
         examples["semantic_parse"][i] = ' '.join(changed_item)
     return examples
 
+#zcl
+def ptr_change_zcl(examples):
+    """
+    将semantic_parse里面的的词，换成utterance里对应的ptr_x
+    """
+    st = examples["seqlogical"]
+    changed_item = []
+    # ut_list = ut.split(' ')
+    cnt = 1
+    # print(st)
+    for s in st.split(' '):
+        if s.startswith('[') or s == ']':
+            # print(s)
+            # exit()
+            changed_item.append(s)
+        else:
+            # print(s)
+            # print(f"@ptr_{cnt}")
+            changed_item.append(f"@ptr_{cnt}")
+            cnt += 1
+
+    examples["seqlogical"] = ' '.join(changed_item)
+    return examples
+@DatasetsProcessorNameSpace.register("zcl")
+def ptr_change(examples):
+    return ptr_change_zcl(examples)
+
+@DatasetsProcessorNameSpace.register("zcl_mixed")
+def ptr_change(examples):
+    return ptr_change_zcl(examples)
+
+@DatasetsProcessorNameSpace.register("Default")
 def filter_function(example):
     return example.expression.find("：]") == -1
+
+@DatasetsProcessorNameSpace.register("zcl") # weather
+def filter_function(example):
+    return example
+@DatasetsProcessorNameSpace.register("zcl_mixed")
+def filter_function(example):
+    return example
 
 def preprocess_dataset(dataset):
     dataset = dataset.map(ptr_change)

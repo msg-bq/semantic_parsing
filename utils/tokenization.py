@@ -1,10 +1,12 @@
 import torch
 from collections import defaultdict
 
-from .ExtraNameSpace import DatasetsReaderNameSpace
+from .ExtraNameSpace import DatasetsReaderNameSpace, DatasetsProcessorNameSpace
 from .data_preprocess import PreliminaryDataset, ptr_change
 from .text_utils import add_space_after_chinese
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
+tokenizer1 = AutoTokenizer.from_pretrained("/data/lbq/models/mt5-base-trained-final-500+500-2-7_again")#("/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again")#("/data/lbq/models/mt5-base-trained-final-500+500-2-7_again")
 
 def delete_blank(tokenized_inputs, max_seq=512):
     new_tokenized_inputs = defaultdict(list)
@@ -21,7 +23,7 @@ def delete_blank(tokenized_inputs, max_seq=512):
     tokenized_inputs = {k: torch.tensor(v) for k,v in new_tokenized_inputs.items()}
     return tokenized_inputs
 
-@DatasetsReaderNameSpace.register("ours")
+@DatasetsProcessorNameSpace.register("ours")
 def tokenize_function(examples, tokenizer):
     # examples = ptr_change(examples)
     examples.natural_sentence =  [add_space_after_chinese(s.replace("得到","") ) for s in examples.natural_sentence]
@@ -36,7 +38,7 @@ def tokenize_function(examples, tokenizer):
 
     return tokenized_inputs
 
-@DatasetsReaderNameSpace.register("topv2")
+@DatasetsProcessorNameSpace.register("topv2")
 def tokenize_function(examples, tokenizer):
     examples = ptr_change(examples)
     tokenized_inputs = tokenizer(examples['utterance'], padding='max_length', truncation=True, max_length=30, return_tensors="pt")
@@ -45,20 +47,46 @@ def tokenize_function(examples, tokenizer):
     tokenized_inputs['labels'] = tokenized_labels['input_ids']
     return tokenized_inputs
 
+#zcl
+def tokenize_function_zcl(examples, tokenizer):
+    examples = ptr_change(examples)
+    global tokenizer1
+    tokenizer = tokenizer1
+    tokenized_inputs = tokenizer(examples['utterance'], padding='max_length', truncation=True, max_length=128, return_tensors="pt")
+    tokenized_labels = tokenizer(examples['seqlogical'], padding='max_length', truncation=True, max_length=128, return_tensors="pt")
 
-tokenizer = None
-@DatasetsReaderNameSpace.register("ours")
+    tokenized_inputs['labels'] = tokenized_labels['input_ids']
+    return tokenized_inputs
+
+@DatasetsProcessorNameSpace.register("zcl")
+def tokenize_function(examples, tokenizer):
+    return tokenize_function_zcl(examples, tokenizer)
+
+@DatasetsProcessorNameSpace.register("zcl_mixed")
+def tokenize_function(examples, tokenizer):
+    return tokenize_function_zcl(examples, tokenizer)
+
+
+@DatasetsProcessorNameSpace.register("ours")
 def tokenizer_dataset(tokenizer, dataset: PreliminaryDataset) -> PreliminaryDataset:
     tokenized_datasets = dataset.map(tokenize_function, tokenizer)
     # tokenized_datasets = tokenized_datasets.remove_columns(["expression"]) # 临时移除
     # tokenized_datasets = tokenized_datasets.remove_columns(["NL"])
     return tokenized_datasets
 
-@DatasetsReaderNameSpace.register("topv2")
+@DatasetsProcessorNameSpace.register("topv2")
 def tokenizer_dataset(tokenizer, dataset):
-    tokenized_datasets = dataset.map(tokenize_function, batched=True)
+    tokenized_datasets = dataset.map(tokenize_function, tokenizer)
     tokenized_datasets = tokenized_datasets.remove_columns(["utterance"])
     tokenized_datasets = tokenized_datasets.remove_columns(["semantic_parse"])
     tokenized_datasets = tokenized_datasets.remove_columns(["domain"])
 
     return tokenized_datasets
+
+@DatasetsProcessorNameSpace.register("zcl")
+def tokenizer_dataset(tokenizer, dataset):
+    return dataset.map(tokenize_function, tokenizer)
+
+@DatasetsProcessorNameSpace.register("zcl_mixed")
+def tokenizer_dataset(tokenizer, dataset):
+    return dataset.map(tokenize_function, tokenizer)

@@ -57,15 +57,20 @@ class SelfTrainTrainer(Trainer):
         outputs = self.model.generate(input_ids=input_ids, num_beams=self.train_args.selftrain_topk, max_length=512,
                     num_return_sequences=self.train_args.selftrain_topk, return_dict_in_generate=True, output_scores=True)
 
+        sequences = outputs.sequences  # [:, input_ids.shape[-1]:]
+        # outputs_scores = tuple([s.to("cpu") for s in outputs.scores])
+        # outputs_beam_indices = outputs.beam_indices.to("cpu")
+
         transition_scores = self.model.compute_transition_scores(
+            # sequences, outputs_scores, outputs_beam_indices, normalize_logits=False
             outputs.sequences, outputs.scores, outputs.beam_indices, normalize_logits=False
         )
 
         transition_scores = transition_scores.sum(dim=1).exp()
-        sequences = outputs.sequences  # [:, input_ids.shape[-1]:]
+
         if outputs.sequences[0].shape[-1] >= input_ids.shape[-1]:
-            print("The output sequence is not longer than the input sequence.")
-            sequences = outputs.sequences[:, input_ids.shape[-1]:]
+            # print("The output sequence is not longer than the input sequence.")
+            sequences = sequences[:, input_ids.shape[-1]:] #outputs.
 
         sentence_score = {sent: score for sent, score in zip(sequences, transition_scores)} # 每个sent是ids，即[356,  481,  307, 1498,  284]
 
@@ -180,7 +185,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                                            evaluation_strategy="epoch",
                                            selftrain_topk=4)
 
-    for _ in range(3):
+    for epoch in range(3):
         if args.given_model: # 如果基础模型已经训过了，就先训self
             args.given_model = False
         else:
@@ -210,3 +215,4 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
         self_trainer.train()
         model = self_trainer.model
 
+        model.save_pretrained(f"/data/lbq/models/mt5_1000_{epoch}")

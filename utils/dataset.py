@@ -26,8 +26,10 @@ class AssertionExample:
         return hash((self.expression, self.natural_sentence))
 
     def __eq__(self, other):
-        return self.expression == other.expression and self.natural_sentence == other.natural_sentence
+        if isinstance(other, AssertionExample):
+            return self.expression == other.expression and self.natural_sentence == other.natural_sentence
 
+        raise ValueError("Invalid AssertionExample comparison.")
 class PreliminaryDataset(Dataset): # 这个类虽然名字叫了个预实验，但本身是指自建数据。因为自建数据没想到啥好名字
     def __init__(self, dataset: List[AssertionExample]=None):
         super().__init__()
