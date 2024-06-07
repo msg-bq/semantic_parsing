@@ -157,7 +157,6 @@ class SelfTrainTrainer(Trainer):
         # return (
         # loss, {'outputs': outputs}) if return_outputs else loss  # 一定要记得 compute loss的时候！！！outputs要用字典返回
 
-
 def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     """
     1. 先训练基础模型
@@ -210,9 +209,13 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                                         train_dataset=unlabeled_dataset,
                                         tokenizer=tokenizer,
                                         optimizers=(optimizer, None))
+
+        unlabeled_dataset.eval()
         self_trainer.get_soft_label_dataloader()
 
-        self_trainer.train()
+        self_trainer.train(tokenizer)
+        unlabeled_dataset.train(tokenizer)
+        
         model = self_trainer.model
 
         model.save_pretrained(f"/data/lbq/models/mt5_1000_{epoch}")

@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Union, Tuple
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+os.environ["CUDA_VISIBLE_DEVICES"] = "6"
 
 import torch
 import yaml
@@ -67,7 +67,7 @@ def args_parse():
     parser.add_argument("--criterion", type=str, default="CrossEntropyLoss",
                     help="criterion")
 
-    parser.add_argument("--device", type=str, default="cuda",
+    parser.add_argument("--device", type=str, default="cpu",
                     help="device")
 
     parser.add_argument("--epoch", type=int, default=3,
@@ -174,6 +174,7 @@ def main():
 
     model = MT5ForConditionalGeneration.from_pretrained(args.model_dir)
     tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
+    print(args.device)
     model.to(args.device)
 
     dataset = get_dataset(tokenizer, args)

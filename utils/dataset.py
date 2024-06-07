@@ -72,8 +72,11 @@ class PreliminaryDataset(Dataset): # 这个类虽然名字叫了个预实验，�
 
 
 class SelfTrainDataset(Dataset):
-    def __init__(self, question_list: str, topk=5):#unlabeled_dataset: List[List[AssertionExample]]=None, topk=5):
+    def __init__(self, init_question_list: str, topk=5):#unlabeled_dataset: List[List[AssertionExample]]=None, topk=5):
         """
+        注：一般情况下，question存的是str，natural_sentence存的是tensor
+
+
         这个地方用堆的复杂度仍然是nlogn，主要瓶颈是每轮存在一次整个数组重新打分的过程
         O(n)的策略也有，就每次遍历前转list再重新建堆，但这个就太没必要了，且数量少那常数项大也不合适
         heapq.heappush(items, new_item)
@@ -82,29 +85,27 @@ class SelfTrainDataset(Dataset):
         综上所述，暂定还是list
         """
         super().__init__()
-        self.key_to_index = {q: i for i, q in enumerate(question_list)}
+        self.key_to_index = {q: i for i, q in enumerate(init_question_list)}
         # for i, data_list in enumerate(self.unlabeled_dataset):  # 这里list没关系，因为每次都是更新所有的score，所以每次整个把data_list删掉重建
         #     # 因为即便用dict，修改方便但每次还要排序
         #     key = data_list[0].expression
         #     self.key_to_index[key] = i
 
-        self.unlabeled_dataset = [[] for _ in range(len(question_list))]
+        self.unlabeled_dataset = [[] for _ in range(len(init_question_list))]
         self.sent_to_instance_list = [] # 用于避免重复
         for i, data_list in enumerate(self.unlabeled_dataset):
             # sent_to_instance = {data.natural_sentence: data for data in data_list}# 这个地方就不应该有重复
             sent_to_instance = {}
             self.sent_to_instance_list.append(sent_to_instance)
 
-        self.sorted_sign = [False] * len(question_list) # 用于减少排序开销
+        self.sorted_sign = [False] * len(init_question_list) # 用于减少排序开销
+
+        self.tokenized_dataset = None
+        self.tokenized_sign = False
 
         self.topk = topk
 
-    def __getitem__(self, i):
-        """
-        只取topk
-        """
-        # 这里面没考虑不够topk的情况，这个一般不会触发
-
+    def __getitem__eval(self, i):
         if isinstance(i, int):
             if not self.sorted_sign[i]:
                 self.unlabeled_dataset[i].sort(key=lambda x: x.weight, reverse=True)
@@ -120,6 +121,20 @@ class SelfTrainDataset(Dataset):
             return [self.unlabeled_dataset[j][:self.topk] for j in range(i.start, i.stop)]
 
         raise ValueError("Invalid index type {}.".format(type(i)))
+
+    def __getitem__train(self, i):
+        return self.tokenized_dataset[i]
+
+    def __getitem__(self, i):
+        """
+        只取topk
+        """
+        # 这里面没考虑不够topk的情况，这个一般不会触发
+        if self.tokenized_sign:
+            return self.__getitem__train(i)
+        
+        return self.__getitem__eval(i)
+
 
     def __len__(self):
         return len(self.unlabeled_dataset)
@@ -142,11 +157,39 @@ class SelfTrainDataset(Dataset):
         if key in self.key_to_index:
             self.unlabeled_dataset[self.key_to_index[key]].append(AssertionExample(expression, natural_sentence, score)) #?
             self.sorted_sign[self.key_to_index[key]] = False
+
         else:
             self.key_to_index[key] = len(self.unlabeled_dataset)
             self.unlabeled_dataset.append([AssertionExample(expression, natural_sentence, score)])
             self.sorted_sign.append(False)
 
+    def train(self, tokenizer):
+        """进入train的状态，此时应该改为返回tokenize_dataset"""
+        self.tokenized_dataset = self._return_tokenized_dataset(tokenizer) # 每次重新算吧，毕竟labels在更新，也浪费不了多少时间
+        self.tokenized_sign = True # 顺序不能颠倒，不然getitem会错
+
+    def eval(self):
+        """进入eval的状态，此时应该按正常返回，以便更新topk"""
+        del self.tokenized_dataset
+        self.tokenized_sign = False
+
+    def _return_tokenized_dataset(self, tokenizer) -> List[List[Dict[str, torch.Tensor]]]:
+        """
+        这个地方直接返回可以进dataloader的dataset/list, 不过这里因为有topk，所以要多一层
+        """
+        def tokenize_example(input_text):
+            return tokenizer(input_text, padding='max_length', truncation=True, max_length=30,
+                      return_tensors="pt")["input_ids"] if isinstance(input_text, str) else input_text
+
+        tokenized_dataset = []
+        for topk_examples in self:
+            tokenized_dataset.append(
+                [{"input_ids": tokenize_example(example.natural_sentence),
+                  "labels": tokenize_example(example.question),
+                  "weight": example.weight}
+                for example in topk_examples]) # 因为getitem时候已经取了topk
+
+        return tokenized_dataset
 
 def mycollate(examples):
     for example in examples:
@@ -194,15 +237,18 @@ def self_train_collate(examples):
     for topk_examples in examples:
         weights_sum = sum([example.weight for example in topk_examples])
 
-        for example in examples:
-            for key in example:
-                if key == "weight":
-                    example[key] /= weights_sum
+        print("examples", examples)
+        for topk_examples in examples:
+            print(topk_examples)
+            for sub_example in topk_examples: # 指topk
+                for key in sub_example:
+                    if key == "weight":
+                        sub_example[key] /= weights_sum
 
-                try:
-                    example[key] = torch.tensor(example[key])
-                except Exception as e:
-                    pass
+                    try:
+                        sub_example[key] = torch.tensor(sub_example[key])
+                    except Exception as e:
+                        pass
 
     examples = [e for topk_examples in examples for e in topk_examples]
 

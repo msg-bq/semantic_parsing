@@ -127,7 +127,7 @@ def read_dataset(directory_path: str) -> DatasetDict:
 @DatasetsReaderNameSpace.register("ours")
 def read_unlabeled_dataset(directory_path: str):
     dataset = load_dataset(directory_path)
-    return SelfTrainDataset(question_list=[l[0] for l in dataset["train"]["自然语句"]])
+    return SelfTrainDataset(init_question_list=[l[0] for l in dataset["train"]["自然语句"]])
 
 @DatasetsReaderNameSpace.register("topv2")
 def read_unlabeled_dataset(directory_path: str):
@@ -149,7 +149,7 @@ def read_unlabeled_dataset_zcl(directory_path: str):
     # 如果需要，将处理后的数据转换回Dataset格式
     dataset = Dataset.from_pandas(df2_unique)
 
-    return SelfTrainDataset(question_list=dataset["utterance"])
+    return SelfTrainDataset(init_question_list=dataset["utterance"][:2])
 
 @DatasetsReaderNameSpace.register("zcl")
 def read_unlabeled_dataset(directory_path: str):

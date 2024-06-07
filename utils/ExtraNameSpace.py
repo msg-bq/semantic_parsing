@@ -22,7 +22,7 @@ class NameSpace:
     @classmethod
     def register(self, fn_name: str):
         def decorator(fn):
-            func = Function_space(fn=fn, space_cls=self)
+            func = Function(fn=fn, space_cls=self)
             name = func.register_key(fn_name=fn_name)  # 构造注册命名空间的name
             cls = DatasetsReaderNameSpace.get_instance()
             cls.function_map[name] = fn
@@ -34,7 +34,7 @@ class NameSpace:
     def get(self, fn: Callable) -> Callable:
         cls = DatasetsReaderNameSpace.get_instance()
 
-        func = Function_space(fn=fn, space_cls=self)
+        func = Function(fn=fn, space_cls=self)
         fn_name = cls._args.dataset
         name = func.register_key(fn_name=fn_name)
 
@@ -47,7 +47,7 @@ class NameSpace:
 
         return fn
 
-class Function_space:
+class Function:
     def __init__(self, fn: Callable, space_cls):
         self.fn = fn
         self.space_cls = space_cls
@@ -70,7 +70,7 @@ class Function_space:
         return tuple([
             # self.fn.__module__,
             self.fn.__class__,
-            self.fn.__name__, # 这个key目前无意义，但似乎不需要额外继承出DateReaderFunction_space之类的类
+            self.fn.__name__, # 这个key目前无意义，但似乎不需要额外继承出DateReaderFunction之类的类
             self.space_cls.__name__,
             fn_name
         ])
@@ -81,7 +81,7 @@ class DatasetsReaderNameSpace(NameSpace):
     def get(self, fn: Callable) -> Callable:
         cls = DatasetsReaderNameSpace.get_instance()
 
-        func = Function_space(fn=fn, space_cls=self)
+        func = Function(fn=fn, space_cls=self)
         fn_name = [f"{cls._args.task}_{cls._args.dataset}", cls._args.dataset, "Default"]
 
         for name in fn_name:
@@ -101,7 +101,7 @@ class DatasetsProcessorNameSpace(NameSpace):
     def get(self, fn: Callable) -> Callable:
         cls = DatasetsReaderNameSpace.get_instance()
 
-        func = Function_space(fn=fn, space_cls=self)
+        func = Function(fn=fn, space_cls=self)
         fn_name = cls._args.dataset
         name = func.register_key(fn_name=fn_name)
 
