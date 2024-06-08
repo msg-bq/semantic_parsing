@@ -163,9 +163,9 @@ class SelfTrainDataset(Dataset):
             self.unlabeled_dataset.append([AssertionExample(expression, natural_sentence, score)])
             self.sorted_sign.append(False)
 
-    def train(self, tokenizer):
+    def train(self, tokenizer, max_length=512):
         """进入train的状态，此时应该改为返回tokenize_dataset"""
-        self.tokenized_dataset = self._return_tokenized_dataset(tokenizer) # 每次重新算吧，毕竟labels在更新，也浪费不了多少时间
+        self.tokenized_dataset = self._return_tokenized_dataset(tokenizer, max_length) # 每次重新算吧，毕竟labels在更新，也浪费不了多少时间
         self.tokenized_sign = True # 顺序不能颠倒，不然getitem会错
 
     def eval(self):
@@ -173,19 +173,31 @@ class SelfTrainDataset(Dataset):
         del self.tokenized_dataset
         self.tokenized_sign = False
 
-    def _return_tokenized_dataset(self, tokenizer) -> List[List[Dict[str, torch.Tensor]]]:
+    def _return_tokenized_dataset(self, tokenizer, max_length=512) -> List[List[Dict[str, torch.Tensor]]]:
         """
         这个地方直接返回可以进dataloader的dataset/list, 不过这里因为有topk，所以要多一层
         """
         def tokenize_example(input_text):
-            return tokenizer(input_text, padding='max_length', truncation=True, max_length=30,
-                      return_tensors="pt")["input_ids"] if isinstance(input_text, str) else input_text
+            if isinstance(input_text, str):
+                input_ids =  tokenizer(input_text, padding='max_length', truncation=True, max_length=max_length,
+                                       return_tensors="pt")["input_ids"]
+            elif isinstance(input_text, list):
+                input_ids = torch.tensor(input_text + [tokenizer.pad_token_id] * (max_length - len(input_text)))
+                input_ids = input_ids.unsqueeze(0)  # Add batch dimension
+            elif isinstance(input_text, torch.Tensor):
+                if input_text.size(0) < max_length:
+                    padding = torch.tensor([tokenizer.pad_token_id] * (max_length - input_text.size(0)))
+                    input_ids = torch.cat((input_text.cpu(), padding), dim=0)
+            else:
+                raise ValueError("Invalid input_text type {}.".format(type(input_text)))
+
+            return input_ids.cpu() # 这个地方固定住to.cpu也没关系，因为目测没有to(cuda)的需求
 
         tokenized_dataset = []
         for topk_examples in self:
             tokenized_dataset.append(
                 [{"input_ids": tokenize_example(example.natural_sentence),
-                  "labels": tokenize_example(example.question),
+                  "labels": tokenize_example(example.expression),
                   "weight": example.weight}
                 for example in topk_examples]) # 因为getitem时候已经取了topk
 
@@ -235,7 +247,7 @@ def self_train_collate(examples):
     和mycollate一样，主要是每四个要单独处理一个y^
     """
     for topk_examples in examples:
-        weights_sum = sum([example.weight for example in topk_examples])
+        weights_sum = sum([example['weight'] for example in topk_examples])
 
         print("examples", examples)
         for topk_examples in examples:

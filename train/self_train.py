@@ -50,8 +50,7 @@ class SelfTrainTrainer(Trainer):
         return softmaxed_chunks.flatten() if chunk_size == 1 else softmaxed_chunks
 
     def get_beam_search_score(self, question) -> dict:
-        input_ids = self.tokenizer(question, return_tensors="pt").input_ids \
-            if isinstance(question, str) else question # 可以鲁棒地接纳tokenize前后的情况
+        input_ids = self._tokenize_input_robustly(question)
         input_ids = input_ids.to(self.train_args.device)
 
         outputs = self.model.generate(input_ids=input_ids, num_beams=self.train_args.selftrain_topk, max_length=512,
@@ -72,17 +71,33 @@ class SelfTrainTrainer(Trainer):
             # print("The output sequence is not longer than the input sequence.")
             sequences = sequences[:, input_ids.shape[-1]:] #outputs.
 
-        sentence_score = {sent: score for sent, score in zip(sequences, transition_scores)} # 每个sent是ids，即[356,  481,  307, 1498,  284]
+        sentence_score = {sent.cpu(): score.cpu() for sent, score in zip(sequences, transition_scores)} # 每个sent是ids，即[356,  481,  307, 1498,  284]
 
         return sentence_score
 
+    def _tokenize_input_robustly(self, input_text):
+        """
+        # 可以鲁棒地接纳tokenize前后的情况
+        """
+        tokenizer = self.tokenizer
+
+        if isinstance(input_text, str):
+            input_ids = tokenizer(input_text, padding='max_length', truncation=True, max_length=30,
+                                  return_tensors="pt")["input_ids"]
+        elif isinstance(input_text, list):
+            input_ids = torch.tensor(input_text)
+        elif isinstance(input_text, torch.Tensor):
+            input_ids = input_text
+        else:
+            raise ValueError("Invalid input_text type {}.".format(type(input_text)))
+
+        return input_ids
+
     def get_fixed_output_score(self, example) -> float:
-        input_ids = self.tokenizer(example.expression, return_tensors="pt").input_ids \
-            if isinstance(example.expression, str) else example.expression
+        input_ids = self._tokenize_input_robustly(example.natural_sentence)
         input_ids = input_ids.to(self.train_args.device)
 
-        output_ids = self.tokenizer(example.natural_sentence, return_tensors="pt").input_ids \
-            if isinstance(example.natural_sentence, str) else example.natural_sentence
+        output_ids = self._tokenize_input_robustly(example.expression)
         output_ids = output_ids[output_ids != self.tokenizer.pad_token_id]
 
         score = 1
@@ -144,7 +159,7 @@ class SelfTrainTrainer(Trainer):
         return whole_loss
 
     def compute_loss(self, model, inputs, return_outputs=False):  ## compute loss这个步骤实际上定义了 forward和loss的计算过程
-        score = torch.tensor(inputs.get("weight"))
+        score = torch.tensor(inputs.pop("weight"))
         return score * super(SelfTrainTrainer, self).compute_loss(model, inputs, return_outputs)
         # labels = inputs.get("labels")
         # outputs = model(inputs.get('inputs'))  ##在这里定义了foward和batch的计算过程
@@ -213,8 +228,8 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
         unlabeled_dataset.eval()
         self_trainer.get_soft_label_dataloader()
 
-        self_trainer.train(tokenizer)
-        unlabeled_dataset.train(tokenizer)
+        unlabeled_dataset.train(tokenizer, args.max_length)
+        self_trainer.train()
         
         model = self_trainer.model
 

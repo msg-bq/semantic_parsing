@@ -76,6 +76,9 @@ def args_parse():
     parser.add_argument("--batch_size", type=int, default=1,
                     help="batch size")
 
+    parser.add_argument("--max_length", type=int, default=512,
+                    help="max length")
+
     parser.add_argument("--operator_num", type=int, default=5,
                     help="做预实验的算子数量")
 
