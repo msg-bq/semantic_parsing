@@ -1,0 +1,4 @@
+include ChineseTextEDA/stopwords/baidu_stopwords.txt
+include ChineseTextEDA/stopwords/cn_stopwords.txt
+include ChineseTextEDA/stopwords/hit_stopwords.txt
+include ChineseTextEDA/stopwords/scu_stopwords.txt
