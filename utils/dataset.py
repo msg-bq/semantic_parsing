@@ -149,11 +149,11 @@ class SelfTrainDataset(Dataset):
         return False
 
 
-    def append(self, expression, natural_sentence, score=-1):
+    def append(self, natural_sentence, expression, score=-1):
         """
         判断新旧再append，这里面不控制
         """
-        key = expression
+        key = natural_sentence
         if key in self.key_to_index:
             self.unlabeled_dataset[self.key_to_index[key]].append(AssertionExample(expression, natural_sentence, score)) #?
             self.sorted_sign[self.key_to_index[key]] = False
@@ -179,15 +179,15 @@ class SelfTrainDataset(Dataset):
         """
         def tokenize_example(input_text):
             if isinstance(input_text, str):
-                input_ids =  tokenizer(input_text, padding='max_length', truncation=True, max_length=max_length,
-                                       return_tensors="pt")["input_ids"]
+                input_ids = tokenizer(input_text, padding='max_length', truncation=True, max_length=max_length,
+                                      return_tensors="pt")["input_ids"]
             elif isinstance(input_text, list):
                 input_ids = torch.tensor(input_text + [tokenizer.pad_token_id] * (max_length - len(input_text)))
                 input_ids = input_ids.unsqueeze(0)  # Add batch dimension
             elif isinstance(input_text, torch.Tensor):
                 if input_text.size(0) < max_length:
-                    padding = torch.tensor([tokenizer.pad_token_id] * (max_length - input_text.size(0)))
-                    input_ids = torch.cat((input_text.cpu(), padding), dim=0)
+                    padding = torch.tensor([tokenizer.pad_token_id] * (max_length - input_text.size(1))).unsqueeze(dim=0)
+                    input_ids = torch.cat((input_text.cpu(), padding), dim=1)
             else:
                 raise ValueError("Invalid input_text type {}.".format(type(input_text)))
 
@@ -267,7 +267,7 @@ def self_train_collate(examples):
     batch = {}
     for key in examples[0]:
         try:
-            batch[key] = torch.stack([example[key] for example in examples])
+            batch[key] = torch.stack([example[key] for example in examples]).squeeze()
         except:
             batch[key] = [example[key] for example in examples]
 

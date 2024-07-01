@@ -52,6 +52,7 @@ class SelfTrainTrainer(Trainer):
     def get_beam_search_score(self, question) -> dict:
         input_ids = self._tokenize_input_robustly(question)
         input_ids = input_ids.to(self.train_args.device)
+        self.model.to(self.train_args.device)
 
         outputs = self.model.generate(input_ids=input_ids, num_beams=self.train_args.selftrain_topk, max_length=512,
                     num_return_sequences=self.train_args.selftrain_topk, return_dict_in_generate=True, output_scores=True)
@@ -127,6 +128,7 @@ class SelfTrainTrainer(Trainer):
 
             sentence_score = self.get_beam_search_score(question)
             for sentence, score in sentence_score.items():
+                sentence = sentence.unsqueeze(dim=0) # 为了保持输入的维度还是2维，不要被for循环减少
                 if (question, sentence) not in self.train_dataset: # 如果beam search和原来的重叠率高会有点浪费，但这小问题了
                     self.train_dataset.append(question, sentence, score)
 
@@ -160,7 +162,7 @@ class SelfTrainTrainer(Trainer):
 
     def compute_loss(self, model, inputs, return_outputs=False):  ## compute loss这个步骤实际上定义了 forward和loss的计算过程
         score = torch.tensor(inputs.pop("weight"))
-        return score * super(SelfTrainTrainer, self).compute_loss(model, inputs, return_outputs)
+        return torch.sum(score * super(SelfTrainTrainer, self).compute_loss(model, inputs, return_outputs))
         # labels = inputs.get("labels")
         # outputs = model(inputs.get('inputs'))  ##在这里定义了foward和batch的计算过程
         # logits = outputs  # .get("logits")
@@ -186,7 +188,8 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                                    save_steps=1000,
                                    learning_rate=args.lr,
                                    evaluation_strategy="epoch",
-                                   do_eval=True if "eval" in dataset else False)
+                                   do_eval=True if "eval" in dataset else False,
+                                   no_cuda=False if args.device == "cuda" else True)
 
     unlabeled_dataset = dataset["unlabeled"]  # 我们假设这里是个question_list
     # unlabeled_dataset = SelfTrainDataset(question_list=unlabeled_dataset)
@@ -197,7 +200,10 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                                            save_steps=1000,
                                            learning_rate=args.lr,
                                            evaluation_strategy="epoch",
-                                           selftrain_topk=4)
+                                           selftrain_topk=4,
+                                           no_cuda=False if args.device == "cuda" else True)
+
+    # model.resize_token_embeddings(len(tokenizer))
 
     for epoch in range(3):
         if args.given_model: # 如果基础模型已经训过了，就先训self
@@ -214,6 +220,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
 
             trainer.train()
             model = trainer.model
+            model.to(args.device)
 
         print("初步训练完成")
 

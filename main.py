@@ -48,7 +48,7 @@ def args_parse():
                     help="省得分文件了")
 
     parser.add_argument("--model_dir", type=str,
-                        default="/data/lbq/models/mt5-base-trained-final-500+500-2-7_again",
+                        default="/data/lbq/models/mt5-base-trained-final-500+500-2-7_again",#"/data/lbq/models/mt5-base-trained-final-500+500-2-7_again",
     #,"/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again"
                     help="model dir")
 
@@ -176,9 +176,8 @@ def main():
     args = args_parse()
 
     model = MT5ForConditionalGeneration.from_pretrained(args.model_dir)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
-    print(args.device)
     model.to(args.device)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
 
     dataset = get_dataset(tokenizer, args)
 
