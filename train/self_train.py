@@ -200,7 +200,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                                            save_steps=1000,
                                            learning_rate=args.lr,
                                            evaluation_strategy="epoch",
-                                           selftrain_topk=4,
+                                           selftrain_topk=2,
                                            no_cuda=False if args.device == "cuda" else True)
 
     # model.resize_token_embeddings(len(tokenizer))

@@ -3,11 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="4ef24877-20a4-4099-8a2e-7ba8e06ef73d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/module/MT5.py" beforeDir="false" afterPath="$PROJECT_DIR$/module/MT5.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train/self_train.py" beforeDir="false" afterPath="$PROJECT_DIR$/train/self_train.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/tokenization.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/tokenization.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,7 +71,7 @@
       <option name="presentableId" value="Default" />
       <updated>1717817224494</updated>
       <workItem from="1717817226750" duration="19356000" />
-      <workItem from="1719848034620" duration="6181000" />
+      <workItem from="1719848034620" duration="6727000" />
     </task>
     <servers />
   </component>
@@ -145,6 +141,6 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/semantic_parsing$main.coverage" NAME="main Coverage Results" MODIFIED="1719854121269" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/semantic_parsing$main.coverage" NAME="main Coverage Results" MODIFIED="1719854635914" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
