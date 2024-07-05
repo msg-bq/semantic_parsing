@@ -13,6 +13,7 @@ from utils.operators_concepts import operator_dict
 from utils.text_utils import add_space_after_chinese, find_long_string_in_list
 
 import pandas as pd
+import json
 
 
 @DatasetsProcessorNameSpace.register("Default")
@@ -50,6 +51,10 @@ def read_ours_from_dir(directory_path: str) -> List[AssertionExample]:
                 line = eval(f.readlines()[0])
 
                 for e in line:
+                    # 存在e['自然语句'] = []的情况导致random.choice(e['自然语句'])报错
+                    if(e['自然语句'] == []):
+                        continue
+
                     expression, natural_sentence = e['表达式'], random.choice(e['自然语句'])
                     if expression == "None":
                         continue
@@ -126,8 +131,16 @@ def read_dataset(directory_path: str) -> DatasetDict:
 
 @DatasetsReaderNameSpace.register("ours")
 def read_unlabeled_dataset(directory_path: str):
-    dataset = load_dataset(directory_path)
-    return SelfTrainDataset(init_question_list=[l[0] for l in dataset["train"]["自然语句"]])
+    # 修改为 ↓
+    for filename in os.listdir(directory_path):
+        # 读取json文件，里面有"split_and_filter"和"origin"
+        # 把split_and_filter里的全部取出来就行
+        with open(directory_path + "/" + filename) as f: # replace 'yourfilename' with your actual file name
+            data = json.load(f)
+        flattened_list = []
+        for i in range(len(data)):
+            flattened_list += data[i]["split_and_filter"]
+    return SelfTrainDataset(init_question_list=flattened_list)
 
 @DatasetsReaderNameSpace.register("topv2")
 def read_unlabeled_dataset(directory_path: str):

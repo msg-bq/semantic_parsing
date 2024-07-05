@@ -249,9 +249,7 @@ def self_train_collate(examples):
     for topk_examples in examples:
         weights_sum = sum([example['weight'] for example in topk_examples])
 
-        print("examples", examples)
         for topk_examples in examples:
-            print(topk_examples)
             for sub_example in topk_examples: # 指topk
                 for key in sub_example:
                     if key == "weight":

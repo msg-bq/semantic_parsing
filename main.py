@@ -5,6 +5,7 @@ from typing import Union, Tuple
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "6"
 
+import json
 import torch
 import yaml
 from torch import optim
@@ -32,13 +33,13 @@ def args_parse():
     parser.add_argument('--config', type=str, default='config.yaml',
                     help='config file, 只使用单层的嵌套')
 
-    parser.add_argument("--dataset", type=str, default="zcl",
+    parser.add_argument("--dataset", type=str, default="ours",
                         choices=["ours", "topv2", "zcl", "zcl_mixed"])
 
-    parser.add_argument("--train_dataset_dir", type=str, default="./data/dev",
+    parser.add_argument("--train_dataset_dir", type=str, default="./data/train",
                     help="train dataset dir")
 
-    parser.add_argument("--unlabel_dataset_dir", type=str, default="./data/dev",
+    parser.add_argument("--unlabel_dataset_dir", type=str, default="./data/unlabel_train",
                     help="unlabel dataset dir")
 
     parser.add_argument("--test_dataset_dir", type=str, default="./data/dev",
@@ -48,7 +49,7 @@ def args_parse():
                     help="省得分文件了")
 
     parser.add_argument("--model_dir", type=str,
-                        default="/data/lbq/models/mt5-base-trained-final-500+500-2-7_again",#"/data/lbq/models/mt5-base-trained-final-500+500-2-7_again",
+                        default="/data/lbq/lzx/mt5-base/mt5-base",#"/data/lbq/models/mt5-base-trained-final-500+500-2-7_again",
     #,"/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again"
                     help="model dir")
 
@@ -67,16 +68,16 @@ def args_parse():
     parser.add_argument("--criterion", type=str, default="CrossEntropyLoss",
                     help="criterion")
 
-    parser.add_argument("--device", type=str, default="cpu",
+    parser.add_argument("--device", type=str, default="cuda",
                     help="device")
 
-    parser.add_argument("--epoch", type=int, default=3,
+    parser.add_argument("--epoch", type=int, default=20,
                     help="epoch")
 
-    parser.add_argument("--batch_size", type=int, default=1,
+    parser.add_argument("--batch_size", type=int, default=16,
                     help="batch size")
 
-    parser.add_argument("--max_length", type=int, default=512,
+    parser.add_argument("--max_length", type=int, default=256,
                     help="max length")
 
     parser.add_argument("--operator_num", type=int, default=5,
@@ -103,7 +104,7 @@ def args_parse():
     parser.add_argument("--selftrain_topk", type=int, default=5,
                         help="self train的topk")
 
-    parser.add_argument("--given_model", type=bool, default=True,
+    parser.add_argument("--given_model", type=bool, default=False,
                         help="是否给定模型，如果是的话就直接训self train")
 
     args = parser.parse_args()
@@ -171,13 +172,23 @@ def get_criterion(args):
     raise ValueError(f"Unknown criterion: {args.criterion}")
 
 
-
 def main():
     args = args_parse()
 
+    # 如果用指针加词表 _rasize 可以就在这里进行
+    tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
+    # ---下面可以封装成一个函数---
+    with open('other_tokens3.json', 'r', encoding='utf-8') as file:
+        data = json.load(file)
+    other_tokens = list(data.keys())
+
+    tokenizer.add_tokens(other_tokens)
+    tokenizer.save_pretrained("./tokenizer/")
+    # -------------------------------
     model = MT5ForConditionalGeneration.from_pretrained(args.model_dir)
     model.to(args.device)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
+
+    model.resize_token_embeddings(len(tokenizer))
 
     dataset = get_dataset(tokenizer, args)
 

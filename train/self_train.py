@@ -82,8 +82,9 @@ class SelfTrainTrainer(Trainer):
         """
         tokenizer = self.tokenizer
 
+        # 应该用args.max_length
         if isinstance(input_text, str):
-            input_ids = tokenizer(input_text, padding='max_length', truncation=True, max_length=30,
+            input_ids = tokenizer(input_text, padding='max_length', truncation=True, max_length=256,
                                   return_tensors="pt")["input_ids"]
         elif isinstance(input_text, list):
             input_ids = torch.tensor(input_text)
@@ -100,13 +101,13 @@ class SelfTrainTrainer(Trainer):
 
         output_ids = self._tokenize_input_robustly(example.expression)
         output_ids = output_ids[output_ids != self.tokenizer.pad_token_id]
-
+        output_ids = output_ids.to(self.train_args.device)
         score = 1
 
         for ids in output_ids:
+            
             tmp_output_ids = torch.cat((input_ids[0], ids.unsqueeze(0)), dim=0).unsqueeze(0) # [356,  481,  307, 1498,  284]
             # 上面的列表后面再拼个3，然后转成2维
-
             tmp_output = self.model.generate(input_ids=input_ids, max_new_tokens=1, return_dict_in_generate=True, output_scores=True)
             transition_scores = self.model.compute_transition_scores(
                 tmp_output_ids, tmp_output.scores, normalize_logits=True
@@ -124,6 +125,7 @@ class SelfTrainTrainer(Trainer):
         dataset = self.train_dataset
 
         for question in dataset.key_to_index.keys():
+            print(question)
             last_examples = len(dataset.unlabeled_dataset[dataset.key_to_index[question]])
 
             sentence_score = self.get_beam_search_score(question)
@@ -201,20 +203,23 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                                            learning_rate=args.lr,
                                            evaluation_strategy="epoch",
                                            selftrain_topk=2,
+                                           dataloader_pin_memory=False,
                                            no_cuda=False if args.device == "cuda" else True)
 
     # model.resize_token_embeddings(len(tokenizer))
-
+    
     for epoch in range(3):
+
         if args.given_model: # 如果基础模型已经训过了，就先训self
             args.given_model = False
         else:
             # 1. 先训练基础模型
+            
             trainer = Trainer(model=model,
                               args=train_args,
                               data_collator=mycollate_trainer, # 要么给自己的，要么在定义trainer后面单独写一个data_collator=None，不然代码里有默认collate
-                              train_dataset=dataset["train"][:10],
-                              eval_dataset=dataset["train"][:10],#dataset["eval"] if "eval" in dataset else None,
+                              train_dataset=dataset["train"],
+                              eval_dataset=dataset["train"],#dataset["eval"] if "eval" in dataset else None,
                               tokenizer=tokenizer,
                               optimizers=(optimizer, None)) # 缺了学习率调度器
 
