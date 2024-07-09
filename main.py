@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Union, Tuple
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"
+os.environ["CUDA_VISIBLE_DEVICES"] = "7"
 
 import json
 import torch
@@ -36,7 +36,7 @@ def args_parse():
     parser.add_argument("--dataset", type=str, default="ours",
                         choices=["ours", "topv2", "zcl", "zcl_mixed"])
 
-    parser.add_argument("--train_dataset_dir", type=str, default="./data/train",
+    parser.add_argument("--train_dataset_dir", type=str, default="./data/dev",
                     help="train dataset dir")
 
     parser.add_argument("--unlabel_dataset_dir", type=str, default="./data/unlabel_train",
@@ -53,7 +53,7 @@ def args_parse():
     #,"/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again"
                     help="model dir")
 
-    parser.add_argument("--save_dir", type=str, default="/data/lbq/models/mt5-base",
+    parser.add_argument("--save_dir", type=str, default="./mt5-base",
                     help="save dir")
 
     parser.add_argument("--experiment_name", type=str, default="Default", choices=["Default"], # 这个比如10样例、100样例等
@@ -71,10 +71,10 @@ def args_parse():
     parser.add_argument("--device", type=str, default="cuda",
                     help="device")
 
-    parser.add_argument("--epoch", type=int, default=3,
+    parser.add_argument("--epoch", type=int, default=20,
                     help="epoch")
 
-    parser.add_argument("--batch_size", type=int, default=1,
+    parser.add_argument("--batch_size", type=int, default=8,
                     help="batch size")
 
     parser.add_argument("--max_length", type=int, default=256,
@@ -185,7 +185,7 @@ def main():
     tokenizer.add_tokens(other_tokens)
     tokenizer.save_pretrained("./tokenizer/")
     # -------------------------------
-    print
+    print("111")
     model = MT5ForConditionalGeneration.from_pretrained(args.model_dir)
     model.to(args.device)
 

@@ -35,7 +35,6 @@ class SelfTrainingArguments(TrainingArguments):
 
 class SelfTrainTrainer(Trainer):
     def __init__(self, *args, **kwargs):
-        self.train_args = kwargs.pop("train_args")
         super().__init__(*args, **kwargs)
 
     def softmax_chunks(self, lst, chunk_size=4):
@@ -51,29 +50,32 @@ class SelfTrainTrainer(Trainer):
 
     def get_beam_search_score(self, question) -> dict:
         input_ids = self._tokenize_input_robustly(question)
-        input_ids = input_ids.to(self.train_args.device)
-        self.model.to(self.train_args.device)
+        input_ids = input_ids.to(self.args.device)
+        self.model.to(self.args.device)
 
-        outputs = self.model.generate(input_ids=input_ids, num_beams=self.train_args.selftrain_topk, max_length=512,
-                    num_return_sequences=self.train_args.selftrain_topk, return_dict_in_generate=True, output_scores=True)
-
+        outputs = self.model.generate(input_ids=input_ids, num_beams=self.args.selftrain_topk, max_length=256,
+                    num_return_sequences=self.args.selftrain_topk, return_dict_in_generate=True, output_scores=True)
         sequences = outputs.sequences  # [:, input_ids.shape[-1]:]
         # outputs_scores = tuple([s.to("cpu") for s in outputs.scores])
         # outputs_beam_indices = outputs.beam_indices.to("cpu")
 
+        # print(outputs.scores)
         transition_scores = self.model.compute_transition_scores(
             # sequences, outputs_scores, outputs_beam_indices, normalize_logits=False
             outputs.sequences, outputs.scores, outputs.beam_indices, normalize_logits=False
         )
-
+        print(f"transition_scores.sum(dim=1):{transition_scores.sum(dim=1)}")
+        # print(transition_scores)
         transition_scores = transition_scores.sum(dim=1).exp()
-
-        if outputs.sequences[0].shape[-1] >= input_ids.shape[-1]:
-            # print("The output sequence is not longer than the input sequence.")
-            sequences = sequences[:, input_ids.shape[-1]:] #outputs.
-
+        
+        #
+        # 屯着
+        # if outputs.sequences[0].shape[-1] >= input_ids.shape[-1]:
+        #     # print("The output sequence is not longer than the input sequence.")
+        #     sequences = sequences[:, :input_ids.shape[-1]] #outputs.
+            
         sentence_score = {sent.cpu(): score.cpu() for sent, score in zip(sequences, transition_scores)} # 每个sent是ids，即[356,  481,  307, 1498,  284]
-
+        # print(f"sentence_score:{transition_scores}")
         return sentence_score
 
     def _tokenize_input_robustly(self, input_text):
@@ -97,55 +99,79 @@ class SelfTrainTrainer(Trainer):
 
     def get_fixed_output_score(self, example) -> float:
         input_ids = self._tokenize_input_robustly(example.natural_sentence)
-        input_ids = input_ids.to(self.train_args.device)
+        input_ids = input_ids.to(self.args.device)
 
         output_ids = self._tokenize_input_robustly(example.expression)
         output_ids = output_ids[output_ids != self.tokenizer.pad_token_id]
-        output_ids = output_ids.to(self.train_args.device)
+        output_ids = output_ids.to(self.args.device)
         score = 1
 
+        sums = 0
+        print(output_ids)
         for ids in output_ids:
             
             tmp_output_ids = torch.cat((input_ids[0], ids.unsqueeze(0)), dim=0).unsqueeze(0) # [356,  481,  307, 1498,  284]
+            print("tmp_output_ids")
+            print(tmp_output_ids)
             # 上面的列表后面再拼个3，然后转成2维
             tmp_output = self.model.generate(input_ids=input_ids, max_new_tokens=1, return_dict_in_generate=True, output_scores=True)
+            print("tmp_output")
+
+            # 这里是发现不论是生成出来的token，还是ids，对应的score都是大于0的，而transition_scores反而是<0的
+            print(tmp_output.scores[0][0,ids])
+            print(print(tmp_output.scores[0][0,tmp_output.sequences[0][1]]))
+
             transition_scores = self.model.compute_transition_scores(
                 tmp_output_ids, tmp_output.scores, normalize_logits=True
             )
+            print(transition_scores.item())
+            sums += transition_scores.item()
 
             score *= transition_scores.exp()
 
             input_ids = tmp_output_ids
 
+        print(f"sums:{sums}")
+        print(f"score:{score}")
         return score
 
     def get_soft_label_dataloader(self):
         # beam search
-        self.train_dataset.topk = self.train_args.selftrain_topk
+        self.train_dataset.topk = self.args.selftrain_topk
         dataset = self.train_dataset
 
         for question in dataset.key_to_index.keys():
+            # print(dataset.unlabeled_dataset)
             last_examples = len(dataset.unlabeled_dataset[dataset.key_to_index[question]])
 
             sentence_score = self.get_beam_search_score(question)
             for sentence, score in sentence_score.items():
                 sentence = sentence.unsqueeze(dim=0) # 为了保持输入的维度还是2维，不要被for循环减少
+
                 if (question, sentence) not in self.train_dataset: # 如果beam search和原来的重叠率高会有点浪费，但这小问题了
                     self.train_dataset.append(question, sentence, score)
+
 
             new_examples = dataset[dataset.key_to_index[question]]
             sum_scores = sum([example.weight for example in dataset[dataset.key_to_index[question]]])
 
-            for example in new_examples[:last_examples]:
+            # last_examples 从0，1，2，3，4....
+            # print(new_examples)
+            # print(last_examples)
+            for example in new_examples:
+                # print(example)
                 new_score = self.get_fixed_output_score(example)
                 alpha = 0.5 # 这里有一个被固定进代码的变量
                 example.weight = (1-alpha) * example.weight / sum_scores + alpha * new_score
-
+            # print("2222")
             # 归一化
             sum_scores = sum([example.weight for example in new_examples])
 
             for example in new_examples:
                 example.weight /= sum_scores
+                # print(example.weight)
+        
+
 
     def calc_weighted_loss(loss_fct, outputs, batch, scores):
         inputs, labels = batch["input_ids"], batch["labels"]
@@ -203,6 +229,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                                            evaluation_strategy="epoch",
                                            selftrain_topk=2,
                                            dataloader_pin_memory=False,
+                                           do_eval=False,
                                            no_cuda=False if args.device == "cuda" else True)
 
     # model.resize_token_embeddings(len(tokenizer))
@@ -230,11 +257,12 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
 
         # 2. 用基础模型预测unlabeled数据集
         self_trainer = SelfTrainTrainer(model=model,
-                                        train_args=selftrain_args,
+                                        args=selftrain_args,
                                         data_collator=self_train_collate,
                                         train_dataset=unlabeled_dataset,
                                         tokenizer=tokenizer,
                                         optimizers=(optimizer, None))
+
 
         unlabeled_dataset.eval()
         self_trainer.get_soft_label_dataloader()

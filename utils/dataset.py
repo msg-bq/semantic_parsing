@@ -185,12 +185,11 @@ class SelfTrainDataset(Dataset):
                 input_ids = torch.tensor(input_text + [tokenizer.pad_token_id] * (max_length - len(input_text)))
                 input_ids = input_ids.unsqueeze(0)  # Add batch dimension
             elif isinstance(input_text, torch.Tensor):
-                if input_text.size(0) < max_length:
+                if input_text.size(0) <= max_length:
                     padding = torch.tensor([tokenizer.pad_token_id] * (max_length - input_text.size(1))).unsqueeze(dim=0)
                     input_ids = torch.cat((input_text.cpu(), padding), dim=1)
             else:
                 raise ValueError("Invalid input_text type {}.".format(type(input_text)))
-
             return input_ids.cpu() # 这个地方固定住to.cpu也没关系，因为目测没有to(cuda)的需求
 
         tokenized_dataset = []
