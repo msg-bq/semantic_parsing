@@ -958,7 +958,11 @@ class MT5Stack(MT5PreTrainedModel):
         output_attentions=None,
         output_hidden_states=None,
         return_dict=None,
-    ):
+    ):  
+        #  存在是Type:torch.float32的情况，不知道什么情况
+        if input_ids.dtype == torch.float32:
+            input_ids = input_ids.clone().detach().to(torch.int64)
+
         # Model parallel
         if self.model_parallel:
             torch.cuda.set_device(self.first_device)
@@ -2005,6 +2009,15 @@ class MT5ForConditionalGeneration(MT5PreTrainedModel):
         >>> print(tokenizer.decode(outputs[0], skip_special_tokens=True))
         >>> # studies have shown that owning a dog is good for you.
         ```"""
+        # 检查 input_ids 的类型是否是 torch.float32
+        if input_ids != None and input_ids.dtype == torch.float32:
+            # 使用 clone().detach() 方法进行类型转换
+            input_ids = input_ids.clone().detach().to(torch.int64)
+        # 检查 labels 的类型是否是 torch.float32
+        if labels != None and labels.dtype == torch.float32:
+            # 使用 clone().detach() 方法进行类型转换
+            labels = labels.clone().detach().to(torch.int64)
+
         # input_ids = input_ids[0] # 这里只是权宜之计
         use_cache = use_cache if use_cache is not None else self.config.use_cache
         return_dict = return_dict if return_dict is not None else self.config.use_return_dict
@@ -2060,7 +2073,7 @@ class MT5ForConditionalGeneration(MT5PreTrainedModel):
                 attention_mask = attention_mask.to(self.decoder.first_device)
             if decoder_attention_mask is not None:
                 decoder_attention_mask = decoder_attention_mask.to(self.decoder.first_device)
-
+        
         # Decode
         decoder_outputs = self.decoder(
             input_ids=decoder_input_ids,
@@ -2115,6 +2128,7 @@ class MT5ForConditionalGeneration(MT5PreTrainedModel):
             labels = labels.to(lm_logits.device)
             # print(labels.shape)
             # print(lm_logits.view(-1, lm_logits.size(-1)).shape)
+
             loss = loss_fct(lm_logits.view(-1, lm_logits.size(-1)), labels.view(-1))
             # TODO(thom): Add z_loss https://github.com/tensorflow/mesh/blob/fa19d69eafc9a482aff0b59ddd96b025c0cb207d/mesh_tensorflow/layers.py#L666
 
