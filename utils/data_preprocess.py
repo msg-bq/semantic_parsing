@@ -140,6 +140,7 @@ def read_unlabeled_dataset(directory_path: str):
         flattened_list = []
         for i in range(len(data)):
             flattened_list += data[i]["split_and_filter"]
+    
     return SelfTrainDataset(init_question_list=flattened_list)
 
 @DatasetsReaderNameSpace.register("topv2")

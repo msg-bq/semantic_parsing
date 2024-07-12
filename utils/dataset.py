@@ -7,13 +7,14 @@ from torch.utils.data import Dataset
 
 
 class AssertionExample:
-    def __init__(self, expression, natural_sentence, weight=-1):
+    def __init__(self, expression, natural_sentence, score=None,weight=-1):
         self.expression = expression
         self.natural_sentence = natural_sentence
         self.weight = weight # 只是self train时候才用
-
+        self.score = score
         self.__dict__.update({"expression": expression,
                               "natural_sentence": natural_sentence,
+                              "score" : score,
                               "weight": weight})
 
     def __repr__(self):
@@ -149,18 +150,18 @@ class SelfTrainDataset(Dataset):
         return False
 
 
-    def append(self, natural_sentence, expression, score=-1):
+    def append(self, natural_sentence, expression, score,weight=-1):
         """
         判断新旧再append，这里面不控制
         """
         key = natural_sentence
         if key in self.key_to_index:
-            self.unlabeled_dataset[self.key_to_index[key]].append(AssertionExample(expression, natural_sentence, score)) #?
+            self.unlabeled_dataset[self.key_to_index[key]].append(AssertionExample(expression, natural_sentence, score,weight)) #?
             self.sorted_sign[self.key_to_index[key]] = False
 
         else:
             self.key_to_index[key] = len(self.unlabeled_dataset)
-            self.unlabeled_dataset.append([AssertionExample(expression, natural_sentence, score)])
+            self.unlabeled_dataset.append([AssertionExample(expression, natural_sentence, score,weight)])
             self.sorted_sign.append(False)
 
     def train(self, tokenizer, max_length=512):
@@ -190,13 +191,14 @@ class SelfTrainDataset(Dataset):
                     input_ids = torch.cat((input_text.cpu(), padding), dim=1)
             else:
                 raise ValueError("Invalid input_text type {}.".format(type(input_text)))
-            return input_ids.cpu() # 这个地方固定住to.cpu也没关系，因为目测没有to(cuda)的需求
+            return input_ids.to(torch.int64).cpu() # 这个地方固定住to.cpu也没关系，因为目测没有to(cuda)的需求
 
         tokenized_dataset = []
         for topk_examples in self:
             tokenized_dataset.append(
                 [{"input_ids": tokenize_example(example.natural_sentence),
                   "labels": tokenize_example(example.expression),
+                  "score" : example.score,
                   "weight": example.weight}
                 for example in topk_examples]) # 因为getitem时候已经取了topk
 
