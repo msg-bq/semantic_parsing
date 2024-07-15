@@ -48,6 +48,17 @@ class SelfTrainTrainer(Trainer):
         # Flatten the result back to a 1D array if desired
         return softmaxed_chunks.flatten() if chunk_size == 1 else softmaxed_chunks
 
+    def pad_tensor(self,tensor, target_length=255, padding_value=1.0):
+        device = tensor.device  # 获取输入张量所在的设备
+        k, current_length = tensor.size()
+        if current_length >= target_length:
+            return tensor
+        else:
+            padding_size = target_length - current_length
+            padding = torch.full((k, padding_size), padding_value,device=device)
+            padded_tensor = torch.cat((tensor, padding), dim=1)
+            return padded_tensor
+
     def get_beam_search_score(self, question) -> dict:
         input_ids = self._tokenize_input_robustly(question)
         input_ids = input_ids.to(self.args.device)
@@ -63,7 +74,8 @@ class SelfTrainTrainer(Trainer):
             outputs.sequences, outputs.scores, outputs.beam_indices, normalize_logits=False
         )
         # 在第0个维度上归一化
-        print(transition_scores.shape)
+        transition_scores = self.pad_tensor(transition_scores)
+        
         transition_scores = F.softmax(transition_scores, dim=0)
         # transition_scores = transition_scores.sum(dim=1).exp()
             
@@ -189,8 +201,9 @@ class SelfTrainTrainer(Trainer):
 
         labels = inputs.get("labels")
         score = inputs.pop("score")
+        inputs.pop("weight")
         # # 创建一个形状为 [8, 1] 的张量，所有元素为 1
-
+        outputs = model(**inputs)
         is_a_tensor = torch.is_tensor(score)
         if is_a_tensor == False:
             for s in score:
@@ -203,7 +216,6 @@ class SelfTrainTrainer(Trainer):
         # # 将 ones 张量与原始 tensor 在维度 1 上进行拼接
         score = torch.cat((ones, score), dim=1).view(-1)
 
-        inputs.pop("weight")
 
         outputs = model(**inputs)  ##在这里定义了foward和batch的计算过程
 

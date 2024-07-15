@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Union, Tuple
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+os.environ["CUDA_VISIBLE_DEVICES"] = "5"
 
 import json
 import torch
@@ -74,7 +74,7 @@ def args_parse():
     parser.add_argument("--epoch", type=int, default=20,
                     help="epoch")
 
-    parser.add_argument("--batch_size", type=int, default=8,
+    parser.add_argument("--batch_size", type=int, default=4,
                     help="batch size")
 
     parser.add_argument("--max_length", type=int, default=256,
