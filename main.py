@@ -36,7 +36,7 @@ def args_parse():
     parser.add_argument("--dataset", type=str, default="ours",
                         choices=["ours", "topv2", "zcl", "zcl_mixed"])
 
-    parser.add_argument("--train_dataset_dir", type=str, default="./data/dev",
+    parser.add_argument("--train_dataset_dir", type=str, default="./data/train",
                     help="train dataset dir")
 
     parser.add_argument("--unlabel_dataset_dir", type=str, default="./data/unlabel_train",
@@ -104,7 +104,7 @@ def args_parse():
     parser.add_argument("--selftrain_topk", type=int, default=5,
                         help="self train的topk")
 
-    parser.add_argument("--given_model", type=bool, default=True,
+    parser.add_argument("--given_model", type=bool, default=False,
                         help="是否给定模型，如果是的话就直接训self train")
 
     args = parser.parse_args()

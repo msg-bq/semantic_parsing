@@ -6,6 +6,7 @@ import torch.nn as nn
 import heapq
 
 from torch import device
+from tqdm import tqdm
 from transformers import TrainingArguments, Trainer
 
 from utils.dataset import mycollate_trainer, self_train_collate, AssertionExample, SelfTrainDataset
@@ -131,7 +132,7 @@ class SelfTrainTrainer(Trainer):
             # print(transition_scores.item())
             sums += transition_scores.item()
 
-            score *= transition_scores.exp()
+            # score *= transition_scores.exp()
 
             input_ids = tmp_output_ids
 
@@ -144,22 +145,33 @@ class SelfTrainTrainer(Trainer):
         self.train_dataset.topk = self.args.selftrain_topk
         dataset = self.train_dataset
 
-        for question in dataset.key_to_index.keys():
+        for question in tqdm(dataset.key_to_index.keys(), desc="Processing questions"):
             # print(dataset.unlabeled_dataset)
-            last_examples = len(dataset.unlabeled_dataset[dataset.key_to_index[question]])
+            mapp = {}
+            last_examples = len(dataset[dataset.key_to_index[question]])
 
             sentence_score = self.get_beam_search_score(question)
             for sentence, score in sentence_score.items():
                 # print(score)
                 sentence = sentence.unsqueeze(dim=0) # 为了保持输入的维度还是2维，不要被for循环减少
-
+                mapp[sentence] = score
                 # 如果不在里面，则用原本的score
                 if (question, sentence) not in self.train_dataset: # 如果beam search和原来的重叠率高会有点浪费，但这小问题了
                     # 还要有个weight
                     weight = score.sum(dim=0)
                     self.train_dataset.append(question, sentence, score,weight)
                 # 如果在里面，要.....
- 
+
+
+            # 更新暂时只能这样了
+            new_examples = dataset[dataset.key_to_index[question]]
+            for example in new_examples[:last_examples]:
+                new_score = mapp.get(example.sentence,None)
+                if new_score != None:
+                    alpha = 0.5 # 这里有一个被固定进代码的变量
+                    new_weight = new_score.sum(dim=0)
+                    example.weight = (1-alpha) * example.weight + alpha * new_weight
+                    example.score = (1-alpha) * example.score + alpha * new_score
 
             # new_examples = dataset[dataset.key_to_index[question]]
             # sum_scores = sum([example.weight for example in dataset[dataset.key_to_index[question]]])
@@ -181,8 +193,6 @@ class SelfTrainTrainer(Trainer):
                 # print(example.weight)
         
 
-
-    # 那就是这里要改了
     # def calc_weighted_loss(loss_fct, outputs, batch, scores):
     #     inputs, labels = batch["input_ids"], batch["labels"]
     #     loss_per_token = loss_fct(outputs.logits.view(-1, model.config.vocab_size), labels.view(-1))
@@ -264,7 +274,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
 
     # model.resize_token_embeddings(len(tokenizer))
     
-    for epoch in range(3):
+    for epoch in range(args.epoch):
 
         if args.given_model: # 如果基础模型已经训过了，就先训self
             args.given_model = False
