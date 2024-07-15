@@ -185,7 +185,6 @@ def main():
     tokenizer.add_tokens(other_tokens)
     tokenizer.save_pretrained("./tokenizer/")
     # -------------------------------
-    print("111")
     model = MT5ForConditionalGeneration.from_pretrained(args.model_dir)
     model.to(args.device)
 
