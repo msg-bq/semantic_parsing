@@ -172,6 +172,9 @@ class SelfTrainTrainer(Trainer):
                     new_weight = new_score.sum(dim=0)
                     example.weight = (1-alpha) * example.weight + alpha * new_weight
                     example.score = (1-alpha) * example.score + alpha * new_score
+                else:
+                    example.weight = 0.7 * example.weight
+                    example.score = 0.7 * example.score
 
             # new_examples = dataset[dataset.key_to_index[question]]
             # sum_scores = sum([example.weight for example in dataset[dataset.key_to_index[question]]])
