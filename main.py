@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Union, Tuple
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 import torch
 import yaml
@@ -52,8 +52,7 @@ def args_parse():
     #,"/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again"
                     help="model dir")
 
-    parser.add_argument("--save_dir", type=str, default="/data/lbq/models/mt5-base",
-                    help="save dir")
+    parser.add_argument("--save_dir", type=str, default="./mt5-base-new", help="save dir")
 
     parser.add_argument("--experiment_name", type=str, default="Default", choices=["Default"], # 这个比如10样例、100样例等
                     help="experiment name")

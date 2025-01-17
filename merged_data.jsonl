@@ -1,0 +1,519 @@
+{
+    "input": "2016 年  公  司  扣  非  净  利  润  增  速  低  于  营  收  增  速  。",
+    "output_self": "\"谓词：经济增长速度\" ([地点：@ptr_3@ptr_4 ],[时间：@ptr_1@ptr_2 ])=[速度：@ptr_12@ptr_11 ]",
+    "output_normal": "None",
+	"gold": "\"谓词：扣除非母公司的净利润\" ([...])"
+}
+{
+    "input": "2022 年  信  创  产  业  的  非  核  心  市  场  规  模  为 6827.4 亿  元  ，  占  总  体  市  场  的 74 %  。",
+    "output_self": "\"谓词：CR4\" ([行业：@ptr_3@ptr_4 ],[地点：@ptr_19@ptr_4 ],[时间：@ptr_1@ptr_2 ])=[资金：@ptr_16@ptr_18 ]",
+    "output_normal": "\"谓词：CR4\" ([行业：@ptr_3@ptr_6 ],[地点：@ptr_8@ptr_10 ],[时间：@ptr_1@ptr_2 ])=[gdp：@ptr_16@ptr_18 ]",
+	"gold": "?"
+	
+}
+{
+    "input": "对  应  增  速 184 %  、 30 %  、 30 %  、 20 %  。",
+    "output_self": "\"谓词：利润增速\" ([产品：@ptr_3@ptr_4 ])=[百分数：@ptr_5@ptr_6 ]",
+    "output_normal": "\"谓词：SLR\" ([地点：@ptr_3 ],[时间段：@ptr_5@ptr_6 ],[百分数：@ptr_11@ptr_15 ])=[百分数：@ptr_5@ptr_6 ]",
+	"gold": "?"
+}
+{
+    "input": "据  智  妍  咨  询  ， 2021 年  立  昂  微  国  内  市  占  率  达 17 %  。",
+    "output_self": "\"谓词：市占率\" ([行业：@ptr_2@ptr_5 ],[地点：@ptr_9@ptr_11 ],[时间：@ptr_7@ptr_8 ])=[百分数：@ptr_18@ptr_19 ]",
+    "output_normal": "\"谓词：CR4\" ([行业：@ptr_2@ptr_5 ],[地点：@ptr_9@ptr_11 ],[时间：@ptr_7@ptr_8 ])=[百分数：@ptr_18@ptr_19 ]"
+	"gold": "谓词：市占率（[行业：None], ...）"
+}
+{
+    "input": "相  当  于 17 年 45 倍  的  动  态  市  盈  率  。",
+    "output_self": "\"谓词：市占率\" ([行业：@ptr_9@ptr_10 ])=[百分数：@ptr_6@ptr_7 ]",
+    "output_normal": "\"谓词：储蓄回报率\" ([地点：@ptr_9@ptr_10 ],[时间：@ptr_4@ptr_5 ])=[百分数：@ptr_6@ptr_7 ]"，
+	"gold": "?"
+}
+{
+    "input": "当  前  股  价  对  应  的 PS 分  别  为 26.3 、 16.6 、 12.3 倍  。",
+    "output_self": "\"谓词：CPI\" ([产品：@ptr_8@ptr_8 ],[时间：@ptr_1фан ])=[百分数：@ptr_12@ptr_17 ]",
+    "output_normal": "\"谓词：SLR\" ([地点：@ptr_8@ptr_8 ],[时间：@ptr_8@ptr_17 ])=[百分数：@ptr_12@ptr_17 ]",
+	"gold": "PS或股价（[产品：None]）"
+	
+}
+{
+    "input": "据 Yole 预  测  ，  全  球  碳  化  硅  器  件  市  场  将  从 2021 年 10 亿  美  元  的  规  模  增  长  至 2027 年  的 60 亿  美  元  以  上  ，  复  合  增  速  将  高  达 34 %  。",
+    "output_self": "\"谓词：CR4\" ([行业：@ptr_8@ptr_12 ],[地点：@ptr_19@ptr_7 ],[时间：@ptr_17@ptr_17 ])=[gdp：@ptr_19@ptr_46 ], \"谓词：经济增长速度\" ([地点：@ptr_31@ptr_40 ],[产品：@ptr_31@ptr_32 ],[时间：@ptr_31@ptr_32 ])=[百分数：@ptr_46@ptr_46 ]",
+    "output_normal": "\"谓词：市场规模\" ([行业：@ptr_8@ptr_12 ],[时间：@ptr_17@ptr_18 ])=[百分数：@ptr_46@ptr_47 ], \"谓词：经济增长速度\" ([地点：@ptr_6@ptr_22 ],[时间段：@ptr_17@ptr_18 ],[百分数：@ptr_29@ptr_30 ])=[百分数：@ptr_46@ptr_47 ]",
+	"gold": "output_normal差不多"
+}
+{
+    "input": "预  计  某  公  司  在 2022 - 2023 年  的  毛  利  率  在 30 %  - 40 %  以  上  。",
+    "output_self": "\"谓词：毛利率\" ([公司：@ptr_3@ptr_5 ],[时间段：@ptr_7@ptr_8 ],[百分数：@ptr_9@ptr_10 ])=[百分数：@ptr_16@ptr_17 ]",
+    "output_normal": "\"谓词：毛利率\" ([公司：@ptr_3@ptr_5 ],[时间段：@ptr_7@ptr_10 ],[百分数：@ptr_9@ptr_10 ])=[百分数：@ptr_16@ptr_20 ]"，
+	"gold": "output_normal，缺个时段"
+}
+{
+    "input": "2019 年  海  光  信  息  毛  利  率  为 37.31 %  。",
+    "output_self": "\"谓词：毛利率\" ([行业：@ptr_5@ptr_6 ],[地点：@ptr_3@ptr_4 ],[年数：@ptr_1@ptr_2 ])=[百分数：@ptr_11@ptr_12 ]",
+    "output_normal": "\"谓词：毛利率\" ([公司：@ptr_3@ptr_4 ])=[百分数：@ptr_11@ptr_12 ]",
+	"gold": "output_normal，公司可以优化"
+}
+{
+    "input": "预  计  未  来 1 - 3 年  内  ，  我  国 8 英  寸  产  能  每  月  将  新  增 280 万  片  ， 12 英  寸  产  能  每  月  将  新  增 502 万  片  。",
+    "output_self": "\"谓词：产量\" ([产品：@ptr_13@ptr_15 ],[时间：@ptr_3@ptr_8 ])=[数目：@ptr_23@ptr_23 ]",
+    "output_normal": "\"谓词：储备量\" ([国家：@ptr_11@ptr_12 ],[产品：@ptr_13@ptr_25 ],[时间：@ptr_5@ptr_8 ])=[数目：@ptr_23@ptr_37 ]",
+	"gold": "output_self*2"
+}
+{
+    "input": "2001 - 2010 年  日  本  德  山  多  晶  硅  业  务  的  经  营  情  况  显  示  ，  在 2005 年  光  伏  需  求  爆  发  前  ，  其  营  业  利  润  率  为 10 %  左  右  。",
+    "output_self": "\"谓词：营业收入\" ([行业：@ptr_8@ptr_11 ],[地点：@ptr_5@ptr_7 ],[时间段：@ptr_1@ptr_2 ],[百分数：@ptr_3@ptr_4 ])=[百分数：@ptr_40@ptr_41 ], \"谓词：营业收入\" ([行业：@ptr_25@ptr_26 ],[地点：@ptr_25@ptr_26 ],[时间：@ptr_23@ptr_24 ])=[百分数：@ptr_40@ptr_41 ]",
+    "output_normal": "\"谓词：市场经济状况\" ([行业：@ptr_25@ptr_26 ],[时间：@ptr_23@ptr_24 ])=[百分数：@ptr_40@ptr_41 ], \"谓词：市场经济状况\" ([行业：@ptr_10@ptr_11 ],[地点：@ptr_5@ptr_9 ],[时间段：@ptr_1@ptr_4 ],[百分数：@ptr_3@ptr_4 ])=[百分数：@ptr_40@ptr_41 ]",
+	"gold": "output_self?"
+}
+{
+    "input": "一  方  面  ， 2019 年  英  飞  凌  占  据 11.9 %  的  全  球  市  场  份  额  ，  为  全  球  最  高  。",
+    "output_self": "\"谓词：CR4\" ([行业：@ptr_17@ptr_18 ],[地点：@ptr_7@ptr_9 ],[时间：@ptr_5@ptr_6 ])=[百分数：@ptr_12@ptr_13 ]",
+    "output_normal": "\"谓词：CR4\" ([行业：@ptr_23@ptr_26 ],[地点：@ptr_7@ptr_9 ],[时间：@ptr_5@ptr_6 ])=[百分数：@ptr_12@ptr_13 ]"
+	"gold": "这个是谓词的问题，就不该有CR4，而是CRn"
+}
+{
+    "input": "预  计  到 2027 年  ，  全  球  激  光  雷  达  市  场  规  模  有  望  成  长  到 63 亿  美  元  。",
+    "output_self": "\"谓词：市场规模\" ([行业：@ptr_9@ptr_12 ],[时间：@ptr_4@ptr_5 ])=[资金：@ptr_22@ptr_25 ]",
+    "output_normal": "\"谓词：市场规模\" ([行业：@ptr_7@ptr_12 ],[时间：@ptr_4@ptr_5 ])=[大小：@ptr_22@ptr_20 ]",
+	"gold": "output_self"
+}
+{
+    "input": "2019 年  度  ，  时  代  电  气  向  中  车  集  团  控  制  的  企  业  销  售  商  品  及  提  供  劳  务  金  额  为 785 , 452.62 万  元  ，  占  营  业  收  入  的  比  例  为 48.17 %  。",
+    "output_self": "\"谓词：营业收入\" ([公司：@ptr_10@ptr_18 ])=[资金：@ptr_33@ptr_35 ]",
+    "output_normal": "\"谓词：营业收入\" ([公司：@ptr_10@ptr_15 ])=[资金：@ptr_31@ptr_35 ]",
+	"gold": "懒得数33，不过公司是output_self"
+}
+{
+    "input": "IPG 2023 年 Q2 单  季  度  毛  利  率  同  比 +2.5pp 。",
+    "output_self": "\"谓词：SLR\" ([地点：@ptr_1@ptr_2 ],[时间：@ptr_3@ptr_4 ])=[百分数：@ptr_14@ptr_15 ]",
+    "output_normal": "\"谓词：毛利率\" ([公司：@ptr_1@ptr_2 ],[时间：@ptr_2@ptr_4 ])=[百分数：@ptr_14@ptr_15 ]",
+	"gold": "None"
+}
+{
+    "input": "旺  宏  市  占  率  为 24 %  ，  在 NOR Flash 市  场  排  名  第  二  。",
+    "output_self": "\"谓词：市占率\" ([行业：@ptr_11@ptr_12 ],[地点：@ptr_1@ptr_2 ],[时间：@ptr_11фан ])=[百分数：@ptr_7@ptr_8 ]",
+    "output_normal": "\"谓词：CR4\" ([行业：@ptr_11@ptr_12 ],[地点：@ptr_1@ptr_2 ],[时间：@ptr_11@ptr_18 ])=[百分数：@ptr_7@ptr_8 ]",
+	"gold": "差不多，地点都不对"
+}
+{
+    "input": "我  们  预  计  江  海  股  份 2023 年  归  母  净  利  润  为 8.41 亿  元  。",
+    "output_self": "\"谓词：扣非归母净利润\" ([公司：@ptr_5@ptr_8 ],[时间：@ptr_9@ptr_10 ])=[资金：@ptr_17@ptr_19 ]",
+    "output_normal": "\"谓词：扣非归母净利润\" ([公司：@ptr_5@ptr_8 ],[时间：@ptr_9@ptr_10 ])=[资金：@ptr_17@ptr_19 ]",
+	"gold": "怀疑建模缺了归母净利润？both"
+}
+{
+    "input": "因  需  求  疲  软  预  计 2022 年  全  年  中  国  电  感  器  件  进  口  量  同  比  会  有  所  下  滑  。",
+    "output_self": "\"谓词：进口量\" ([公司：@ptr_12@ptr_13 ],[产品：@ptr_14@ptr_17 ],[时间：@ptr_8@ptr_9 ])=[升降：@ptr_26@ptr_27 ]",
+    "output_normal": "\"谓词：进口量\" ([公司：@ptr_12@ptr_13 ])=[供应量：@ptr_4@ptr_5 ]"
+}
+{
+    "input": "一  辆  售  价  万  元  的  纯  电  动  汽  车  动  力  总  成  售  价  约 1.1 万  元  。",
+    "output_self": "\"谓词：工业产值\" ([地点：@ptr_8@ptr_2 ],[时间：@ptr_1@ptr_2 ])=[资金：@ptr_20@ptr_22 ]",
+    "output_normal": "\"谓词：生产资料价格\" ([公司：@ptr_8@ptr_17 ])=[资金：@ptr_20@ptr_22 ]"
+}
+{
+    "input": "截  至  最  新  数  据  ，  美  国  仅  科  锐  一  家  公  司  的 SiC 晶  圆  产  量  就  占  据  全  球 60 %  以  上  。",
+    "output_self": "\"谓词：专利数量或知识产权拥有者比例\" ([行业：@ptr_18@ptr_20 ],[地点：@ptr_8@ptr_12 ],[时间：@ptr_7@ptr_29 ])=[百分数：@ptr_28@ptr_29 ]",
+    "output_normal": "\"谓词：CR8\" ([行业：@ptr_18@ptr_20 ],[地点：@ptr_8@ptr_12 ],[时间：@ptr_28@ptr_4 ])=[百分数：@ptr_28@ptr_29 ]"
+}
+{
+    "input": "2010 年  顺  络  电  子  毛  利  率  同  比  增  长 4 个  百  分  点  ，  达  到 46 %  。",
+    "output_self": "\"谓词：毛利率\" ([公司：@ptr_3@ptr_4 ])=[百分数：@ptr_22@ptr_23 ]",
+    "output_normal": "\"谓词：毛利率\" ([公司：@ptr_3@ptr_4 ])=[百分数：@ptr_22@ptr_23 ]"
+}
+{
+    "input": "2019 年  和 2020 年  硅  烷  科  技  利  润  增  速  均  超  过 100 %  。",
+    "output_self": "\"谓词：利润增速\" ([公司：@ptr_6@ptr_9 ])=[百分数：@ptr_17@ptr_18 ]",
+    "output_normal": "\"谓词：利润增速\" ([公司：@ptr_6@ptr_7 ])=[百分数：@ptr_17@ptr_18 ]"
+}
+{
+    "input": "住  友  电  工  目  标 2022 年  实  现 ROE 达  到 8 %  以  上  。",
+    "output_self": "\"谓词：CR8\" ([行业：@ptr_3@ptr_4 ],[地点：@ptr_1@ptr_2 ],[时间：@ptr_7@ptr_8 ])=[百分数：@ptr_14@ptr_15 ]",
+    "output_normal": "\"谓词：CR8\" ([行业：@ptr_3@ptr_4 ],[地点：@ptr_1@ptr_2 ],[时间：@ptr_7@ptr_8 ])=[百分数：@ptr_14@ptr_15 ]"
+}
+{
+    "input": "推  荐  斯  达  半  导  、  东  微  半  导  、  兆  易  创  新  等  。",
+    "output_self": "\"谓词：市场创新率\" ([行业：@ptr_13@ptr_14 ],[地点：@ptr_3@ptr_6 ],[时间：@ptr_136,0.1 ])=[程度：@ptr_15@ptr_16 ]",
+    "output_normal": "None"
+}
+{
+    "input": "到 2025 年  ，  新  能  源  车  用  薄  膜  电  容  市  场  空  间  将  超  过 65 亿  元  。",
+    "output_self": "\"谓词：工业产值\" ([地点：@ptr_8@ptr_13 ],[时间：@ptr_2@ptr_3 ])=[资金：@ptr_21@ptr_23 ]",
+    "output_normal": "\"谓词：产业空心化程度\" ([行业：@ptr_8@ptr_13 ],[地点：@ptr_5@ptr_7 ],[时间：@ptr_2@ptr_3 ])=[工资：@ptr_21@ptr_23 ]"
+}
+{
+    "input": "行  业  快  速  成  长  的  背  后  是  仅  为 20 %  左  右  的  国  产  配  套  率  。",
+    "output_self": "\"谓词：经济增长趋势速度\" ([地点：@ptr_18@ptr_22 ],[时间：@ptr_136,0.1 ])=[百分数：@ptr_13@ptr_14 ]",
+    "output_normal": "\"谓词：SLR\" ([地点：@ptr_1@ptr_6 ],[时间：@ptr_1@ptr_4 ])=[百分数：@ptr_13@ptr_14 ]"
+}
+{
+    "input": "我  们  预  计  某  公  司 2018 年  实  现  归  母  净  利  润 32.85 亿  元  ，  对  应 EPS 为 0.81 元  ，  对  应 PE 为 17.89 倍  。",
+    "output_self": "\"谓词：归母净利润\" ([公司：@ptr_12@ptr_7 ],[时间：@ptr_8@ptr_9 ])=[EPS：@ptr_17@ptr_19 ]",
+    "output_normal": "\"谓词：扣非归母净利润\" ([公司：@ptr_5@ptr_7 ],[时间：@ptr_8@ptr_9 ])=[资金：@ptr_25@ptr_19 ]"
+}
+{
+    "input": "对  应  晶  盛  机  电 2022 年  的 PE 为 30 倍  。",
+    "output_self": "\"谓词：CPI\" ([产品：@ptr_3@ptr_6 ],[时间：@ptr_7@ptr_8 ])=[百分数：@ptr_12@ptr_13 ]",
+    "output_normal": "\"谓词：PPI\" ([产品：@ptr_3@ptr_6 ],[时间：@ptr_7@ptr_8 ])=[百分数：@ptr_12@ptr_13 ]"
+}
+{
+    "input": "新  能  源  薄  膜  电  容  产  品  毛  利  率  预  计  提  升  。",
+    "output_self": "\"谓词：毛利率\" ([公司：@ptr_4@ptr_3 ])=[升降：@ptr_15@ptr_16 ]",
+    "output_normal": "\"谓词：金融指标市场预期值变化\" ([金融指标：@ptr_4@ptr_7 ])=[升降：@ptr_15@ptr_16 ]"
+}
+{
+    "input": "以  陶  瓷  手  机  背  板  为  例  ，  单  片  成  本  已  由  最  初  的 500 元  左  右  降  至  目  前  的 100 - 200 元  。",
+    "output_self": "\"谓词：成本价格\" ([产品：@ptr_2@ptr_5 ])=[价格：@ptr_29@ptr_32 ]",
+    "output_normal": "\"谓词：价格\" ([产品：@ptr_2@ptr_7 ],[时间：@ptr_20@ptr_21 ])=[价格：@ptr_29@ptr_32 ]"
+}
+{
+    "input": "2022 年  德  龙  激  光  实  现  营  业  收  入 5.68 亿  元  。",
+    "output_self": "\"谓词：营业收入\" ([行业：@ptr_13@ptr_10 ],[地点：@ptr_3@ptr_6 ],[时间：@ptr_1@ptr_2 ])=[工资：@ptr_13@ptr_15 ]",
+    "output_normal": "\"谓词：营业收入\" ([公司：@ptr_3@ptr_6 ])=[资金：@ptr_13@ptr_15 ]"
+}
+{
+    "input": "2017 年 10 月 9 日  ，  新  增  产  能  后  ，  中  环  股  份  单  晶  硅  总  产  能  达  到 23GW 。",
+    "output_self": "\"谓词：CR8\" ([行业：@ptr_18@ptr_23 ],[品牌：@ptr_14@ptr_17 ],[时间：@ptr_1@ptr_6 ])=[数目：@ptr_25@ptr_25 ]",
+    "output_normal": "\"谓词：上游产品\" ([产品：@ptr_18@ptr_23 ])=[数目：@ptr_26@ptr_26 ]"
+}
+{
+    "input": "年  报  数  据  显  示  ，  村  田  电  子  上  一  财  年  在  中  国  大  陆  的  销  售  额  为 9939 亿  日  元  ，  占  其  总  收  入  的 54.9 %  。",
+    "output_self": "\"谓词：SLR\" ([地点：@ptr_17@ptr_20 ],[时间：@ptr_12@ptr_15 ])=[gdp：@ptr_26@ptr_29 ]",
+    "output_normal": "\"谓词：GDP\" ([地点：@ptr_17@ptr_9 ],[时间：@ptr_14@ptr_15 ])=[gdp：@ptr_26@ptr_29 ]"
+}
+{
+    "input": "杰  普  特 22 年 Q3 毛  利  率  同  比  下  降 1.61PCT 。",
+    "output_self": "\"谓词：CR4\" ([行业：@ptr_6@ptr_7 ],[地点：@ptr_1@ptr_3 ],[时间：@ptr_4@ptr_5 ])=[百分数：@ptr_12@ptr_15 ]",
+    "output_normal": "\"谓词：SLR\" ([地点：@ptr_1@ptr_3 ],[时间：@ptr_4@ptr_5 ])=[百分数：@ptr_12@ptr_15 ]"
+}
+{
+    "input": "联  创  光  电  作  为  行  业  龙  头  ，  有  望  充  分  受  益  行  业  的  快  速  增  长  ，  成  长  空  间  可  观  。",
+    "output_self": "None",
+    "output_normal": "None"
+}
+{
+    "input": "我  们  维  持  铂  科  新  材 2025 年  归  母  净  利  润  预  测  为 6.09 亿  元  。",
+    "output_self": "\"谓词：扣非归母净利润\" ([公司：@ptr_7@ptr_8 ])=[资金：@ptr_19@ptr_21 ]",
+    "output_normal": "\"谓词：归母净利润\" ([公司：@ptr_5@ptr_8 ])=[资金：@ptr_19@ptr_21 ]"
+}
+{
+    "input": "太  阳  诱  电  是  全  球  领  先  的  被  动  元  件  制  造  商  。",
+    "output_self": "\"谓词：下游产品\" ([产品：@ptr_1@ptr_4 ])=[产品：@ptr_11@ptr_16 ]",
+    "output_normal": "\"谓词：上游产品\" ([产品：@ptr_1@ptr_4 ])=[产品：@ptr_1@ptr_4 ]"
+}
+{
+    "input": "根  据 0mdia 的  数  据  ，  全  球  固  定  网  络  和  移  动  网  络  数  据  量  将  从 2018 年  的 130 万 PB 增  长  至 2024 年  的 576 万 PB ， 18 - 24 年  复  合  年  增  长  率  达 28.7 %  。",
+    "output_self": "\"谓词：GDP\" ([地点：@ptr_11@ptr_10 ],[时间：@ptr_25@ptr_28 ])=[数目：@ptr_28@ptr_28 ], \"谓词：市场增长率\" ([行业：@ptr_11@ptr_19 ],[地点：@ptr_36@ptr_37 ],[时间：@ptr_36@ptr_37 ])=[数目：@ptr_37@ptr_37 ], \"谓词：市场增长率\" ([行业：@ptr_45@ptr_46 ],[地点：@ptr_45@ptr_46 ],[时间：@ptr_47@ptr_44 ])=[百分数：@ptr_51@ptr_52 ]",
+    "output_normal": "\"谓词：SLR\" ([地点：@ptr_11@ptr_11 ],[时间：@ptr_25@ptr_34 ])=[数目：@ptr_28@ptr_52 ], \"谓词：SLR\" ([地点：@ptr_41@ptr_32 ],[时间段：@ptr_25@ptr_34 ],[人数：@ptr_34@ptr_34 ])=[人数：@ptr_52@ptr_52 ]"
+}
+{
+    "input": "年  报  数  据  显  示  ， TDK 上  一  财  年  电  感  销  售  额  为 1799.4 亿  日  元  ，  占  总  收  入  之  比  为 9.46 %  。",
+    "output_self": "\"谓词：SLR\" ([地点：@ptr_24@ptr_22 ],[时间：@ptr_24@ptr_12 ])=[gdp：@ptr_19@ptr_22 ]",
+    "output_normal": "\"谓词：SLR\" ([地点：@ptr_7@ptr_10 ],[时间：@ptr_11@ptr_12 ])=[百分数：@ptr_31@ptr_32 ]"
+}
+{
+    "input": "海  外  上  市  企  业  建  议  关  注  大  全  新  能  源  ( DQ.N ,  未  评  级  )  。",
+    "output_self": "\"谓词：社会福利压力\" ([地点：@ptr_11@ptr_12 ],[资源：@ptr_17@ptr_23 ],[时间：@ptr_126,0.1 ])=[强弱：@ptr_8@ptr_8 ]",
+    "output_normal": "None"
+}
+{
+    "input": "美  新  半  导  体  在 2018 年  的  业  绩  承  诺  为  净  利  润 1.1 亿  元  。",
+    "output_self": "\"谓词：扣非归母净利润\" ([行业：@ptr_3@ptr_5 ],[地点：@ptr_1@ptr_2 ],[时间：@ptr_7@ptr_8 ])=[资金：@ptr_18@ptr_20 ]",
+    "output_normal": "\"谓词：净融资额\" ([行业：@ptr_3@ptr_5 ],[时间：@ptr_7@ptr_8 ])=[资金：@ptr_18@ptr_20 ]"
+}
+{
+    "input": "我  们  预  计  公  司 2019 年  实  现  归  母  净  利  润 8.54 亿  元  。",
+    "output_self": "\"谓词：归母净利润\" ([公司：@ptr_11@ptr_6 ],[时间：@ptr_7@ptr_8 ])=[资金：@ptr_16@ptr_18 ]",
+    "output_normal": "\"谓词：扣非归母净利润\" ([公司：@ptr_5@ptr_6 ],[时间：@ptr_7@ptr_8 ])=[资金：@ptr_16@ptr_18 ]"
+}
+{
+    "input": "2022 年  三  季  度  末  新  洁  能  存  货  水  平  为 4.01 亿  元  ，  与 2022 年  二  季  度  末  基  本  持  平  。",
+    "output_self": "\"谓词：居民贷款量\" ([地点：@ptr_7@ptr_9 ],[时间段：@ptr_1@ptr_5 ],[资金：@ptr_20@ptr_24 ])=[资金：@ptr_15@ptr_17 ]",
+    "output_normal": "\"谓词：储备量\" ([国家：@ptr_7@ptr_9 ],[产品：@ptr_7@ptr_9 ],[时间：@ptr_1@ptr_2 ])=[gdp：@ptr_15@ptr_17 ]"
+}
+{
+    "input": "我  们  维  持  晶  盛  机  电 2024 年  的  归  母  净  利  润  为 48.19 亿  元  。",
+    "output_self": "\"谓词：归母净利润\" ([公司：@ptr_5@ptr_8 ])=[资金：@ptr_18@ptr_20 ]",
+    "output_normal": "\"谓词：归母净利润\" ([公司：@ptr_5@ptr_8 ])=[资金：@ptr_18@ptr_20 ]"
+}
+{
+    "input": "我  们  预  计 2022 / 2023 / 2024 年  海  光  信  息 7000 系  列  的  营  业  收  入  分  别  为 32.15 、 49.95 、 66.51 亿  元  ，  增  速  分  别  为 114 %  、 55 %  、 33 %  ，  毛  利  率  分  别  为 68.70 %  、 68.79 %  、 69.03 %  。",
+    "output_self": "\"谓词：营业收入\" ([行业：@ptr_13@ptr_15 ],[地点：@ptr_11@ptr_12 ],[时间段：@ptr_5@ptr_6 ],[资金：@ptr_9@ptr_10 ])=[资金：@ptr_26@ptr_32 ], \"谓词：利润增速\" ([公司：@ptr_34@ptr_34 ])=[百分数：@ptr_39@ptr_40 ], \"谓词：毛利率\" ([公司：@ptr_48@ptr_48 ])=[百分数：@ptr_54@ptr_55 ]",
+    "output_normal": "\"谓词：营业收入\" ([公司：@ptr_11@ptr_12 ])=[资金：@ptr_26@ptr_32 ], \"谓词：市场增长率\" ([行业：@ptr_34@ptr_35 ],[地点：@ptr_11@ptr_12 ],[时间段：@ptr_5@ptr_10 ],[百分数：@ptr_9@ptr_10 ])=[百分数：@ptr_39@ptr_40 ], \"谓词：毛利率\" ([公司：@ptr_48@ptr_50 ],[时间段：@ptr_5@ptr_10 ],[百分数：@ptr_9@ptr_10 ])=[百分数：@ptr_57@ptr_61 ]"
+}
+{
+    "input": "中  国  市  场  的  年  收  入  增  长  最  为  强  劲  。",
+    "output_self": "\"谓词：收入增长率\" ([公司：@ptr_1@ptr_2 ])=[强弱：@ptr_13@ptr_13 ]",
+    "output_normal": "\"谓词：经济复苏力度\" ([地点：@ptr_1@ptr_2 ],[时间：@ptr_6@ptr_6 ])=[强弱：@ptr_13@ptr_13 ]"
+}
+{
+    "input": "2019 年  公  司  投  产  了  年  产 6 , 000 吨  颗  粒  硅  的  徐  州  生  产  基  地  。",
+    "output_self": "\"谓词：产量\" ([产品：@ptr_14@ptr_16 ],[时间：@ptr_1@ptr_2 ])=[数目：@ptr_10@ptr_10 ]",
+    "output_normal": "\"谓词：GDP\" ([地点：@ptr_18@ptr_19 ],[时间：@ptr_1@ptr_2 ])=[gdp：@ptr_10@ptr_13 ]"
+}
+{
+    "input": "新  洁  能 2023 年  前  三  季  度  净  利  率 25.51 %  。",
+    "output_self": "\"谓词：净利率\" ([行业：@ptr_2@ptr_3 ],[地点：@ptr_1@ptr_1 ],[时间：@ptr_4@ptr_9 ])=[百分数：@ptr_13@ptr_14 ]",
+    "output_normal": "\"谓词：SLR\" ([地点：@ptr_1@ptr_3 ],[时间：@ptr_4@ptr_5 ])=[百分数：@ptr_13@ptr_14 ]"
+}
+{
+    "input": "晶  盛  机  电  未  来  成  长  确  定  性  可  期  。",
+    "output_self": "\"谓词：行业生命周期状况\" ([行业：@ptr_1@ptr_4 ],[时间：@ptr_56,0.1 ])=[周期性：@ptr_12@ptr_13 ]",
+    "output_normal": "\"谓词：行业生命周期状况\" ([行业：@ptr_1@ptr_4 ],[时间：@ptr_5@ptr_8 ])=[周期性：@ptr_12@ptr_13 ]"
+}
+{
+    "input": "新  洁  能 2021 年  上  半  年  归  母  净  利  润  同  比  增  加 215.29 %  。",
+    "output_self": "\"谓词：归母净利润\" ([行业：@ptr_2@ptr_3 ],[地点：@ptr_1@ptr_1 ],[时间段：@ptr_4@ptr_5 ],[百分数：@ptr_6@ptr_5 ])=[百分数：@ptr_18@ptr_19 ]",
+    "output_normal": "\"谓词：归母净利润\" ([公司：@ptr_1@ptr_3 ],[时间段：@ptr_4@ptr_5 ],[百分数：@ptr_4@ptr_5 ])=[百分数：@ptr_18@ptr_19 ]"
+}
+{
+    "input": "预  测  四  方  光  电 2022 - 2024 年  的  归  母  净  利  润  分  别  为 2.76 / 3.67 / 4.96 亿  元  。",
+    "output_self": "\"谓词：归母净利润\" ([行业：@ptr_5@ptr_6 ],[地点：@ptr_3@ptr_4 ],[时间段：@ptr_7@ptr_8 ],[资金：@ptr_9@ptr_10 ])=[资金：@ptr_20@ptr_26 ]",
+    "output_normal": "\"谓词：扣非归母净利润\" ([公司：@ptr_3@ptr_6 ])=[资金：@ptr_20@ptr_26 ]"
+}
+{
+    "input": "公  司  努  力  打  造  全  球  领  先  的  硅  材  料  供  应  商  。",
+    "output_self": "None",
+    "output_normal": "None"
+}
+{
+    "input": "赛  迪  顾  问  预  计  ，  中  国  互  联  网  行  业  数  据  中  心  市  场  规  模  到 2023 年  将  达  到 1796.2 亿  元  。",
+    "output_self": "\"谓词：市场规模\" ([行业：@ptr_10@ptr_12 ],[时间：@ptr_24@ptr_25 ])=[资金：@ptr_29@ptr_31 ]",
+    "output_normal": "\"谓词：市场规模\" ([行业：@ptr_8@ptr_12 ],[时间：@ptr_24@ptr_25 ])=[资金：@ptr_29@ptr_31 ]"
+}
+{
+    "input": "从  现  在  起  到 2023 年  ，  未  来 3 年  复  合  增  长  率  将  达  到 15 %  。",
+    "output_self": "\"谓词：SLR\" ([地点：@ptr_9@ptr_14 ],[时间：@ptr_6@ptr_7 ])=[百分数：@ptr_21@ptr_22 ]",
+    "output_normal": "\"谓词：SLR\" ([地点：@ptr_9 ],[时间段：@ptr_6@ptr_7 ],[百分数：@ptr_6@ptr_7 ])=[百分数：@ptr_21@ptr_22 ]"
+}
+{
+    "input": "2021 年  立  昂  微  定  向  增  发  募  集  资  金  总  额 52 亿  元  。",
+    "output_self": "\"谓词：净融资额\" ([行业：@ptr_3@ptr_9 ],[时间：@ptr_1@ptr_2 ])=[资金：@ptr_16@ptr_18 ]",
+    "output_normal": "\"谓词：债券收益\" ([地点：@ptr_3@ptr_4 ],[时间：@ptr_1@ptr_2 ])=[资金：@ptr_16@ptr_18 ]"
+}
+{
+    "input": "2020 年  中  国  智  能  照  明  市  场  规  模  为 294 亿  元  。",
+    "output_self": "\"谓词：市场规模\" ([行业：@ptr_5@ptr_8 ],[时间：@ptr_1@ptr_2 ])=[资金：@ptr_14@ptr_16 ]",
+    "output_normal": "\"谓词：市场规模\" ([行业：@ptr_5@ptr_8 ],[时间：@ptr_1@ptr_2 ])=[gdp：@ptr_14@ptr_16 ]"
+}
+{
+    "input": "2020 年  我  国  军  用  红  外  热  成  像  市  场  规  模  达  到 42.2 亿  美  元  。",
+    "output_self": "\"谓词：市场规模\" ([行业：@ptr_5@ptr_11 ],[时间：@ptr_1@ptr_2 ])=[资金：@ptr_18@ptr_21 ]",
+    "output_normal": "\"谓词：市场规模\" ([行业：@ptr_5@ptr_11 ],[时间：@ptr_1@ptr_2 ])=[gdp：@ptr_18@ptr_21 ]"
+}
+{
+    "input": "2019 年  我  国  新  能  源  汽  车  渗  透  率  为 4.7 %  。",
+    "output_self": "\"谓词：渗透率\" ([产品：@ptr_3@ptr_9 ],[时间：@ptr_1@ptr_2 ])=[百分数：@ptr_14@ptr_15 ]",
+    "output_normal": "\"谓词：渗透率\" ([产品：@ptr_8@ptr_9 ],[时间：@ptr_1@ptr_2 ])=[百分数：@ptr_14@ptr_15 ]"
+}
+{
+    "input": "比  亚  迪  半  导  体  市  占  率  稳  居  国  内  市  场  第  三  ，  占  比 14.5 %  。",
+    "output_self": "\"谓词：市占率\" ([行业：@ptr_4@ptr_6 ],[地点：@ptr_1@ptr_3 ],[时间：@ptr_12фан ])=[百分数：@ptr_21@ptr_22 ]",
+    "output_normal": "\"谓词：CR4\" ([行业：@ptr_4@ptr_6 ],[地点：@ptr_1@ptr_3 ],[时间：@ptr_4@ptr_6 ])=[百分数：@ptr_21@ptr_22 ]"
+}
+{
+    "input": "ADAS 将  成  为  全  球  激  光  雷  达  市  场  的  主  要  增  长  驱  动  力  。",
+    "output_self": "\"谓词：CR4\" ([行业：@ptr_6@ptr_9 ],[地点：@ptr_6@ptr_9 ],[时间：@ptr_6@ptr_1 ])=[百分数：@ptr_13@ptr_1 ]",
+    "output_normal": "\"谓词：SLR\" ([地点：@ptr_7@ptr_10 ],[时间：@ptr_10@ptr_1 ])=[大小：@ptr_4@ptr_1 ]"
+}
+{
+    "input": "实  现  利  润  总  额 401 亿  元  。",
+    "output_self": "\"谓词：利润\" ([国家：@ptr_3@ptr_6 ])=[资金：@ptr_7@ptr_9 ]",
+    "output_normal": "\"谓词：利润\" ([公司：[产品：@ptr_4 ])=[资金：@ptr_7@ptr_9 ]"
+}
+{
+    "input": "2023 年  中  国  电  子  陶  瓷  行  业  市  场  规  模  或  突  破 1145 亿  元  。",
+    "output_self": "\"谓词：市场规模\" ([行业：@ptr_5@ptr_8 ],[时间：@ptr_1@ptr_2 ])=[资金：@ptr_18@ptr_20 ]",
+    "output_normal": "\"谓词：市场规模\" ([行业：@ptr_5@ptr_8 ],[时间：@ptr_1@ptr_2 ])=[资金：@ptr_18@ptr_20 ]"
+}
+{
+    "input": "8 英  寸  晶  圆  设  备  短  缺  及  芯  片  涨  价  幅  度  有  限  也  限  制 8 英  寸  品  圆  厂  扩  产  。",
+    "output_self": "\"谓词：供应量状况\" ([公司：@ptr_15@ptr_21 ])=[供应量：@ptr_8@ptr_9 ]",
+    "output_normal": "\"谓词：供应量状况\" ([公司：@ptr_17@ptr_20 ],[产品：@ptr_1@ptr_3 ],[时间：@ptr_1@ptr_3 ])=[供应量：@ptr_8@ptr_9 ]"
+}
+{
+    "input": "2020 年  晶  盛  机  电  归  母  净  利  润  同  比  增  长 34 %  。",
+    "output_self": "\"谓词：归母净利润\" ([公司：@ptr_12@ptr_13 ])=[百分数：@ptr_16@ptr_17 ]",
+    "output_normal": "\"谓词：归母净利润\" ([公司：@ptr_3@ptr_6 ])=[百分数：@ptr_16@ptr_17 ]"
+}
+{
+    "input": "2023 年 Q1 公  司  的  利  润  表  现  超  预  期  。",
+    "output_self": "\"谓词：金融指标市场预期值变化\" ([金融指标：@ptr_3@ptr_4 ],[公司：[时间：@ptr_1 ],[时间：@ptr_1@ptr_2 ])=[周期性：@ptr_11@ptr_13 ]",
+    "output_normal": "\"谓词：SLR\" ([地点：@ptr_2@ptr_5 ],[时间：@ptr_1@ptr_2 ])=[时限：@ptr_11@ptr_13 ]"
+}
+{
+    "input": "2016 - 2018 年  ，  华  峰  测  控  的  前  十  大  客  户  留  存  率  为 95 %  。",
+    "output_self": "\"谓词：用户留存率\" ([公司：@ptr_6@ptr_9 ])=[百分数：@ptr_20@ptr_21 ]",
+    "output_normal": "\"谓词：用户留存率\" ([公司：@ptr_6@ptr_9 ])=[百分数：@ptr_20@ptr_21 ]"
+}
+{
+    "input": "其  余  板  块  营  收  增  速  大  多  位  于 10 %  到 20 %  之  间  。",
+    "output_self": "\"谓词：利润增速\" ([产品：@ptr_3@ptr_4 ])=[百分数：@ptr_13@ptr_14 ]",
+    "output_normal": "\"谓词：利润增速\" ([公司：@ptr_3@ptr_4 ])=[百分数：@ptr_13@ptr_17 ]"
+}
+{
+    "input": "2020 年 x86 服  务  器  销  售  量  达  到 1180.2 万  台  。",
+    "output_self": "\"谓词：销售量\" ([公司：[产品：@ptr_6 ],[产品：@ptr_4@ptr_6 ],[时间：@ptr_1@ptr_2 ])=[单数：@ptr_12@ptr_14 ]",
+    "output_normal": "\"谓词：销售量\" ([公司：@ptr_3@ptr_4 ],[产品：@ptr_3@ptr_7 ],[时间：@ptr_1@ptr_2 ])=[数目：@ptr_12@ptr_12 ]"
+}
+{
+    "input": "2022 年  前  三  季  度  ，  联  创  光  电  的  归  母  净  利  润 2.68 亿  元  。",
+    "output_self": "\"谓词：归母净利润\" ([公司：@ptr_10@ptr_11 ])=[资金：@ptr_18@ptr_20 ]",
+    "output_normal": "\"谓词：扣非归母净利润\" ([公司：@ptr_8@ptr_9 ])=[资金：@ptr_18@ptr_20 ]"
+}
+{
+    "input": "单  位  衬  底  分  摊  的  成  本  下  降  。",
+    "output_self": "None",
+    "output_normal": "None"
+}
+{
+    "input": "安  世  半  导  体  的  碳  化  硅  二  极  管  产  品  已  经  出  样  。",
+    "output_self": "\"谓词：出货量\" ([公司：@ptr_1@ptr_5 ])=[供应量：@ptr_17@ptr_18 ]",
+    "output_normal": "\"谓词：判别\" ([产品：@ptr_1@ptr_5 ])=[行业：@ptr_3@ptr_12 ]"
+}
+{
+    "input": "预  计 2025 年  全  球  芯  片  电  感  需  求  量  约 206.7 亿  个  。",
+    "output_self": "\"谓词：需求量\" ([公司：@ptr_5@ptr_6 ],[产品：@ptr_7@ptr_10 ],[时间：@ptr_3@ptr_4 ])=[数目：@ptr_15@ptr_15 ]",
+    "output_normal": "\"谓词：需求量\" ([产品：@ptr_7@ptr_10 ],[时间：@ptr_3@ptr_4 ])=[数目：@ptr_15@ptr_15 ]"
+}
+{
+    "input": "目  前  ，  斯  达  半  导  的  研  发  人  员  占  斯  达  半  导  员  工  总  数  的 21.82 %  。",
+    "output_self": "\"谓词：CR4\" ([行业：@ptr_9@ptr_12 ],[地点：@ptr_4@ptr_7 ],[时间：@ptr_1@ptr_2 ])=[百分数：@ptr_23@ptr_24 ]",
+    "output_normal": "\"谓词：CR4\" ([行业：@ptr_6@ptr_7 ],[地点：@ptr_4@ptr_5 ],[时间：@ptr_4@ptr_7 ])=[百分数：@ptr_23@ptr_24 ]"
+}
+{
+    "input": "2020 年  至 2026 年  期  间  ，  全  球  光  模  块  市  场  实  现 13 %  的  年  复  合  增  长  率  。",
+    "output_self": "\"谓词：市场进入率\" ([行业：@ptr_11@ptr_13 ],[地点：@ptr_9@ptr_10 ],[时间段：@ptr_1@ptr_2 ],[百分数：@ptr_4@ptr_5 ])=[百分数：@ptr_18@ptr_19 ]",
+    "output_normal": "\"谓词：市场创新率\" ([行业：@ptr_11@ptr_13 ],[地点：@ptr_9@ptr_10 ],[时间段：@ptr_1@ptr_2 ],[百分数：@ptr_4@ptr_5 ])=[百分数：@ptr_18@ptr_19 ]"
+}
+{
+    "input": "2018 年  我  国 12 英  寸  产  能  缺  口  达 45 万  片  /  月  。",
+    "output_self": "\"谓词：产量\" ([产品：@ptr_5@ptr_7 ],[时间：@ptr_1@ptr_2 ])=[数目：@ptr_13@ptr_13 ]",
+    "output_normal": "\"谓词：产量\" ([产品：@ptr_5@ptr_7 ],[时间：@ptr_1@ptr_2 ])=[数目：@ptr_13@ptr_13 ]"
+}
+{
+    "input": "分  立  器 MOSFET 等  高  端  化  产  品  推  动  未  来  分  立  器  件  市  场  高  速  增  长  。",
+    "output_self": "\"谓词：上游产品\" ([产品：@ptr_1@ptr_3 ])=[产品：@ptr_4@ptr_11 ]",
+    "output_normal": "\"谓词：上游产品\" ([产品：@ptr_1@ptr_3 ])=[产品：@ptr_4@ptr_7 ]"
+}
+{
+    "input": "量  价  双  升  。",
+    "output_self": "\"谓词：通胀水平回落速度\" ([地点：@ptr_1@ptr_4 ],[时间：@ptr_3фан ])=[升降：@ptr_3@ptr_4 ]",
+    "output_normal": "None"
+}
+{
+    "input": "对  应 EPS 分  别  为 1.22 元  /  股  。",
+    "output_self": "\"谓词：摊薄EPS\" ([EPS：@ptr_7@ptr_10 ])=[EPS：@ptr_7@ptr_10 ]",
+    "output_normal": "\"谓词：摊薄EPS\" ([公司：@ptr_7@ptr_10 ])=[EPS：@ptr_7@ptr_8 ]"
+}
+{
+    "input": "2022 - 2024 年  预  计  三  安  光  电  实  现  净  利  润  由 19.98 亿  / 31.72 亿  / 43.17 亿  下  调  为 16.92 亿  / 30.70 亿  / 41.81 亿  。",
+    "output_self": "\"谓词：净储蓄率\" ([地点：@ptr_7@ptr_8 ],[时间段：@ptr_1@ptr_2 ],[资金：@ptr_3@ptr_4 ])=[gdp：@ptr_17@ptr_24 ]",
+    "output_normal": "\"谓词：通货膨胀率\" ([地点：@ptr_7@ptr_8 ],[时间段：@ptr_1@ptr_4 ],[gdp：@ptr_3@ptr_4 ])=[gdp：@ptr_17@ptr_24 ]"
+}
+{
+    "input": "我  们  预  计  新  洁  能 2022 年  营  业  收  入  为 20.55 亿  元  。",
+    "output_self": "\"谓词：营业收入\" ([行业：@ptr_6@ptr_7 ],[地点：@ptr_5@ptr_5 ],[时间：@ptr_8@ptr_9 ])=[工资：@ptr_15@ptr_17 ]",
+    "output_normal": "\"谓词：营业收入\" ([公司：@ptr_5@ptr_7 ])=[资金：@ptr_15@ptr_17 ]"
+}
+{
+    "input": "2017 年  英  飞  凌  的  市  占  率  同  比  提  高 0.3 %  。",
+    "output_self": "\"谓词：市占率\" ([行业：@ptr_7@ptr_12 ],[地点：@ptr_3@ptr_5 ],[时间：@ptr_1@ptr_2 ])=[百分数：@ptr_14@ptr_15 ]",
+    "output_normal": "\"谓词：CR4\" ([行业：@ptr_3@ptr_5 ],[地点：@ptr_3@ptr_5 ],[时间：@ptr_1@ptr_2 ])=[百分数：@ptr_14@ptr_15 ]"
+}
+{
+    "input": "单  晶  致  密  料  的  均  衡  价  格  在 90 元  / kg 以  上  。",
+    "output_self": "\"谓词：价格\" ([产品：@ptr_1@ptr_5 ])=[价格：@ptr_12@ptr_15 ]",
+    "output_normal": "\"谓词：日常用品价格\" ([产品：@ptr_1@ptr_5 ],[时间：@ptr_12@ptr_15 ])=[价格：@ptr_12@ptr_13 ]"
+}
+{
+    "input": "2022 上  半  年  ，  铂  科  新  材  扣  非  归  母  净  利  同  比  增  长 57.74 %  。",
+    "output_self": "\"谓词：归母净利润\" ([行业：@ptr_8@ptr_9 ],[地点：@ptr_6@ptr_7 ],[时间段：@ptr_1@ptr_1 ],[百分数：@ptr_2@ptr_4 ])=[百分数：@ptr_20@ptr_21 ]",
+    "output_normal": "\"谓词：归母净利润\" ([公司：@ptr_6@ptr_7 ])=[百分数：@ptr_20@ptr_21 ]"
+}
+{
+    "input": "预  计  到 2020 年  总  动  力  电  池  产  能  将  达  到 156.5GWH 。",
+    "output_self": "\"谓词：产量\" ([产品：@ptr_6@ptr_10 ],[时间：@ptr_4@ptr_5 ])=[数目：@ptr_16@ptr_16 ]",
+    "output_normal": "\"谓词：产量\" ([产品：@ptr_6@ptr_10 ],[时间段：@ptr_4@ptr_5 ],[数目：@ptr_4@ptr_5 ])=[数目：@ptr_15@ptr_15 ]"
+}
+{
+    "input": "我  们  预  计  海  光  信  息 2023 年  对  应 PE 为 73 倍  。",
+    "output_self": "\"谓词：SLR\" ([地点：@ptr_5@ptr_6 ],[时间：@ptr_9@ptr_10 ])=[百分数：@ptr_15@ptr_16 ]",
+    "output_normal": "\"谓词：SLR\" ([地点：@ptr_5@ptr_6 ],[时间：@ptr_9@ptr_10 ])=[百分数：@ptr_15@ptr_16 ]"
+}
+{
+    "input": "源  杰  科  技  营  业  收  入  及  归  母  净  利  润  有  所  波  动  。",
+    "output_self": "\"谓词：营业收入\" ([行业：@ptr_3@ptr_4 ],[地点：@ptr_1@ptr_2 ],[时间：@ptr_1фан ])=[资金：@ptr_10@ptr_14 ]",
+    "output_normal": "\"谓词：归母净利润\" ([公司：@ptr_1@ptr_4 ])=[资金：@ptr_10@ptr_14 ]"
+}
+{
+    "input": "立  昂  微 12 英  寸  硅  片  在 2021 年  底  已  达  到 15 万  片  /  月  的  产  能  规  模  。",
+    "output_self": "\"谓词：产量\" ([产品：@ptr_1@ptr_8 ],[时间：@ptr_10@ptr_11 ])=[数目：@ptr_16@ptr_16 ]",
+    "output_normal": "\"谓词：产量\" ([产品：@ptr_1@ptr_8 ],[时间：@ptr_10@ptr_11 ])=[数目：@ptr_16@ptr_16 ]"
+}
+{
+    "input": "但  是  中  国 IGBT 行  业  仍  然  大  量  依  赖  进  口  。",
+    "output_self": "\"谓词：进口依赖度\" ([国家：@ptr_3@ptr_4 ],[资源：@ptr_6@ptr_6 ],[时间：@ptr_4@ptr_6 ])=[大小：@ptr_10@ptr_10 ]",
+    "output_normal": "\"谓词：进口依赖度\" ([国家：@ptr_3@ptr_4 ],[资源：@ptr_5@ptr_6 ],[时间：@ptr_4@ptr_6 ])=[大小：@ptr_11@ptr_11 ]"
+}
+{
+    "input": "公  司 2021 年  对  应 EPS 为 0 元  。",
+    "output_self": "\"谓词：摊薄EPS\" ([金融指标：@ptr_1@ptr_10 ],[成本类型：@ptr_1@ptr_2 ],[时间：@ptr_3@ptr_4 ])=[EPS：@ptr_9@ptr_10 ]",
+    "output_normal": "\"谓词：摊薄EPS\" ([公司：@ptr_1@ptr_2 ],[时间：@ptr_3@ptr_4 ])=[EPS：@ptr_9@ptr_10 ]"
+}
+{
+    "input": "预  计  汽  车  用  分  立 IGBT 市  场 2018 年  至 2023 年  的  复  合  年  增  长  率 13.9 %  。",
+    "output_self": "\"谓词：市场增长率\" ([行业：@ptr_9@ptr_6 ],[地点：@ptr_17@ptr_18 ],[时间段：@ptr_11@ptr_12 ],[百分数：@ptr_14@ptr_15 ])=[百分数：@ptr_23@ptr_24 ]",
+    "output_normal": "\"谓词：SLR\" ([地点：@ptr_17@ptr_6 ],[时间段：@ptr_11@ptr_12 ],[百分数：@ptr_14@ptr_15 ])=[百分数：@ptr_23@ptr_24 ]"
+}
+{
+    "input": "90 %  以  上  的  半  导  体  产  品  是  硅  基  材  料  制  造  。",
+    "output_self": "\"谓词：PPI\" ([产品：@ptr_12@ptr_17 ])=[百分数：@ptr_1@ptr_2 ]",
+    "output_normal": "\"谓词：PPI\" ([产品：@ptr_12@ptr_17 ])=[百分数：@ptr_1@ptr_2 ]"
+}
+{
+    "input": "莱  特  光  电 2020 年  在  全  球 OLED 有  机  材  料  市  场  的  市  场  份  额  约 2.46 %  。",
+    "output_self": "\"谓词：CR4\" ([行业：@ptr_3@ptr_4 ],[地点：@ptr_1@ptr_2 ],[时间：@ptr_5@ptr_6 ])=[百分数：@ptr_23@ptr_24 ]",
+    "output_normal": "\"谓词：CR4\" ([行业：@ptr_8@ptr_14 ],[地点：@ptr_1@ptr_2 ],[时间：@ptr_5@ptr_6 ])=[百分数：@ptr_23@ptr_24 ]"
+}
+{
+    "input": "2019 年  中  国  前  五  大  硅  片  企  业  产  量  达  到 98.0GW 。",
+    "output_self": "\"谓词：产量\" ([产品：@ptr_8@ptr_9 ],[时间：@ptr_1@ptr_2 ])=[数目：@ptr_16@ptr_17 ]",
+    "output_normal": "\"谓词：产量\" ([产品：@ptr_8@ptr_9 ])=[数目：@ptr_16@ptr_16 ]"
+}
+{
+    "input": "华  润  微  的  国  内  首  条 6 寸  商  用 SiC 产  线  已  经  正  式  量  产  。",
+    "output_self": "\"谓词：产量\" ([产品：@ptr_1@ptr_3 ])=[产品：@ptr_18@ptr_19 ]",
+    "output_normal": "\"谓词：上游产品\" ([产品：@ptr_1@ptr_3 ])=[产品：@ptr_9@ptr_19 ]"
+}
+{
+    "input": "2018 年  第  三  季  度  单  季  营  收  同  比  增  速  较 2017 年  第  三  季  度  提  高 3.5pct 。",
+    "output_self": "\"谓词：经济增长速度\" ([地点：@ptr_11@ptr_12 ],[时间段：@ptr_1@ptr_6 ],[数目：@ptr_16@ptr_21 ])=[百分数：@ptr_24@ptr_25 ]",
+    "output_normal": "\"谓词：利润增速\" ([公司：@ptr_7@ptr_10 ],[产品：@ptr_7@ptr_10 ],[时间段：@ptr_1@ptr_6 ],[数目：@ptr_16@ptr_21 ])=[速度：@ptr_23@ptr_23 ]"
+}
+{
+    "input": "预  计  未  来  每  年 35GW 。",
+    "output_self": "\"谓词：预测价格\" ([产品：@ptr_3@ptr_2 ],[时间：@ptr_3@ptr_6 ])=[数目：@ptr_8@ptr_8 ]",
+    "output_normal": "\"谓词：预测价格\" ([产品：@ptr_3@ptr_2 ],[时间：@ptr_5@ptr_6 ])=[数目：@ptr_7@ptr_7 ]"
+}
+{
+    "input": "2020 年  全  球  光  模  块  市  场  规  模  为 80 亿  美  元  。",
+    "output_self": "\"谓词：市场规模\" ([行业：@ptr_5@ptr_7 ],[时间：@ptr_1@ptr_2 ])=[资金：@ptr_13@ptr_16 ]",
+    "output_normal": "\"谓词：市场规模\" ([行业：@ptr_5@ptr_7 ],[时间：@ptr_1@ptr_2 ])=[资金：@ptr_13@ptr_16 ]"
+}
+{
+    "input": "MiniLED 高  端  膜  材  需  求  增  加  ，  有  望  带  动  百  亿  级  市  场  空  间  。",
+    "output_self": "\"谓词：消费者需求强度\" ([行业产品：@ptr_2@ptr_5 ],[时间：@ptr_2@ptr_2 ],[高低：@ptr_2@ptr_2 ])=[高低：@ptr_2@ptr_2 ]",
+    "output_normal": "None"
+}
+{
+    "input": "当  前  股  价  对  应  士  兰  微 2023 年  的 PE 为 25x 。",
+    "output_self": "\"谓词：PPI\" ([产品：@ptr_13@ptr_16 ],[时间：@ptr_10@ptr_11 ])=[百分数：@ptr_14@ptr_16 ]",
+    "output_normal": "\"谓词：SLR\" ([地点：@ptr_7@ptr_9 ],[时间：@ptr_10@ptr_11 ])=[百分数：@ptr_14@ptr_16 ]"
+}
+{
+    "input": "英  飞  凌  分  部  业  绩  利  润  率  在 27 %  左  右  。",
+    "output_self": "\"谓词：SLR\" ([地点：@ptr_1@ptr_3 ],[时间：@ptr_126,0.1 ])=[百分数：@ptr_12@ptr_13 ]",
+    "output_normal": "\"谓词：SLR\" ([地点：@ptr_1@ptr_3 ],[时间：@ptr_1@ptr_3 ])=[百分数：@ptr_12@ptr_13 ]"
+}
