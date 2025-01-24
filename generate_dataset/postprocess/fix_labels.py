@@ -123,7 +123,7 @@ def _reorder_expression_topv2(dataset: CustomDataset) -> CustomDataset:
                 raise ValueError(f"Invalid element type: {type(element)} with the content {element}")
 
         try:
-            reordered_exp = _order_expression(parsed_exp, sent)
+            reordered_exp, _, _ = _order_expression(parsed_exp, sent)
         except AssertionError as e:
             print(f"AssertionError {e} in _order_expression for sentence: {sent} and parsed_exp: {parsed_exp}")
             example.output = None
@@ -132,12 +132,14 @@ def _reorder_expression_topv2(dataset: CustomDataset) -> CustomDataset:
         # Construct the reordered expression back into string form
         def construct_expression(reordered):
             result = ""
-            for item in reordered:
-                if isinstance(item, tuple):
-                    element_type, content = item
-                    result += f"[{element_type} {content}]"
-                elif isinstance(item, list):
-                    result += f"[{item[0]} {construct_expression(item[1])}]"
+            if isinstance(reordered, tuple):
+                element_type, content = reordered
+                result += f"[ {element_type} {construct_expression(content)} ]"
+            elif isinstance(reordered, list):  # 对应slots
+                values = [f"[ {slot_type} {construct_expression(slot_value)} ]" for slot_type, slot_value in reordered]
+                result += ' '.join(values)
+            elif isinstance(reordered, str):
+                result += reordered
             return result
 
         reordered_exp_str = construct_expression(reordered_exp)
