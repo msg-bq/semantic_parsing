@@ -2,13 +2,15 @@ import time
 
 from openai import AsyncOpenAI, OpenAI, NOT_GIVEN
 
-aclient_gpt = AsyncOpenAI(api_key="sk-6j0IVIdNzxwEsKYQ07Np5gU1Oi00dnT0jUr98OgOgg1jeiVL",
+
+api_key = 'sk-CrQb5MFkrdZafRMnoNTfpNEyRiRJrzjIXOn3iF0BxQuB0F0M'
+aclient_gpt = AsyncOpenAI(api_key=api_key,
                           base_url="https://api.chatanywhere.tech/v1")
-client_gpt = OpenAI(api_key="sk-6j0IVIdNzxwEsKYQ07Np5gU1Oi00dnT0jUr98OgOgg1jeiVL",
+client_gpt = OpenAI(api_key=api_key,
                     base_url="https://api.chatanywhere.tech/v1")
 
 
-async def async_query_gpt(user_prompt: str, model="gpt-3.5-turbo-ca", temperature=NOT_GIVEN) -> str:
+async def async_query_gpt(user_prompt: str, model="gpt-4o-mini-ca", temperature=NOT_GIVEN) -> str:
     response = await aclient_gpt.chat.completions.create(
         model=model,
         messages=[
@@ -21,7 +23,7 @@ async def async_query_gpt(user_prompt: str, model="gpt-3.5-turbo-ca", temperatur
     return response.choices[0].message.content
 
 
-def query_gpt(user_prompt: str, model="gpt-3.5-turbo-ca", temperature=NOT_GIVEN) -> str:
+def query_gpt(user_prompt: str, model="gpt-4o-mini-ca", temperature=NOT_GIVEN) -> str:
     if isinstance(user_prompt, str):
         prompt = [{"role": "user", "content": user_prompt}]
     else:
