@@ -6,3 +6,6 @@
 .idea/misc.xml
 .idea/inspectionProfiles/profiles_settings.xml
 .idea/semantic_parsing.iml
+.idea/workspace.xml
+/.idea
+*.pyc
