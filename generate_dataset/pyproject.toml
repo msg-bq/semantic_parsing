@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "generate_dataset"
+version = "0.1.0"
+description = "通过cfg derivation和llm构造数据，用于semantic parsing的训练"
+authors = ["Your Name <your@email.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+torch = "*"  # 在generate dataset里面，torch是有点蠢的。如果回头和semantic parsing公用一个pypoetry.toml的话，就么得问题
+# 那时候用torch.utils.data.Dataset比较统一。如果你想单拎出来，那直接移除掉对Dataset的继承即可，反正是抽象类
+faker = "*"
+mimesis = "*"
+asyncio = "*"
+
+[[tool.poetry.source]]
+name = "tuna"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu124"
+priority = "explicit"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
