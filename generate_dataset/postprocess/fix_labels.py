@@ -118,7 +118,7 @@ def _reorder_expression_topv2(dataset: CustomDataset) -> CustomDataset:
 
             elif isinstance(element, str):  # 代表单纯的slot
                 st, ed = __get_word_position(element, sentence)
-                return element, st, ed
+                return sentence[st:ed], st, ed
             else:
                 raise ValueError(f"Invalid element type: {type(element)} with the content {element}")
 
