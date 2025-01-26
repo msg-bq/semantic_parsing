@@ -60,13 +60,15 @@ def __clean_and_parse_response(response: str) -> dict:
 
         return response_dict
     except Exception:
-        raise ValueError(f"The response is not in the correct format. Response: {response}")
+        print(f"The response is not in the correct format. Response: {response}")
 
 
 def _valid_response(response_dict: dict, expression: str):
-    if response_dict['expression'] != expression:
+    if response_dict['expression'] != expression:  # todo: 这里感觉提示词就没必要生成一遍expression？
+        # 毕竟提示词既没什么额外的修复作用。生成完的expression又不保真
         warnings.warn(f"The expression in the response does not match the input expression. Response expression is"
                       f" '{response_dict['expression']}' while input expression is '{expression}'.")
+        response_dict['expression'] = expression   # 目前调成False了
 
     def __check_original_words(sentence: str, words: list[str]) -> bool:
         # Check if all original words are in the response
@@ -103,7 +105,7 @@ def _generate_nl_topv2(label: str) -> dict:
     while attempt < max_attempts:
         if result:
             result = _valid_response(result, label)
-            if result['sentences']:
+            if result['expression'] and result['sentences']:
                 return result
         # 若条件不满足，可选择再次查询获取新结果，这里简单假设重新获取response
         response = query_gpt(prompt)
