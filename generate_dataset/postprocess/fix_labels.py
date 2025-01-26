@@ -1,5 +1,10 @@
-from typing import Any
+from typing import Any, List
+import sys
+import os
+import re
+import string
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from generate_natural_language.generate_nl import CustomDataset, Example
 
 
@@ -48,12 +53,100 @@ def _parse_expression_topv2(expression: str) -> tuple:
     return parsed[0]
 
 
+# 按照topv2的特殊格式转换input字符串
+def format_time_string(input_string: str) -> str:
+    english_punctuation = string.punctuation.replace(':', '')
+    # 正则表达式匹配时间格式
+    time_pattern = r'(\d{1,2})(:)?(\d{2})?(am|pm|AM|PM)?'
+    # 替换逻辑
+    def replacer(match):
+        hour = match.group(1)
+        colon = " : " if match.group(2) else ""
+        minute = match.group(3) if match.group(3) else ""
+        period = f" {match.group(4)}" if match.group(4) else ""
+        return f"{hour}{colon}{minute}{period}"
+    # 对字符串进行替换
+    formatted_string = re.sub(time_pattern, replacer, input_string)
+    # 判断末尾字符是否是english_punctuation内的标点符号且前面无空格
+    if formatted_string[-1] in english_punctuation and formatted_string[-2] != " ":
+        formatted_string = formatted_string[:-1] + " " + formatted_string[-1]
+    # 使用正则表达式找到字母后面的单引号，并在其前面添加一个空格
+    return re.sub(r"([a-zA-Z])'", r"\1 '", formatted_string)
+
+
+# 从列表元组中抽出来每个槽值
+def extract_last_values(output_lst: List[Any]) -> List[Any]:
+    result = []
+    def extract_value(element):
+        if isinstance(element, list):
+            return [extract_value(item) for item in element]
+        elif isinstance(element, tuple):
+            return extract_value(element[-1])
+        else:
+            return element
+
+    for item in output_lst:
+        result.append(extract_value(item[-1]))
+
+    return result
+
+
+def flatten_list(nested_list: List[Any]) -> List[List[str]]:
+    # 铺平多层的槽值列表->1维的列表
+    def flatten(nested_list: List[Any]) -> List[str]:
+        flat_list = []
+        for item in nested_list:
+            if isinstance(item, list):  # 如果元素是列表，则递归展平
+                flat_list.extend(flatten(item))
+            else:  # 否则直接添加元素
+                flat_list.append(item)
+        return flat_list
+
+    flattened = []
+    for item in nested_list:
+        flat_list = flatten(item)
+        flattened.append(flat_list)
+    return flattened
+
+
 def _fill_other_information_topv2(dataset: CustomDataset) -> CustomDataset:
     """
 Move the 10am alarm up 30 minutes.
 [IN:UPDATE_ALARM Move the [SL:ALARM_NAME [IN:GET_TIME [SL:DATE_TIME 10 am ] ] ] alarm [SL:DATE_TIME up 30 minutes ] . ]
     """
-    # todo: 还需要填补非关键信息
+    for example in dataset:
+        # 拆原句input，把pm am : 以及's、标点，给加上空格
+        text = format_time_string(example.input)
+        output = example.output
+        # 去掉第一个空格前面的operator，以及最后的 "]"
+        output_lst = eval(re.sub(r'^[^\s]+(\s.*\])$', r'\1', output)[:-1])
+        # [['Rainy'], ['London'], ['Next Friday']]
+        slot_content_lst = extract_last_values(output_lst)
+        slot_content_lst = flatten_list(slot_content_lst)
+        new_example_output = []
+        # 3.在句子中删掉包括这个词在内的前面的词（新建的对象）删掉，继续匹配，
+        last_end = 0
+        for i, d in enumerate(slot_content_lst):
+            sub_sentence = ' '.join(d)
+            match = re.search(sub_sentence, text, re.IGNORECASE)
+            if match:
+                start, end = match.span()  # 获取匹配的起始和结束位置
+            else:
+                raise "出错了"
+            # 看这个start是不是0，否则就取从0到start-1的位置
+            insert_sen = text[last_end:start]
+            # 把非关键信息插进去
+            if insert_sen.replace(" ", "") != "":
+                new_example_output.append(insert_sen.strip())
+            # 把原本的SL给插进去
+            new_example_output.append(output_lst[i])
+            last_end = end
+        # 4.直到句子中没词（结束）或者匹配完，句子中还剩下一些（末尾的符号）加到output的最后
+        if last_end != len(text):
+            new_example_output.append(text[last_end:].strip())
+
+        example.output = output.split(" ")[0] + " " + str(new_example_output) + "]"
+
     return dataset
 
 
