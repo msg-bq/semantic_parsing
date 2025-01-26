@@ -1,7 +1,7 @@
 import random
 from concurrent.futures import ThreadPoolExecutor
 
-from ._generate_nl_topv2 import _generate_nl_topv2
+from generate_natural_language._generate_nl_topv2 import _generate_nl_topv2
 from torch.utils.data import Dataset
 
 
