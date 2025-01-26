@@ -1,5 +1,9 @@
 from utils.access_llm import async_query_gpt
-from build_labels.instance_funcs._instance_prompt import _concept_instance_prompt
+from ._instance_prompt import _concept_instance_prompt
+from ._existed_instance_provider import _get_existed_generators
+
+existed_generators = _get_existed_generators()
+
 
 concept_list_by_llm = []  # 通过llm实例化的concept列表
 concept_list_by_custom_funcs: dict[str: callable] = {}  # 通过自定义的funcs对concept进行实例化
@@ -18,6 +22,9 @@ async def get_concept_instance(concept_name: str) -> str | None:
     """
     if concept_name in concept_list_by_custom_funcs:
         return concept_list_by_custom_funcs[concept_name](concept_name)
+
+    if concept_name in existed_generators:
+        return existed_generators[concept_name]()
 
     prompt = _concept_instance_prompt(concept_name)
     while True:  # hack: 这里给个最大的try_cnt会好一点
