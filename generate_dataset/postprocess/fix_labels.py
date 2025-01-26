@@ -130,19 +130,19 @@ def _reorder_expression_topv2(dataset: CustomDataset) -> CustomDataset:
             continue
 
         # Construct the reordered expression back into string form
-        def construct_expression(reordered):
+        def _construct_expression(reordered):
             result = ""
             if isinstance(reordered, tuple):
                 element_type, content = reordered
-                result += f"[ {element_type} {construct_expression(content)} ]"
+                result += f"[ {element_type} {_construct_expression(content)} ]"
             elif isinstance(reordered, list):  # 对应slots
-                values = [f"[ {slot_type} {construct_expression(slot_value)} ]" for slot_type, slot_value in reordered]
+                values = [f"[ {slot_type} {_construct_expression(slot_value)} ]" for slot_type, slot_value in reordered]
                 result += ' '.join(values)
             elif isinstance(reordered, str):
                 result += reordered
             return result
 
-        reordered_exp_str = construct_expression(reordered_exp)
+        reordered_exp_str = _construct_expression(reordered_exp)
 
         # Update the label with the reordered expression
         example.output = reordered_exp_str

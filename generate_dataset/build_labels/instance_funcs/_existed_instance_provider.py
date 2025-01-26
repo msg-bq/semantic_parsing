@@ -67,7 +67,7 @@ def _get_existed_generators(language='EN') -> dict[str, callable]:
     funcs.update(_get_existed_generator_mimesis(lang_mimesis))
 
     global _CUSTOM_CONCEPTS_MAPPING
-    for k, v in _CUSTOM_CONCEPTS_MAPPING:
+    for k, v in _CUSTOM_CONCEPTS_MAPPING.items():
         funcs[k] = funcs[v]
 
     return funcs

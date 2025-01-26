@@ -11,3 +11,4 @@
 *.pyc
 /.idea
 *.xml
+/generate_dataset/build_labels/instance_funcs/llm_instance_datadir
