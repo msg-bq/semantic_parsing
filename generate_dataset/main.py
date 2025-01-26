@@ -12,18 +12,18 @@ def generate_dataset(dataset_name: str, num: int = 2) -> CustomDataset:
     """
     derivation_texts: list[str] = asyncio.run(generate_expressions(n=num))
     al_exps: list[Assertion | Formula] = parse_derivations(derivation_texts, dataset_name)
-    gen_labels: list[str] = translate_format(al_exps, dataset_name=dataset_name)
-    dataset: CustomDataset = generate_nl(gen_labels, dataset_name=dataset_name)
+    gen_labels = translate_format(al_exps, dataset_name=dataset_name)
+    dataset = generate_nl(gen_labels, dataset_name=dataset_name)
 
     if dataset_name == 'topv2':
-        dataset: CustomDataset = fix_labels_topv2(dataset)
+        dataset = fix_labels_topv2(dataset)
 
     return dataset
 
 
 if __name__ == '__main__':
-    dataset_test = 'topv2'
+    dataset = 'topv2'
     n = 20
-    dataset_test = generate_dataset(dataset_test, n)
-    for e in dataset_test:
+    dataset = generate_dataset(dataset, n)
+    for e in dataset:
         print(e)
