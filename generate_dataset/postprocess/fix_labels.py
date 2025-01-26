@@ -20,12 +20,12 @@ def _parse_expression_topv2(expression: str) -> tuple:
     i = 0
     while i < len(expression):
         if expression[i] == '[':
-            if i == len(expression) - 1:
-                raise ValueError(f"Unexpected end of expression {expression}")
             # Start of a new IN/SL element, capture the type
             j = i + 1
             while expression[j] != ' ' and expression[j] != '[':
                 j += 1
+                if j == len(expression):
+                    print("expression是这个", expression)
             element_type = expression[i + 1:j]
             stack.append((element_type, []))
             i = j
@@ -108,7 +108,8 @@ def _reorder_expression_topv2(dataset: CustomDataset) -> CustomDataset:
                         assert len(content) == 1, (f"SL should have only one content, now have {len(content)} "
                                                    f"contents {content}")
                         ordered_elem, sub_st, sub_ed = _order_expression(content[0], sentence)
-                        return (element_type, [ordered_elem]), sub_st, sub_ed
+                        return (element_type, ordered_elem), sub_st, sub_ed  # content取了[0]，是_parse_expression_topv2
+                    # 函数给slot的值补了list。但是实际表达式里没有这个。所以return时候也就不用还原list了
 
                     else:
                         raise ValueError(f"Invalid element type: {element_type} with the content {content}")
@@ -122,7 +123,7 @@ def _reorder_expression_topv2(dataset: CustomDataset) -> CustomDataset:
                 raise ValueError(f"Invalid element type: {type(element)} with the content {element}")
 
         try:
-            reordered_exp = _order_expression(parsed_exp, sent)
+            reordered_exp, _, _ = _order_expression(parsed_exp, sent)
         except AssertionError as e:
             print(f"AssertionError {e} in _order_expression for sentence: {sent} and parsed_exp: {parsed_exp}")
             example.output = None
@@ -131,12 +132,14 @@ def _reorder_expression_topv2(dataset: CustomDataset) -> CustomDataset:
         # Construct the reordered expression back into string form
         def construct_expression(reordered):
             result = ""
-            for item in reordered:
-                if isinstance(item, tuple):
-                    element_type, content = item
-                    result += f"[{element_type} {content}]"
-                elif isinstance(item, list):
-                    result += f"[{item[0]} {construct_expression(item[1])}]"
+            if isinstance(reordered, tuple):
+                element_type, content = reordered
+                result += f"[ {element_type} {construct_expression(content)} ]"
+            elif isinstance(reordered, list):  # 对应slots
+                values = [f"[ {slot_type} {construct_expression(slot_value)} ]" for slot_type, slot_value in reordered]
+                result += ' '.join(values)
+            elif isinstance(reordered, str):
+                result += reordered
             return result
 
         reordered_exp_str = construct_expression(reordered_exp)
@@ -156,7 +159,8 @@ def fix_labels_topv2(dataset: CustomDataset) -> CustomDataset:
 
 if __name__ == '__main__':
     expression_test = ('[IN:get_sunrise [SL:location [IN:get_location [SL:location_modifier London]]] '
-                       '[SL:date_time Next Friday] [SL:weather Rainy]]')
+                       '[SL:date_time Next Friday] [SL:weather Rainy]]')  # XXX: 这个示例好像略有问题，丢了点空格。
+    # 反正对_parse_expression_topv2的结果谨慎一下就好
     sent_test = 'Can you tell me the rainy weather forecast in London next Friday?'
     example_test = Example(inp=sent_test, out=expression_test)
     dataset_test = CustomDataset([example_test])
