@@ -95,7 +95,7 @@ def format_time_string(input_string: str) -> str:
     if formatted_string[-1] in english_punctuation and formatted_string[-2] != " ":
         formatted_string = formatted_string[:-1] + " " + formatted_string[-1]
     # 使用正则表达式找到字母后面的单引号，并在其前面添加一个空格
-    return re.sub(r"([a-zA-Z])'", r"\1 '", formatted_string)
+    return re.sub(r"([a-zA-Z])['’]", r"\1 ", formatted_string)
 
 
 # 从列表元组中抽出来每个槽值
@@ -158,6 +158,7 @@ Move the 10am alarm up 30 minutes.
             match = re.search(sub_sentence, text, re.IGNORECASE)
             if match:
                 start, end = match.span()  # 获取匹配的起始和结束位置
+
             else:
                 raise "出错了"
             # 看这个start是不是0，否则就取从0到start-1的位置
