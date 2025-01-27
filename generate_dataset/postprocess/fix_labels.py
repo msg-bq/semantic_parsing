@@ -53,18 +53,42 @@ def _parse_expression_topv2(expression: str) -> tuple:
     return parsed[0]
 
 
+# Construct the reordered expression back into string form
+def _construct_expression(reordered):
+    result = ""
+    if isinstance(reordered, tuple):
+        element_type, content = reordered
+        result += f"[ {element_type} {_construct_expression(content)} ]"
+    elif isinstance(reordered, list):  # 对应slots
+        # values = [f"[ {slot_type} {_construct_expression(slot_value)} ]" for slot_type, slot_value in reordered]
+        values = []
+        for slot in reordered:
+            if isinstance(slot, tuple):
+                slot_type, slot_value = slot
+                values.append(f"[ {slot_type} {_construct_expression(slot_value)} ]")
+            else:
+                # 非关键信息
+                values.append(slot)
+        result += ' '.join(values)
+    elif isinstance(reordered, str):
+        result += reordered
+    return result
+
+
 # 按照topv2的特殊格式转换input字符串
 def format_time_string(input_string: str) -> str:
     english_punctuation = string.punctuation.replace(':', '')
     # 正则表达式匹配时间格式
-    time_pattern = r'(\d{1,2})(:)?(\d{2})?(am|pm|AM|PM)?'
+    time_pattern = r'(\d{1,2})(:)?(\d{2})?(:)?(\d{2})?(am|pm|AM|PM)?'
     # 替换逻辑
     def replacer(match):
         hour = match.group(1)
         colon = " : " if match.group(2) else ""
         minute = match.group(3) if match.group(3) else ""
-        period = f" {match.group(4)}" if match.group(4) else ""
-        return f"{hour}{colon}{minute}{period}"
+        colon_2 = " : " if match.group(4) else ""
+        second = match.group(5) if match.group(5) else ""
+        period = f" {match.group(6)}" if match.group(6) else ""
+        return f"{hour}{colon}{minute}{colon_2}{second}{period}"
     # 对字符串进行替换
     formatted_string = re.sub(time_pattern, replacer, input_string)
     # 判断末尾字符是否是english_punctuation内的标点符号且前面无空格
@@ -104,8 +128,12 @@ def flatten_list(nested_list: List[Any]) -> List[List[str]]:
 
     flattened = []
     for item in nested_list:
-        flat_list = flatten(item)
-        flattened.append(flat_list)
+        if not isinstance(item, str):
+            flat_list = flatten(item)
+            flattened.append(flat_list)
+        else:
+            flattened.append([item,])
+
     return flattened
 
 
@@ -117,9 +145,8 @@ Move the 10am alarm up 30 minutes.
     for example in dataset:
         # 拆原句input，把pm am : 以及's、标点，给加上空格
         text = format_time_string(example.input)
-        output = example.output
+        output_lst = example.output[1]
         # 去掉第一个空格前面的operator，以及最后的 "]"
-        output_lst = eval(re.sub(r'^[^\s]+(\s.*\])$', r'\1', output)[:-1])
         # [['Rainy'], ['London'], ['Next Friday']]
         slot_content_lst = extract_last_values(output_lst)
         slot_content_lst = flatten_list(slot_content_lst)
@@ -145,8 +172,8 @@ Move the 10am alarm up 30 minutes.
         if last_end != len(text):
             new_example_output.append(text[last_end:].strip())
 
-        example.output = output.split(" ")[0] + " " + str(new_example_output) + "]"
-
+        reordered_exp = (example.output[0], new_example_output)
+        example.output = _construct_expression(reordered_exp)
     return dataset
 
 
@@ -211,7 +238,7 @@ def _reorder_expression_topv2(dataset: CustomDataset) -> CustomDataset:
 
             elif isinstance(element, str):  # 代表单纯的slot
                 st, ed = __get_word_position(element, sentence)
-                return sentence[st:ed], st, ed
+                return format_time_string(sentence[st:ed]), st, ed
             else:
                 raise ValueError(f"Invalid element type: {type(element)} with the content {element}")
 
@@ -222,23 +249,8 @@ def _reorder_expression_topv2(dataset: CustomDataset) -> CustomDataset:
             example.output = None
             continue
 
-        # Construct the reordered expression back into string form
-        def _construct_expression(reordered):
-            result = ""
-            if isinstance(reordered, tuple):
-                element_type, content = reordered
-                result += f"[ {element_type} {_construct_expression(content)} ]"
-            elif isinstance(reordered, list):  # 对应slots
-                values = [f"[ {slot_type} {_construct_expression(slot_value)} ]" for slot_type, slot_value in reordered]
-                result += ' '.join(values)
-            elif isinstance(reordered, str):
-                result += reordered
-            return result
-
-        reordered_exp_str = _construct_expression(reordered_exp)
-
         # Update the label with the reordered expression
-        example.output = reordered_exp_str
+        example.output = reordered_exp
 
     dataset = CustomDataset(data=[d for d in dataset if d.output])
     return dataset
