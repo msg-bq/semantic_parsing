@@ -4,27 +4,27 @@ from ._co_namespace import Declared_Operators
 
 # todo: 这里应当加层校验机制，让它和对应rule的cfg文件保持一致，或者就直接从cfg文件中导出
 get_weather = BaseOperator(
-    name="get_weather",
-    input_type=["date_time", "weather_temperature_unit", "location", "weather_attribute", "weather"],
-    output_type="weather"
+    name="GET_WEATHER",
+    input_type=["DATE_TIME", "WEATHER_TEMPERATURE_UNIT", "LOCATION", "WEATHER_ATTRIBUTE", "WEATHER"],
+    output_type="WEATHER"
 )
 
 get_sunset = BaseOperator(
-    name="get_sunset",
-    input_type=["location", "date_time", "weather"],
+    name="GET_SUNSET",
+    input_type=["LOCATION", "DATE_TIME", "WEATHER"],
     output_type="sunset_time"
 )
 
 get_sunrise = BaseOperator(
-    name="get_sunrise",
-    input_type=["location", "date_time", "weather"],
+    name="GET_SUNRISE",
+    input_type=["LOCATION", "DATE_TIME", "WEATHER"],
     output_type="sunrise_time"
 )
 
 get_location = BaseOperator(
-    name="get_location",
-    input_type=["location_user", "search_radius", "location_modifier"],
-    output_type="location"
+    name="GET_LOCATION",
+    input_type=["LOCATION_USER", "SEARCH_RADIUS", "LOCATION_MODIFIER"],
+    output_type="LOCATION"
 )
 
 dummy_operator = BaseOperator(
@@ -35,10 +35,10 @@ dummy_operator = BaseOperator(
 
 
 Declared_Operators.update({
-    "get_weather": get_weather,
-    "get_sunset": get_sunset,
-    "get_sunrise": get_sunrise,
-    "get_location": get_location,
+    "GET_WEATHER": get_weather,
+    "GET_SUNSET": get_sunset,
+    "GET_SUNRISE": get_sunrise,
+    "GET_LOCATION": get_location,
     "dummy_operator": dummy_operator
 })
 
@@ -55,8 +55,8 @@ def __clean_text(text: str) -> str:
 def __split_operator_variables(derivation_text: str) -> tuple[str, str]:
     """
     Splits the derivation text into the operator name and the variables text.
-    Example: "get_sunset([location:null][date_time:get_next_day(...)][weather:Rainy])"
-    returns ("get_sunset", "[location:null][date_time:get_next_day(...)][weather:Rainy]")
+    Example: "get_sunset([LOCATION:null][DATE_TIME:get_next_day(...)][weather:Rainy])"
+    returns ("get_sunset", "[LOCATION:null][DATE_TIME:get_next_day(...)][weather:Rainy]")
     """
     start = derivation_text.find("(")
     end = derivation_text.rfind(")")
@@ -70,8 +70,8 @@ def __split_operator_variables(derivation_text: str) -> tuple[str, str]:
 def __extract_variables(variables_text: str, operator: BaseOperator) -> list[BaseIndividual | Term]:
     """
     Extracts variables from the variables text and returns them as a list of BaseIndividual or Term objects.
-    Example: "[location:null][date_time:get_next_day(...)][weather:Rainy]"
-    returns [BaseIndividual("location", null), Term(get_next_day, [...]), BaseIndividual("weather", "Rainy")]
+    Example: "[LOCATION:null][DATE_TIME:get_next_day(...)][weather:Rainy]"
+    returns [BaseIndividual("LOCATION", null), Term(get_next_day, [...]), BaseIndividual("WEATHER", "Rainy")]
     """
     def find_matching_bracket(text: str, start: int) -> int:
         """
@@ -118,7 +118,7 @@ def __extract_variables(variables_text: str, operator: BaseOperator) -> list[Bas
 def _parse_derivation_topv2(derivation_text: str) -> Assertion:
     """
     把生成的表达式转为topv2的格式
-    get_sunset ( [ location: null ] [ date_time: get_next_day ( [ datetime: This*spaceMonday ] ) ] [ weather: Rainy ] )
+    get_sunset ( [ LOCATION: null ] [ DATE_TIME: get_next_day ( [ datetime: This*spaceMonday ] ) ] [ weather: Rainy ] )
     """
     derivation_text = derivation_text.replace(' ', '')
     operator_name, variables_text = __split_operator_variables(derivation_text)
@@ -134,5 +134,5 @@ def _parse_derivation_topv2(derivation_text: str) -> Assertion:
 
 if __name__ == '__main__':
     derivation_text_example = \
-        'intent:get_sunrise ( [ location: London ] [ date_time: Next*spaceFriday ] [ weather: Rainy ] )'
+        'intent:get_sunrise ( [ LOCATION: London ] [ DATE_TIME: Next*spaceFriday ] [ weather: Rainy ] )'
     print(_parse_derivation_topv2(derivation_text_example))

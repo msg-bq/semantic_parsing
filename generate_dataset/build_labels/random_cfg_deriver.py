@@ -76,7 +76,7 @@ async def _derive_string(current_string, grammar):
     # 5. update the current string with the random production
     def _avoid_spurious_non_terminal_symbol(terminal_symbol):
         if terminal_symbol.startswith(_NON_TERMINAL_SYMBOL) and terminal_symbol[1:].isupper():
-            return terminal_symbol.lower()
+            return terminal_symbol.lower()  # fixme(lbq): 这里为什么有个未使用的
         return terminal_symbol
 
     variable_references = []
