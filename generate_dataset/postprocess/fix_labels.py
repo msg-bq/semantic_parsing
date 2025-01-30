@@ -76,7 +76,7 @@ def _construct_expression(reordered):
 
 
 # 按照topv2的特殊格式转换input字符串
-def format_time_string(input_string: str) -> str:
+def _format_time_string(input_string: str) -> str:
     english_punctuation = string.punctuation.replace(':', '')
     # 正则表达式匹配时间格式
     time_pattern = r'(\d{1,2})(:)?(\d{2})?(:)?(\d{2})?(am|pm|AM|PM)?'
@@ -99,7 +99,7 @@ def format_time_string(input_string: str) -> str:
 
 
 # 从列表元组中抽出来每个槽值
-def extract_last_values(output_lst: List[Any]) -> List[Any]:
+def _extract_last_values(output_lst: List[Any]) -> List[Any]:
     result = []
     def extract_value(element):
         if isinstance(element, list):
@@ -115,7 +115,7 @@ def extract_last_values(output_lst: List[Any]) -> List[Any]:
     return result
 
 
-def flatten_list(nested_list: List[Any]) -> List[List[str]]:
+def _flatten_list(nested_list: List[Any]) -> List[List[str]]:
     # 铺平多层的槽值列表->1维的列表
     def flatten(nested_list: List[Any]) -> List[str]:
         flat_list = []
@@ -144,12 +144,12 @@ Move the 10am alarm up 30 minutes.
     """
     for example in dataset:
         # 拆原句input，把pm am : 以及's、标点，给加上空格
-        text = format_time_string(example.input)
+        text = _format_time_string(example.input)
         output_lst = example.output[1]
         # 去掉第一个空格前面的operator，以及最后的 "]"
         # [['Rainy'], ['London'], ['Next Friday']]
-        slot_content_lst = extract_last_values(output_lst)
-        slot_content_lst = flatten_list(slot_content_lst)
+        slot_content_lst = _extract_last_values(output_lst)
+        slot_content_lst = _flatten_list(slot_content_lst)
         new_example_output = []
         # 3.在句子中删掉包括这个词在内的前面的词（新建的对象）删掉，继续匹配，
         last_end = 0
@@ -173,8 +173,8 @@ Move the 10am alarm up 30 minutes.
         if last_end != len(text):
             new_example_output.append(text[last_end:].strip())
 
-        reordered_exp = (example.output[0], new_example_output)
-        example.output = _construct_expression(reordered_exp)
+        filled_exp = (example.output[0], new_example_output)
+        example.output = _construct_expression(filled_exp)
     return dataset
 
 
@@ -239,7 +239,7 @@ def _reorder_expression_topv2(dataset: CustomDataset) -> CustomDataset:
 
             elif isinstance(element, str):  # 代表单纯的slot
                 st, ed = __get_word_position(element, sentence)
-                return format_time_string(sentence[st:ed]), st, ed
+                return _format_time_string(sentence[st:ed]), st, ed
             else:
                 raise ValueError(f"Invalid element type: {type(element)} with the content {element}")
 
