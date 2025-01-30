@@ -58,14 +58,14 @@ def _construct_expression(reordered):
     result = ""
     if isinstance(reordered, tuple):
         element_type, content = reordered
-        result += f"[ {element_type} {_construct_expression(content)} ]"
+        result += f"[{element_type} {_construct_expression(content)} ]"
     elif isinstance(reordered, list):  # 对应slots
         # values = [f"[ {slot_type} {_construct_expression(slot_value)} ]" for slot_type, slot_value in reordered]
         values = []
         for slot in reordered:
             if isinstance(slot, tuple):
                 slot_type, slot_value = slot
-                values.append(f"[ {slot_type} {_construct_expression(slot_value)} ]")
+                values.append(f"[{slot_type} {_construct_expression(slot_value)} ]")
             else:
                 # 非关键信息
                 values.append(slot)
