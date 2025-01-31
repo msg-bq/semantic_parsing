@@ -13,6 +13,7 @@ from utils.operators_concepts import operator_dict
 from utils.text_utils import add_space_after_chinese, find_long_string_in_list
 
 import pandas as pd
+import json
 
 
 @DatasetsProcessorNameSpace.register("Default")
@@ -42,6 +43,7 @@ def split_dataset(dataset: Union[list, Dataset, DatasetDict], split_ratio: Union
 def read_ours_from_dir(directory_path: str) -> List[AssertionExample]:
     dataset = []
 
+    s = 0
     # 遍历目录下的所有文件
     for filename in os.listdir(directory_path):
         file_path = os.path.join(directory_path, filename)
@@ -50,12 +52,13 @@ def read_ours_from_dir(directory_path: str) -> List[AssertionExample]:
                 line = eval(f.readlines()[0])
 
                 for e in line:
-                    expression, natural_sentence = e['表达式'], random.choice(e['自然语句'])
-                    if expression == "None":
+                    # 存在e['自然语句'] = []的情况导致random.choice(e['自然语句'])报错
+                    if(e['自然语句'] == []):
                         continue
-
+                    expression, natural_sentence = e['表达式'], random.choice(e['自然语句'])
+                    # if expression == "None":
+                    #     continue
                     dataset.append(AssertionExample(expression, natural_sentence))
-
     return dataset
 
 @DatasetsReaderNameSpace.register("preliminary_ours")
@@ -69,14 +72,21 @@ def read_dataset(directory_path: str) -> Union[Dataset, DatasetDict]:
 
     return PreliminaryDataset(dataset)
 
+from torch.utils.data import random_split
 @DatasetsReaderNameSpace.register("self-train_ours")
 def read_dataset(directory_path: str) -> Union[Dict, DatasetDict]:
     """
     一般情况下，read的时候就改成train eval test
     """
-    dataset = read_ours_from_dir(directory_path)
+    train_dataset = read_ours_from_dir(directory_path)
 
-    return {'train': PreliminaryDataset(dataset)}
+    # 计算训练集和开发集的大小
+    # train_size = int(0.95 * len(train_dataset))
+    # dev_size = len(train_dataset) - train_size
+
+    # # 使用random_split划分数据集
+    # train_subset, dev_subset = random_split(train_dataset, [train_size, dev_size])
+    return {'train': PreliminaryDataset(train_dataset)}
 
 @DatasetsReaderNameSpace.register("self-train_topv2")
 def read_dataset(directory_path: str) -> DatasetDict:
@@ -84,6 +94,7 @@ def read_dataset(directory_path: str) -> DatasetDict:
     一般情况下，read的时候就改成train eval test
     """
     dataset = load_dataset(directory_path)
+    train_dataset = dataset["train"]
     return dataset
 
 @DatasetsReaderNameSpace.register("self-train_zcl")
@@ -126,13 +137,28 @@ def read_dataset(directory_path: str) -> DatasetDict:
 
 @DatasetsReaderNameSpace.register("ours")
 def read_unlabeled_dataset(directory_path: str):
-    dataset = load_dataset(directory_path)
-    return SelfTrainDataset(init_question_list=[l[0] for l in dataset["train"]["自然语句"]])
+    # 修改为 ↓
+    for filename in os.listdir(directory_path):
+        # 读取json文件，里面有"split_and_filter"和"origin"
+        # 把split_and_filter里的全部取出来就行
+        with open(directory_path + "/" + filename) as f: # replace 'yourfilename' with your actual file name
+            data = json.load(f)
+        flattened_list = []
+        for i in range(len(data)):
+            flattened_list += data[i]["split_and_filter"]
+    return SelfTrainDataset(init_question_list=flattened_list)
 
 @DatasetsReaderNameSpace.register("topv2")
 def read_unlabeled_dataset(directory_path: str):
-    dataset = load_dataset(directory_path)
-    return dataset["eval"]["utterance"]
+    # dataset = load_dataset(directory_path)
+    # 用于存储所有字典数据的列表
+    query_list = []
+    with open(directory_path, "r", encoding="utf-8") as f:
+        for s in f:
+            dict1 = json.loads(json.loads(s))
+            query_list.append(dict1["question"])
+    return SelfTrainDataset(init_question_list=query_list)
+    # return dataset["eval"]["utterance"]
 
 # zcl
 def read_unlabeled_dataset_zcl(directory_path: str):
@@ -195,7 +221,9 @@ def unify_format(example: AssertionExample):
 
 @DatasetsProcessorNameSpace.register("ours")
 def ptr_change(example: AssertionExample):
+
     e = unify_format(example)
+
     e.natural_sentence = add_space_after_chinese(e.natural_sentence.replace("得到", ""))
     # encode = tokenizer.encode(e.natural_sentence)
     word_list = e.natural_sentence.split()
@@ -228,6 +256,10 @@ def ptr_change(example: AssertionExample):
 
             rhs_indexes = find_long_string_in_list(word_list, rhs)
 
+            # 改成留着第一个和最后一个，看看能不能好点
+            if len(rhs_indexes) > 0:
+                rhs_indexes = [rhs_indexes[0],rhs_indexes[-1]]
+
             rhs_ptr = f"[{operator_dict[predicate][-1]}：" + "".join(
                 ["@ptr_" + str(item + 1) for item in rhs_indexes]) + "]"
             variable_list = []
@@ -236,6 +268,8 @@ def ptr_change(example: AssertionExample):
             new_structural_tokens.append(f"[{operator_dict[predicate][-1]}：")
             for concept, variable in zip(operator_dict[predicate], variables):
                 variable_indexes = find_long_string_in_list(word_list, variable)
+                if len(variable_indexes) > 0:
+                    variable_indexes = [variable_indexes[0],variable_indexes[-1]]
                 result = "".join(["@ptr_" + str(item + 1) for item in variable_indexes])
                 variable_list.append(f"[{concept}：{result}]")
                 new_structural_tokens.append(f"[{concept}：")
@@ -253,30 +287,55 @@ def ptr_change(example: AssertionExample):
             if i < len(result_list) - 1:
                 Result += " , "
         e.expression = Result
+    # print(e)
     return e
+
+import re
+import string
+# 英文标点符号
+def format_time_string(input_string):
+    english_punctuation = string.punctuation.replace(':', '')
+    # 正则表达式匹配时间格式
+    time_pattern = r'(\d{1,2})(:)?(\d{2})?(am|pm|AM|PM)?'
+
+    # 替换逻辑
+    def replacer(match):
+        hour = match.group(1)
+        colon = " : " if match.group(2) else ""
+        minute = match.group(3) if match.group(3) else ""
+        period = f" {match.group(4)}" if match.group(4) else ""
+        return f"{hour}{colon}{minute}{period}"
+
+    # 对字符串进行替换
+    formatted_string = re.sub(time_pattern, replacer, input_string)
+
+    # 判断末尾字符是否是english_punctuation内的标点符号且前面无空格
+    if formatted_string[-1] in english_punctuation and formatted_string[-2]!= " ":
+        formatted_string = formatted_string[:-1] + " " + formatted_string[-1]
+
+    return formatted_string
 
 @DatasetsProcessorNameSpace.register("topv2")
 def ptr_change(examples):
     """
     将semantic_parse里面的的词，换成utterance里对应的ptr_x
     """
-    for i, st in enumerate(examples["semantic_parse"]):
-        changed_item = []
-        # ut_list = ut.split(' ')
-        cnt = 1
-        # print(st)
-        for s in st.split(' '):
-            if s.startswith('[') or s == ']':
-                # print(s)
-                # exit()
-                changed_item.append(s)
-            else:
-                # print(s)
-                # print(f"@ptr_{cnt}")
-                changed_item.append(f"@ptr_{cnt}")
-                cnt += 1
+    # print(examples)
+    st = examples["semantic_parse"]
+    changed_item = []
+    cnt = 1
 
-        examples["semantic_parse"][i] = ' '.join(changed_item)
+    for s in st.split(' '):
+        # 如果是以 [ 开头 或 是 ] 或 是英文标点符号，则保留原样
+        if s.startswith('[') or s == ']':
+            changed_item.append(s)
+        else:
+            changed_item.append(f"@ptr_{cnt}")
+            cnt += 1
+
+    examples["semantic_parse"] = ' '.join(changed_item)
+    examples["utterance"] = format_time_string(examples["utterance"])
+    # print(examples)
     return examples
 
 #zcl
@@ -323,6 +382,35 @@ def filter_function(example):
 
 def preprocess_dataset(dataset):
     dataset = dataset.map(ptr_change)
-    dataset = dataset.filter(filter_function)
+    # dataset = dataset.filter(filter_function)
 
     return dataset
+
+# if __name__ == '__main__':
+#     s = "[IN:GET_ALARM Check my alarms . ]"
+#     import string
+#     english_punctuation = string.punctuation.replace(':', '')
+#
+#     def ptr_change(examples):
+#         """
+#         将semantic_parse里面的的词，换成utterance里对应的ptr_x
+#         """
+#         # print(examples)
+#         st = examples["semantic_parse"]
+#         changed_item = []
+#         cnt = 1
+#
+#         for s in st.split(' '):
+#             # 如果是以 [ 开头 或 是 ] 或 是英文标点符号，则保留原样
+#             if s.startswith('[') or s == ']' or all(c in english_punctuation for c in s):
+#                 changed_item.append(s)
+#             else:
+#                 changed_item.append(f"@ptr_{cnt}")
+#                 cnt += 1
+#
+#         examples["semantic_parse"] = ' '.join(changed_item)
+#         examples["utterance"] = format_time_string(examples["utterance"])
+#         # print(examples)
+#         return examples
+#
+#     print(ptr_change({"semantic_parse": s, "utterance": s}))
