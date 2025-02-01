@@ -19,3 +19,7 @@ async def get_concept_instance(concept_name: str) -> str | None:
         return str(existed_generators[concept_name]())  # faker和mimesis的随机数据是含格式的，我们这里默认只要str
 
     return await LLMProvider.llm_instance(concept_name)
+
+
+if __name__ == '__main__':
+    print(existed_generators.keys())
