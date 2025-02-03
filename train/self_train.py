@@ -389,7 +389,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     global tokenizer1
     tokenizer1 = tokenizer
     train_args = TrainingArguments(output_dir=args.save_dir,
-                                   num_train_epochs=50,#args.epoch,  # 这个指每个self_train里面的epoch
+                                   num_train_epochs=args.epoch,#args.epoch,  # 这个指每个self_train里面的epoch
                                    per_device_train_batch_size=args.batch_size*args.selftrain_topk,
                                    save_steps=1000,
                                    save_total_limit=1,
@@ -398,57 +398,16 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                                    do_eval=True if "eval" in dataset else False,
                                    no_cuda=False if args.device == "cuda" else True)
 
-    unlabeled_dataset = dataset["unlabeled"]  # 我们假设这里是个question_list
-    # unlabeled_dataset = SelfTrainDataset(question_list=unlabeled_dataset)
-    selftrain_args = SelfTrainingArguments(output_dir=args.save_dir,
-                                           num_train_epochs=1,  # 这个指每个self_train里面的epoch
-                                           per_device_train_batch_size=args.batch_size,
-                                           save_steps=1000,
-                                           save_total_limit=1,
-                                           learning_rate=args.lr,
-                                           evaluation_strategy="no",
-                                           selftrain_topk=args.selftrain_topk,
-                                           max_length=128,
-                                           dataloader_pin_memory=False,
-                                           do_eval=False,
-                                           no_cuda=False if args.device == "cuda" else True)
+    trainer = Trainer(model=model,
+                        args=train_args,
+                        data_collator=mycollate_trainer, # 要么给自己的，要么在定义trainer后面单独写一个data_collator=None，不然代码里有默认collate
+                        train_dataset=dataset["train"],
+                        eval_dataset=dataset["validation"],#dataset["eval"] if "eval" in dataset else None,
+                        tokenizer=tokenizer,
+                        optimizers=(optimizer, None)) # 缺了学习率调度器
 
-    for epoch in range(args.epoch):
+    trainer.train()
+    model = trainer.model
+    model.to(args.device)
 
-        if args.given_model: # 如果基础模型已经训过了，就先训self
-            args.given_model = False
-        else:
-            # 1. 先训练基础模型
-            
-            trainer = Trainer(model=model,
-                              args=train_args,
-                              data_collator=mycollate_trainer, # 要么给自己的，要么在定义trainer后面单独写一个data_collator=None，不然代码里有默认collate
-                              train_dataset=dataset["train"],
-                              eval_dataset=dataset["validation"],#dataset["eval"] if "eval" in dataset else None,
-                              tokenizer=tokenizer,
-                              optimizers=(optimizer, None)) # 缺了学习率调度器
-
-            trainer.train()
-            model = trainer.model
-            model.to(args.device)
-
-        print("初步训练完成")
-        # exit()
-        # 2. 用基础模型预测unlabeled数据集
-        # self_trainer = SelfTrainTrainer(model=model,
-        #                                 args=selftrain_args,
-        #                                 data_collator=self_train_collate,
-        #                                 train_dataset=unlabeled_dataset,
-        #                                 tokenizer=tokenizer,
-        #                                 optimizers=(optimizer, None))
-
-
-        # unlabeled_dataset.eval()
-        # self_trainer.get_soft_label_dataloader()
-
-        # unlabeled_dataset.train(tokenizer, args.max_length)
-        # self_trainer.train()
-        
-        # model = self_trainer.model
-
-        model.save_pretrained(f"/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing_few_shot_our/mt5-base/mt5_1000_our_data")
+    model.save_pretrained(f"/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing_few_shot_our/mt5-base/mt5_1000_our_data")
