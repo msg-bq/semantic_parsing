@@ -1,0 +1,304 @@
+{"domain": "weather", "utterance": "Is there rain in the forecast this week", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_ATTRIBUTE @ptr_3 ] @ptr_4 @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "what's the weather going to be doing at the weekend ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 [SL:DATE_TIME @ptr_9 @ptr_10 @ptr_11 ] @ptr_12 ]"}
+{"domain": "weather", "utterance": "Will there be thunder today", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 ] [SL:DATE_TIME @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "Is it beach weather this weekend ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:LOCATION @ptr_3 ] @ptr_4 [SL:DATE_TIME @ptr_5 @ptr_6 ] @ptr_7 ]"}
+{"domain": "weather", "utterance": "Is it raining in Dorchester ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_ATTRIBUTE @ptr_3 ] @ptr_4 [SL:LOCATION @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "Should I wear a coat tonight ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] [SL:DATE_TIME @ptr_6 ] @ptr_7 ]"}
+{"domain": "weather", "utterance": "How hot will it be this afternoon", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "What's the weather supposed to be like next week ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 [SL:DATE_TIME @ptr_9 @ptr_10 ] @ptr_11 ]"}
+{"domain": "weather", "utterance": "Will the UV index require the application of sunscreen today ?", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 @ptr_10 @ptr_11 ]"}
+{"domain": "weather", "utterance": "What's the weather forecast for this weekend", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 @ptr_7 @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "is there hail with this storm", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_ATTRIBUTE @ptr_3 ] @ptr_4 @ptr_5 [SL:WEATHER_ATTRIBUTE @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "Is there a tornado warning", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "Is it going to snow today ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] [SL:DATE_TIME @ptr_6 ] @ptr_7 ]"}
+{"domain": "weather", "utterance": "What is the temperature in Denver ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 ] @ptr_7 ]"}
+{"domain": "weather", "utterance": "is it going to snow in ohio this weekend", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 [SL:LOCATION @ptr_7 ] [SL:DATE_TIME @ptr_8 @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "Weather at 3 pm in Mexico City", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:DATE_TIME @ptr_2 @ptr_3 @ptr_4 ] @ptr_5 [SL:LOCATION @ptr_6 @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "What is the weather in Baltimore today", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 ] [SL:DATE_TIME @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "will it rain in harlingen today", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_ATTRIBUTE @ptr_3 ] @ptr_4 [SL:LOCATION @ptr_5 ] [SL:DATE_TIME @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "Tell me the weather conditions for New Zealand", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:LOCATION @ptr_7 @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "Is it going to frost tonight", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] [SL:DATE_TIME @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "Are we getting a snowstorm this week ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] [SL:DATE_TIME @ptr_6 @ptr_7 ] @ptr_8 ]"}
+{"domain": "weather", "utterance": "What sort of weather will be happening in Thailand during July ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 [SL:LOCATION @ptr_9 ] [SL:DATE_TIME @ptr_10 @ptr_11 ] @ptr_12 ]"}
+{"domain": "weather", "utterance": "How hot will it be in Los Angeles, CA today ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:LOCATION @ptr_7 @ptr_8 @ptr_9 @ptr_10 ] [SL:DATE_TIME @ptr_11 ] @ptr_12 ]"}
+{"domain": "weather", "utterance": "I'd like to know the weather for the 7th of July .", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 @ptr_8 @ptr_9 @ptr_10 @ptr_11 ] @ptr_12 ]"}
+{"domain": "weather", "utterance": "What was the temperature this day last year", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 @ptr_6 @ptr_7 @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "How hot is it in south Africa today ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 @ptr_7 ] [SL:DATE_TIME @ptr_8 ] @ptr_9 ]"}
+{"domain": "weather", "utterance": "What's the weather this weekend ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 @ptr_6 ] @ptr_7 ]"}
+{"domain": "weather", "utterance": "forecast for 6 am", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:DATE_TIME @ptr_2 @ptr_3 @ptr_4 ] ]"}
+{"domain": "weather", "utterance": "Is it going to be below 1 degrees c out there today", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:WEATHER_ATTRIBUTE @ptr_6 ] [SL:WEATHER_ATTRIBUTE @ptr_7 ] @ptr_8 [SL:WEATHER_TEMPERATURE_UNIT @ptr_9 ] [SL:LOCATION @ptr_10 @ptr_11 ] [SL:DATE_TIME @ptr_12 ] ]"}
+{"domain": "weather", "utterance": "why are storm clouds black", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_ATTRIBUTE @ptr_3 ] [SL:WEATHER_ATTRIBUTE @ptr_4 ] @ptr_5 ]"}
+{"domain": "weather", "utterance": "Show me the weather in 13 November at 7 am", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 @ptr_10 ] ]"}
+{"domain": "weather", "utterance": "Should I wear a jacket tonight", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] [SL:DATE_TIME @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "how hot is it going to be this weekend ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 [SL:DATE_TIME @ptr_8 @ptr_9 ] @ptr_10 ]"}
+{"domain": "weather", "utterance": "when will we have snow", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "What's happening with the weather today ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 ] @ptr_8 ]"}
+{"domain": "weather", "utterance": "What will the weather be like in Cancun Mexico today ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 [SL:LOCATION @ptr_8 @ptr_9 ] [SL:DATE_TIME @ptr_10 ] @ptr_11 ]"}
+{"domain": "weather", "utterance": "What time of day will the weather be the coolest ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 [SL:WEATHER_ATTRIBUTE @ptr_10 ] @ptr_11 ]"}
+{"domain": "weather", "utterance": "What is the humidity percentage for today", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 ] @ptr_5 [SL:DATE_TIME @ptr_6 @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "what is the weather like", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "Is it going to snow tomorrow morning ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] [SL:DATE_TIME @ptr_6 @ptr_7 ] @ptr_8 ]"}
+{"domain": "weather", "utterance": "When is the last time it snowed in Texas", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:WEATHER_ATTRIBUTE @ptr_7 ] @ptr_8 [SL:LOCATION @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "What was the wind speed of the tornado in Kansas", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 @ptr_5 ] @ptr_6 @ptr_7 [SL:WEATHER_ATTRIBUTE @ptr_8 ] @ptr_9 [SL:LOCATION @ptr_10 ] ]"}
+{"domain": "weather", "utterance": "What is the low temp supposed to be tonight ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 [SL:DATE_TIME @ptr_9 ] @ptr_10 ]"}
+{"domain": "weather", "utterance": "how much rain did we get yesterday", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_ATTRIBUTE @ptr_3 ] @ptr_4 @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "What's the weather in Tampa next weekend ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 ] [SL:DATE_TIME @ptr_7 @ptr_8 ] @ptr_9 ]"}
+{"domain": "weather", "utterance": "what is the weather today ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "Does the weather forecast show it's going to be cold today ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 @ptr_10 [SL:WEATHER_ATTRIBUTE @ptr_11 ] [SL:DATE_TIME @ptr_12 ] @ptr_13 ]"}
+{"domain": "weather", "utterance": "How hot is it going to be today ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 [SL:DATE_TIME @ptr_8 ] @ptr_9 ]"}
+{"domain": "weather", "utterance": "What's the weather like tomorrow ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 ] @ptr_7 ]"}
+{"domain": "weather", "utterance": "what will be the temperature tomorrow at 6 am", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 @ptr_7 @ptr_8 @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "How hot is it next week dublin in degrees C", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 @ptr_6 ] [SL:LOCATION @ptr_7 ] @ptr_8 @ptr_9 [SL:WEATHER_TEMPERATURE_UNIT @ptr_10 ] ]"}
+{"domain": "weather", "utterance": "Is there really a chance for snow ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:WEATHER_ATTRIBUTE @ptr_7 ] @ptr_8 ]"}
+{"domain": "weather", "utterance": "Is it going to rain ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "Temperature next week out there Celcius", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:DATE_TIME @ptr_2 @ptr_3 ] [SL:LOCATION @ptr_4 @ptr_5 ] [SL:WEATHER_TEMPERATURE_UNIT @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "Are we still under drought conditions ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 @ptr_7 ]"}
+{"domain": "weather", "utterance": "do I need a jacket", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "How's the weather going to be at 11 am ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 [SL:DATE_TIME @ptr_8 @ptr_9 @ptr_10 ] @ptr_11 ]"}
+{"domain": "weather", "utterance": "how hot can it be today", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "Will it rain today at 4 : 30 pm ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_ATTRIBUTE @ptr_3 ] [SL:DATE_TIME @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 ] @ptr_10 ]"}
+{"domain": "weather", "utterance": "Is it warm in Paris right now ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_ATTRIBUTE @ptr_3 ] @ptr_4 [SL:LOCATION @ptr_5 ] @ptr_6 @ptr_7 @ptr_8 ]"}
+{"domain": "weather", "utterance": "What time is the sun supposed to rise today", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 [SL:DATE_TIME @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "What is the weather going to be like this week at Miami beach ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 [SL:DATE_TIME @ptr_9 @ptr_10 ] @ptr_11 [SL:LOCATION @ptr_12 @ptr_13 ] @ptr_14 ]"}
+{"domain": "weather", "utterance": "Is there any chance of a blizzard in Chicago tomorrow ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:WEATHER_ATTRIBUTE @ptr_7 ] @ptr_8 [SL:LOCATION @ptr_9 ] [SL:DATE_TIME @ptr_10 ] @ptr_11 ]"}
+{"domain": "weather", "utterance": "when will it rain today", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 ] [SL:DATE_TIME @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "Do I need an umbrella ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "Will it be above 58 in Celcius for San Francisco tonight", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 ] [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 [SL:WEATHER_TEMPERATURE_UNIT @ptr_7 ] @ptr_8 [SL:LOCATION @ptr_9 @ptr_10 ] [SL:DATE_TIME @ptr_11 ] ]"}
+{"domain": "weather", "utterance": "Will we have more than a inch of rain today ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 [SL:WEATHER_ATTRIBUTE @ptr_9 ] [SL:DATE_TIME @ptr_10 ] @ptr_11 ]"}
+{"domain": "weather", "utterance": "what is the high for monday next week ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 @ptr_6 @ptr_7 @ptr_8 ] @ptr_9 ]"}
+{"domain": "weather", "utterance": "is it storming ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_ATTRIBUTE @ptr_3 ] @ptr_4 ]"}
+{"domain": "weather", "utterance": "Is it below 26 in degree C menlo park tomorrow morning", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_ATTRIBUTE @ptr_3 ] [SL:WEATHER_ATTRIBUTE @ptr_4 ] @ptr_5 @ptr_6 [SL:WEATHER_TEMPERATURE_UNIT @ptr_7 ] [SL:LOCATION @ptr_8 @ptr_9 ] [SL:DATE_TIME @ptr_10 @ptr_11 ] ]"}
+{"domain": "weather", "utterance": "Do I need my rain jacket this morning ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 @ptr_6 ] [SL:DATE_TIME @ptr_7 @ptr_8 ] @ptr_9 ]"}
+{"domain": "weather", "utterance": "what time does the sun set in Cape Cod", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 [SL:LOCATION @ptr_8 @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "Is it going to be above 4 degree C inside this weekend", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:WEATHER_ATTRIBUTE @ptr_6 ] [SL:WEATHER_ATTRIBUTE @ptr_7 ] @ptr_8 [SL:WEATHER_TEMPERATURE_UNIT @ptr_9 ] [SL:LOCATION @ptr_10 ] [SL:DATE_TIME @ptr_11 @ptr_12 ] ]"}
+{"domain": "weather", "utterance": "What are the conditions like for skiing at Sugar Mountain resort", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 @ptr_10 @ptr_11 ]"}
+{"domain": "weather", "utterance": "Is North and South Vietnam the same temperature today ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:LOCATION @ptr_2 ] @ptr_3 [SL:LOCATION @ptr_4 @ptr_5 ] @ptr_6 @ptr_7 @ptr_8 [SL:DATE_TIME @ptr_9 ] @ptr_10 ]"}
+{"domain": "weather", "utterance": "How will the weather be in Rotherham today ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:LOCATION @ptr_7 ] [SL:DATE_TIME @ptr_8 ] @ptr_9 ]"}
+{"domain": "weather", "utterance": "will the weather permit to travel to Texas next weekend", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 [SL:LOCATION @ptr_8 ] [SL:DATE_TIME @ptr_9 @ptr_10 ] ]"}
+{"domain": "weather", "utterance": "will it be hot in birmingham this weekend", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 ] @ptr_5 [SL:LOCATION @ptr_6 ] [SL:DATE_TIME @ptr_7 @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "Is it hotter today in Los Angeles or San Diego ?", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_ATTRIBUTE @ptr_3 ] [SL:DATE_TIME @ptr_4 ] @ptr_5 [SL:LOCATION @ptr_6 @ptr_7 ] @ptr_8 [SL:LOCATION @ptr_9 @ptr_10 ] @ptr_11 ]"}
+{"domain": "weather", "utterance": "How is the weather in Banat", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "whats the outside temperature right now in colorado springs", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 [SL:LOCATION @ptr_8 @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "How warm is it now in Fahrenheit ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:WEATHER_TEMPERATURE_UNIT @ptr_7 ] @ptr_8 ]"}
+{"domain": "weather", "utterance": "Tell me the weather for Miami", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "Temperature near Dublin this weekend Fahrenheit", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:LOCATION @ptr_3 ] [SL:DATE_TIME @ptr_4 @ptr_5 ] [SL:WEATHER_TEMPERATURE_UNIT @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "Tell me the weather forecast for North East Scotland .", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:LOCATION @ptr_7 @ptr_8 @ptr_9 ] @ptr_10 ]"}
+{"domain": "weather", "utterance": "What is the forecast for Tampa ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 ] @ptr_7 ]"}
+{"domain": "weather", "utterance": "How warm is in Spain tonight ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 [SL:LOCATION @ptr_5 ] [SL:DATE_TIME @ptr_6 ] @ptr_7 ]"}
+{"domain": "weather", "utterance": "How is the weather in Croatia", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "How hot is it paris tomorrow morning in degrees F", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 [SL:LOCATION @ptr_5 ] [SL:DATE_TIME @ptr_6 @ptr_7 ] @ptr_8 @ptr_9 [SL:WEATHER_TEMPERATURE_UNIT @ptr_10 ] ]"}
+{"domain": "weather", "utterance": "Broadcast the weather details in Canada", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "when will the hurricane hit Texas", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 ] @ptr_5 [SL:LOCATION @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "What's the weather like in Thailand ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:LOCATION @ptr_7 ] @ptr_8 ]"}
+{"domain": "weather", "utterance": "Temperature around Tokyo tomorrow morning Celsius", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:LOCATION @ptr_3 ] [SL:DATE_TIME @ptr_4 @ptr_5 ] [SL:WEATHER_TEMPERATURE_UNIT @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "What time is the sunset today ?", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 ] @ptr_7 ]"}
+{"domain": "weather", "utterance": "Have there been any earthquakes in California recently", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 [SL:LOCATION @ptr_7 ] [SL:DATE_TIME @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "Tell me the weather forecast for Spain", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:LOCATION @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "How warm is it boston today in degree f", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 [SL:LOCATION @ptr_5 ] [SL:DATE_TIME @ptr_6 ] @ptr_7 @ptr_8 [SL:WEATHER_TEMPERATURE_UNIT @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "Hows the weather in york tomorrow afternoon ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:LOCATION @ptr_5 ] [SL:DATE_TIME @ptr_6 @ptr_7 ] @ptr_8 ]"}
+{"domain": "weather", "utterance": "How cold is it around Seattle tonight in degree C", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 ] [SL:DATE_TIME @ptr_7 ] @ptr_8 @ptr_9 [SL:WEATHER_TEMPERATURE_UNIT @ptr_10 ] ]"}
+{"domain": "weather", "utterance": "What time is sundown ?", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "Weather by Celsius", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_TEMPERATURE_UNIT @ptr_3 ] ]"}
+{"domain": "weather", "utterance": "can i go for a run this morning", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "What is the dew point ?", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "What is the temperature in Celsius ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:WEATHER_TEMPERATURE_UNIT @ptr_6 ] @ptr_7 ]"}
+{"domain": "weather", "utterance": "Is it going to be around 55 degrees Celsius sao paulo tomorrow morning", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:WEATHER_ATTRIBUTE @ptr_6 ] [SL:WEATHER_ATTRIBUTE @ptr_7 ] @ptr_8 [SL:WEATHER_TEMPERATURE_UNIT @ptr_9 ] [SL:LOCATION @ptr_10 @ptr_11 ] [SL:DATE_TIME @ptr_12 @ptr_13 ] ]"}
+{"domain": "weather", "utterance": "when's sunrise", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 ]"}
+{"domain": "weather", "utterance": "What time does the sun rise today", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "How warm is it at Sao Paulo degrees Celsius", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 @ptr_7 ] @ptr_8 [SL:WEATHER_TEMPERATURE_UNIT @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "How many tropical storms turn into hurricanes", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 ] @ptr_5 @ptr_6 @ptr_7 ]"}
+{"domain": "weather", "utterance": "Can I go skiing tomorrow ?", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 ]"}
+{"domain": "weather", "utterance": "When does hurricane season start", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_ATTRIBUTE @ptr_3 ] @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "How warm is it tomorrow morning in degree fahrenheit", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 @ptr_6 ] @ptr_7 @ptr_8 [SL:WEATHER_TEMPERATURE_UNIT @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "What's the weather in Celsius degree ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:WEATHER_TEMPERATURE_UNIT @ptr_6 @ptr_7 ] @ptr_8 ]"}
+{"domain": "weather", "utterance": "how many tornadoes have touched down this season", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 ]"}
+{"domain": "weather", "utterance": "what time is the sunset tonight", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "How many hours of sun will we get today ?", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 @ptr_10 ]"}
+{"domain": "weather", "utterance": "Can you guess the climate for next week here ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 @ptr_7 @ptr_8 ] [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_USER @ptr_9 ] ] ] @ptr_10 ]"}
+{"domain": "weather", "utterance": "Did it snow in New York in February of last year", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_ATTRIBUTE @ptr_3 ] @ptr_4 @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 @ptr_8 ] @ptr_9 [SL:DATE_TIME @ptr_10 @ptr_11 ] ]"}
+{"domain": "weather", "utterance": "when does it start getting dark out", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 ]"}
+{"domain": "weather", "utterance": "Temperature near New York tomorrow F", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:LOCATION @ptr_3 @ptr_4 ] [SL:DATE_TIME @ptr_5 ] [SL:WEATHER_TEMPERATURE_UNIT @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "How warm is it tonight for Beijing in degrees C", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] @ptr_6 [SL:LOCATION @ptr_7 ] @ptr_8 @ptr_9 [SL:WEATHER_TEMPERATURE_UNIT @ptr_10 ] ]"}
+{"domain": "weather", "utterance": "what is the best day for me to go to the beach this week", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 @ptr_10 @ptr_11 [SL:LOCATION @ptr_12 ] [SL:DATE_TIME @ptr_13 @ptr_14 ] ]"}
+{"domain": "weather", "utterance": "when will it be sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "what is the record high temp for my area", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 [SL:LOCATION @ptr_8 @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "How cold is it for London tomorrow degrees Fahrenheit", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 ] [SL:DATE_TIME @ptr_7 ] @ptr_8 [SL:WEATHER_TEMPERATURE_UNIT @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "What's the low temp tonight in Celsius", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 @ptr_5 ] [SL:DATE_TIME @ptr_6 ] @ptr_7 [SL:WEATHER_TEMPERATURE_UNIT @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "When will the first snow fall", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "When was the last earthquake in my area", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:LOCATION @ptr_7 @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "How hot is it this weekend in Manila in degree F", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 @ptr_6 ] @ptr_7 [SL:LOCATION @ptr_8 ] @ptr_9 @ptr_10 [SL:WEATHER_TEMPERATURE_UNIT @ptr_11 ] ]"}
+{"domain": "weather", "utterance": "what is the protocol for stormy weather in schools", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:WEATHER_ATTRIBUTE @ptr_6 ] @ptr_7 @ptr_8 [SL:LOCATION @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "How hot is it tomorrow here in degree Celcius", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] [SL:LOCATION @ptr_6 ] @ptr_7 @ptr_8 [SL:WEATHER_TEMPERATURE_UNIT @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "do you think ill be able to play outside this afternoon", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 @ptr_10 @ptr_11 ]"}
+{"domain": "weather", "utterance": "What exactly is high pressure? What about low pressure", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 @ptr_10 ]"}
+{"domain": "weather", "utterance": "Will there be a high pollen count today ?", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] [SL:WEATHER_ATTRIBUTE @ptr_6 @ptr_7 ] [SL:DATE_TIME @ptr_8 ] @ptr_9 ]"}
+{"domain": "weather", "utterance": "Is the temperature expected to exceed 35 degrees Celsius ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:WEATHER_ATTRIBUTE @ptr_7 @ptr_8 ] [SL:WEATHER_TEMPERATURE_UNIT @ptr_9 ] @ptr_10 ]"}
+{"domain": "weather", "utterance": "What is the maximum temperature today in celcius ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 ] @ptr_7 [SL:WEATHER_TEMPERATURE_UNIT @ptr_8 ] @ptr_9 ]"}
+{"domain": "weather", "utterance": "Temperature today Fahrenheit", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:DATE_TIME @ptr_2 ] [SL:WEATHER_TEMPERATURE_UNIT @ptr_3 ] ]"}
+{"domain": "weather", "utterance": "Is it going to be below 40 degrees celsius in Houston tonight", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:WEATHER_ATTRIBUTE @ptr_6 ] [SL:WEATHER_ATTRIBUTE @ptr_7 ] @ptr_8 [SL:WEATHER_TEMPERATURE_UNIT @ptr_9 ] @ptr_10 [SL:LOCATION @ptr_11 ] [SL:DATE_TIME @ptr_12 ] ]"}
+{"domain": "weather", "utterance": "What time is the sunset today", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "How cold is it for Mumbai this weekend in degree C", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 ] [SL:DATE_TIME @ptr_7 @ptr_8 ] @ptr_9 @ptr_10 [SL:WEATHER_TEMPERATURE_UNIT @ptr_11 ] ]"}
+{"domain": "weather", "utterance": "How hot is it at Boston tomorrow morning in C", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 ] [SL:DATE_TIME @ptr_7 @ptr_8 ] @ptr_9 [SL:WEATHER_TEMPERATURE_UNIT @ptr_10 ] ]"}
+{"domain": "weather", "utterance": "Temperature shanghai today C", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:LOCATION @ptr_2 ] [SL:DATE_TIME @ptr_3 ] [SL:WEATHER_TEMPERATURE_UNIT @ptr_4 ] ]"}
+{"domain": "weather", "utterance": "How hot it is Celsius ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 [SL:WEATHER_TEMPERATURE_UNIT @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "WHAT TIME IS SUNRISE TOMORROW", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "How hot is it out there tomorrow morning Fahrenheit", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 [SL:LOCATION @ptr_5 @ptr_6 ] [SL:DATE_TIME @ptr_7 @ptr_8 ] [SL:WEATHER_TEMPERATURE_UNIT @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "How hot does it get in Rome in March", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:LOCATION @ptr_7 ] [SL:DATE_TIME @ptr_8 @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "Will it be below 83 in degree F at Menlo Park tonight", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 ] [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 @ptr_7 [SL:WEATHER_TEMPERATURE_UNIT @ptr_8 ] @ptr_9 [SL:LOCATION @ptr_10 @ptr_11 ] [SL:DATE_TIME @ptr_12 ] ]"}
+{"domain": "weather", "utterance": "Temperature at Chicago today Celcius", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:LOCATION @ptr_3 ] [SL:DATE_TIME @ptr_4 ] [SL:WEATHER_TEMPERATURE_UNIT @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "Will it be below 35 in degrees F out there tomorrow", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 ] [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 @ptr_7 [SL:WEATHER_TEMPERATURE_UNIT @ptr_8 ] [SL:LOCATION @ptr_9 @ptr_10 ] [SL:DATE_TIME @ptr_11 ] ]"}
+{"domain": "weather", "utterance": "When does fall weather being", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "Temperature out there tonight C", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:LOCATION @ptr_2 @ptr_3 ] [SL:DATE_TIME @ptr_4 ] [SL:WEATHER_TEMPERATURE_UNIT @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "How cold is it this weekend london degrees Celsius", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 @ptr_6 ] [SL:LOCATION @ptr_7 ] @ptr_8 [SL:WEATHER_TEMPERATURE_UNIT @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "Is it going to be below 6 in F manila tomorrow", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:WEATHER_ATTRIBUTE @ptr_6 ] [SL:WEATHER_ATTRIBUTE @ptr_7 ] @ptr_8 [SL:WEATHER_TEMPERATURE_UNIT @ptr_9 ] [SL:LOCATION @ptr_10 ] [SL:DATE_TIME @ptr_11 ] ]"}
+{"domain": "weather", "utterance": "Temperature near Tokyo today F", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:LOCATION @ptr_3 ] [SL:DATE_TIME @ptr_4 ] [SL:WEATHER_TEMPERATURE_UNIT @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "How hot is it tonight san francisco in degrees c", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] [SL:LOCATION @ptr_6 @ptr_7 ] @ptr_8 @ptr_9 [SL:WEATHER_TEMPERATURE_UNIT @ptr_10 ] ]"}
+{"domain": "weather", "utterance": "What is the hottest temperature reported in the world", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 ] @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 ]"}
+{"domain": "weather", "utterance": "Is adam a tropical depression", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "Will it be above 31 in degrees Fahrenheit in London today", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 ] [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 @ptr_7 [SL:WEATHER_TEMPERATURE_UNIT @ptr_8 ] @ptr_9 [SL:LOCATION @ptr_10 ] [SL:DATE_TIME @ptr_11 ] ]"}
+{"domain": "weather", "utterance": "What's the rainfall measurement in cm ?", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 ] @ptr_5 @ptr_6 @ptr_7 @ptr_8 ]"}
+{"domain": "weather", "utterance": "What is a cumulus cloud formation", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "Can you check today's temperature in Celsius ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:DATE_TIME @ptr_4 ] @ptr_5 @ptr_6 @ptr_7 [SL:WEATHER_TEMPERATURE_UNIT @ptr_8 ] @ptr_9 ]"}
+{"domain": "weather", "utterance": "Temperature at Seattle tomorrow morning F", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:LOCATION @ptr_3 ] [SL:DATE_TIME @ptr_4 @ptr_5 ] [SL:WEATHER_TEMPERATURE_UNIT @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "severe weather alert", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 ]"}
+{"domain": "weather", "utterance": "How cold is it mumbai in degrees C", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 [SL:LOCATION @ptr_5 ] @ptr_6 @ptr_7 [SL:WEATHER_TEMPERATURE_UNIT @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "Temperature at Seattle Celcius", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:LOCATION @ptr_3 ] [SL:WEATHER_TEMPERATURE_UNIT @ptr_4 ] ]"}
+{"domain": "weather", "utterance": "What time is the sunset today", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "what is the dew point ?", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "Temperature in Manila Celsius", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:LOCATION @ptr_3 ] [SL:WEATHER_TEMPERATURE_UNIT @ptr_4 ] ]"}
+{"domain": "weather", "utterance": "What is the temperature right now in Celsius and Fahrenheit ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 [SL:WEATHER_TEMPERATURE_UNIT @ptr_8 ] @ptr_9 [SL:WEATHER_TEMPERATURE_UNIT @ptr_10 ] @ptr_11 ]"}
+{"domain": "weather", "utterance": "Should I take the bus or walk to work tomorrow ?", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 @ptr_10 @ptr_11 ]"}
+{"domain": "weather", "utterance": "what is the average wind speed in central ohio during the fall", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 @ptr_7 [SL:LOCATION @ptr_8 @ptr_9 ] @ptr_10 @ptr_11 @ptr_12 ]"}
+{"domain": "weather", "utterance": "What time is sunrise tomorrow ?", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "What time does the sun rise tomorrow morning", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "What time is sunrise tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "are the conditions good at robert moses", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 ]"}
+{"domain": "weather", "utterance": "Is it going to be around 89 in degree C out there", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:WEATHER_ATTRIBUTE @ptr_6 ] [SL:WEATHER_ATTRIBUTE @ptr_7 ] @ptr_8 @ptr_9 [SL:WEATHER_TEMPERATURE_UNIT @ptr_10 ] [SL:LOCATION @ptr_11 @ptr_12 ] ]"}
+{"domain": "weather", "utterance": "How much ice accumulation is anticipated", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 [SL:WEATHER_ATTRIBUTE @ptr_3 @ptr_4 ] @ptr_5 @ptr_6 ]"}
+{"domain": "weather", "utterance": "what time is sunrise tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "When summer days are going to end", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 [SL:DATE_TIME @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 ]"}
+{"domain": "weather", "utterance": "effects of el nino", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 ]"}
+{"domain": "weather", "utterance": "How cold will the winter be this year", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] @ptr_6 [SL:DATE_TIME @ptr_7 @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "ARE WE EXPECTED TO HAVE A HARSH WINTER THIS YEAR", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:WEATHER_ATTRIBUTE @ptr_7 @ptr_8 ] [SL:DATE_TIME @ptr_9 @ptr_10 ] ]"}
+{"domain": "weather", "utterance": "Where is it summer all year round", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:DATE_TIME @ptr_4 @ptr_5 @ptr_6 ] @ptr_7 ]"}
+{"domain": "weather", "utterance": "What's the hottest day ever recorded", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:WEATHER_ATTRIBUTE @ptr_4 ] @ptr_5 @ptr_6 @ptr_7 ]"}
+{"domain": "weather", "utterance": "Where is the flash flood warning", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 ]"}
+{"domain": "weather", "utterance": "What's the weather like in terms of rain in mm ?", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 [SL:WEATHER_ATTRIBUTE @ptr_9 ] @ptr_10 @ptr_11 @ptr_12 ]"}
+{"domain": "weather", "utterance": "would i be able to go windsurfing today", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 ]"}
+{"domain": "weather", "utterance": "When is it winter in Germany", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:DATE_TIME @ptr_4 ] @ptr_5 [SL:LOCATION @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "time until sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 ]"}
+{"domain": "weather", "utterance": "Will I need a jacket for my walk this evening ?", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 @ptr_10 @ptr_11 ]"}
+{"domain": "weather", "utterance": "Which city had the coldest day in the US in 2016", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 @ptr_7 @ptr_8 @ptr_9 @ptr_10 @ptr_11 ]"}
+{"domain": "weather", "utterance": "when does the sun rise", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "How much summer weather do we have left in Kansas this year", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 [SL:LOCATION @ptr_10 ] [SL:DATE_TIME @ptr_11 @ptr_12 ] ]"}
+{"domain": "weather", "utterance": "what's the local radar like tomorrow", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_MODIFIER @ptr_4 ] ] ] @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "I am going to Canada in August, do I need a Jacket", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:LOCATION @ptr_5 ] [SL:DATE_TIME @ptr_6 @ptr_7 ] @ptr_8 @ptr_9 @ptr_10 @ptr_11 @ptr_12 [SL:WEATHER_ATTRIBUTE @ptr_13 ] ]"}
+{"domain": "weather", "utterance": "What time does the sunset next Monday", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "when is the next sunrise ?", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 ]"}
+{"domain": "weather", "utterance": "How cold does it get in London in the winter", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:LOCATION @ptr_7 ] [SL:DATE_TIME @ptr_8 @ptr_9 @ptr_10 ] ]"}
+{"domain": "weather", "utterance": "Any flash floods in my area", "semantic_parse": "[IN:UNSUPPORTED_WEATHER @ptr_1 [SL:WEATHER_ATTRIBUTE @ptr_2 @ptr_3 ] @ptr_4 [SL:LOCATION @ptr_5 @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "When is sunset today", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 [SL:DATE_TIME @ptr_4 ] ]"}
+{"domain": "weather", "utterance": "when's dawn", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 ]"}
+{"domain": "weather", "utterance": "what time will the sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "what time is sunrise tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "when is dawn tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 [SL:DATE_TIME @ptr_4 ] ]"}
+{"domain": "weather", "utterance": "What time is sunrise tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "What time will the sun rise in Tokyo tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 [SL:LOCATION @ptr_8 ] [SL:DATE_TIME @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "when is sunset in Miami", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:LOCATION @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "You know what time sundown is ?", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 ]"}
+{"domain": "weather", "utterance": "At what time will the sun rise today", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 [SL:DATE_TIME @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "What time is sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 ]"}
+{"domain": "weather", "utterance": "what's the radar look like in my area", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_USER @ptr_8 @ptr_9 ] ] ] ]"}
+{"domain": "weather", "utterance": "when is sunrise tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 [SL:DATE_TIME @ptr_4 ] ]"}
+{"domain": "weather", "utterance": "What time is sunrise", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 ]"}
+{"domain": "weather", "utterance": "What time does the sun set", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 ]"}
+{"domain": "weather", "utterance": "when is sunset ?", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 ]"}
+{"domain": "weather", "utterance": "what time is tomorrows sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 [SL:DATE_TIME @ptr_4 ] @ptr_5 ]"}
+{"domain": "weather", "utterance": "What time is sunrise tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "What time is sunset in Moscow", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "What time is sunrise tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "What time did the sun rise today", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "When is the sunset in California", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "when is sunrise today ?", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 [SL:DATE_TIME @ptr_4 ] @ptr_5 ]"}
+{"domain": "weather", "utterance": "What time is sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 ]"}
+{"domain": "weather", "utterance": "What time does the sun set", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 ]"}
+{"domain": "weather", "utterance": "what time is the sunrise", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "When does the sunrise tomorrow ?", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "What time is sunrise ?", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "when does it get dark", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "at what time will the sun rise in Calaveras County tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 [SL:LOCATION @ptr_9 @ptr_10 ] [SL:DATE_TIME @ptr_11 ] ]"}
+{"domain": "weather", "utterance": "what is the local radar forecast", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_MODIFIER @ptr_4 ] ] ] @ptr_5 @ptr_6 ]"}
+{"domain": "weather", "utterance": "what time is the sun going to set today", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 [SL:DATE_TIME @ptr_9 ] ]"}
+{"domain": "weather", "utterance": "What time does the sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "what time is sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 ]"}
+{"domain": "weather", "utterance": "What time is tonight's sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 [SL:DATE_TIME @ptr_4 ] @ptr_5 @ptr_6 ]"}
+{"domain": "weather", "utterance": "tell me when sunrise is", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "what time is sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 ]"}
+{"domain": "weather", "utterance": "can you tell me the local radar prediction", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_MODIFIER @ptr_6 ] ] ] @ptr_7 @ptr_8 ]"}
+{"domain": "weather", "utterance": "at what time does it start getting dark", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 ]"}
+{"domain": "weather", "utterance": "What time is sunrise", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 ]"}
+{"domain": "weather", "utterance": "What time does the sun set today", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "What time is sunset tomorrow ?", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "when is the sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 ]"}
+{"domain": "weather", "utterance": "what time will it start to get dark out", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 ]"}
+{"domain": "weather", "utterance": "when will the dawn be", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "What time is sunset tomorrow ?", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "What time will the sunrise Friday", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "When is sunset on Friday ?", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 [SL:DATE_TIME @ptr_4 @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "when does the sun set", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "What time does the sun rise this morning", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "show me weather radar in my area", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_USER @ptr_6 @ptr_7 ] ] ] ]"}
+{"domain": "weather", "utterance": "What time is dawn tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "What time is the sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "When does the sun come up", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 ]"}
+{"domain": "weather", "utterance": "When is sunrise on Saturday ?", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 [SL:DATE_TIME @ptr_4 @ptr_5 ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "What time did the sun rise 3 years ago today", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 @ptr_8 @ptr_9 @ptr_10 ] ]"}
+{"domain": "weather", "utterance": "advise me on how many cm of rain is due tomorrow", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:MEASUREMENT_UNIT @ptr_6 ] @ptr_7 [SL:WEATHER_ATTRIBUTE @ptr_8 ] @ptr_9 @ptr_10 [SL:DATE_TIME @ptr_11 ] ]"}
+{"domain": "weather", "utterance": "When is sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 ]"}
+{"domain": "weather", "utterance": "What time is sunrise", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 ]"}
+{"domain": "weather", "utterance": "What time is sunset ?", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "what time does the sun set", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 ]"}
+{"domain": "weather", "utterance": "What time is Sunset tonight", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "What time is sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 ]"}
+{"domain": "weather", "utterance": "tell me the local radar for tomorrow", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_MODIFIER @ptr_4 ] ] ] @ptr_5 [SL:DATE_TIME @ptr_6 @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "Tell me the time of sundown .", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 ]"}
+{"domain": "weather", "utterance": "What time is the sunset today ?", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 ] @ptr_7 ]"}
+{"domain": "weather", "utterance": "When is sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 ]"}
+{"domain": "weather", "utterance": "When will the sun rise today ?", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:DATE_TIME @ptr_6 ] @ptr_7 ]"}
+{"domain": "weather", "utterance": "When's sunset in LA", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:LOCATION @ptr_5 ] ]"}
+{"domain": "weather", "utterance": "What time is the sun setting tonight in the Outer Banks", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 ] @ptr_8 @ptr_9 [SL:LOCATION @ptr_10 @ptr_11 ] ]"}
+{"domain": "weather", "utterance": "What time does the sun rise tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:DATE_TIME @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "Tell me the sundown time .", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 ]"}
+{"domain": "weather", "utterance": "When does the sunset", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 ]"}
+{"domain": "weather", "utterance": "When is dusk the day after tomorrow", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 @ptr_6 @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "what time will the sunrise", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "Pull up the radar for my current area", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_USER @ptr_6 @ptr_7 @ptr_8 ] ] ] ]"}
+{"domain": "weather", "utterance": "what time does sunrise in new york tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 @ptr_7 ] [SL:DATE_TIME @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "gimmie that local radar readout", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_MODIFIER @ptr_3 ] ] ] @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "when is sunrise", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 ]"}
+{"domain": "weather", "utterance": "When is sunrise tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 [SL:DATE_TIME @ptr_4 ] ]"}
+{"domain": "weather", "utterance": "Weather in current location", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_USER @ptr_3 @ptr_4 ] ] ] ]"}
+{"domain": "weather", "utterance": "when does the sun rise", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 ]"}
+{"domain": "weather", "utterance": "When is dawn tomorrow", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 [SL:DATE_TIME @ptr_4 ] ]"}
+{"domain": "weather", "utterance": "When time does the sunrise in New York", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:LOCATION @ptr_7 @ptr_8 ] ]"}
+{"domain": "weather", "utterance": "Sunrise and sunset times in Los Angeles", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION @ptr_6 @ptr_7 ] ]"}
+{"domain": "weather", "utterance": "What time was sunrise this morning", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "What time is sunrise tomorrow morning ?", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 @ptr_6 ] @ptr_7 ]"}
+{"domain": "weather", "utterance": "What time does the sun rise", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 ]"}
+{"domain": "weather", "utterance": "how many millimetres of rain is expected ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:MEASUREMENT_UNIT @ptr_3 ] @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 @ptr_7 @ptr_8 ]"}
+{"domain": "weather", "utterance": "What is the forecast for this weekend at my mums ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:DATE_TIME @ptr_5 @ptr_6 @ptr_7 ] @ptr_8 [SL:LOCATION [IN:GET_INFO_CONTACT [SL:CONTACT [IN:GET_CONTACT [SL:CONTACT_RELATED @ptr_9 ] [SL:TYPE_RELATION @ptr_10 ] ] ] ] ] @ptr_11 ]"}
+{"domain": "weather", "utterance": "when is the dawn", "semantic_parse": "[IN:GET_SUNRISE @ptr_1 @ptr_2 @ptr_3 @ptr_4 ]"}
+{"domain": "weather", "utterance": "I need the local radar", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_MODIFIER @ptr_4 ] ] ] @ptr_5 ]"}
+{"domain": "weather", "utterance": "tell me local radar for today", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_MODIFIER @ptr_3 ] ] ] @ptr_4 [SL:DATE_TIME @ptr_5 @ptr_6 ] ]"}
+{"domain": "weather", "utterance": "What time is dusk in my town", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_USER @ptr_6 @ptr_7 ] ] ] ]"}
+{"domain": "weather", "utterance": "SHOW ME THE RADAR FOR MY AREA", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_USER @ptr_6 @ptr_7 ] ] ] ]"}
+{"domain": "weather", "utterance": "what is the weather here ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_USER @ptr_5 ] ] ] @ptr_6 ]"}
+{"domain": "weather", "utterance": "tell me local radar", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_MODIFIER @ptr_3 ] ] ] @ptr_4 ]"}
+{"domain": "weather", "utterance": "what's the local radar", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_MODIFIER @ptr_4 ] ] ] @ptr_5 ]"}
+{"domain": "weather", "utterance": "Weather here 10th June", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_USER @ptr_2 ] ] ] [SL:DATE_TIME @ptr_3 @ptr_4 ] ]"}
+{"domain": "weather", "utterance": "radar for my region", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_USER @ptr_3 @ptr_4 ] ] ] ]"}
+{"domain": "weather", "utterance": "How many mm of rain are we expecting this evening .", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:MEASUREMENT_UNIT @ptr_3 ] @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 @ptr_7 @ptr_8 [SL:DATE_TIME @ptr_9 @ptr_10 ] @ptr_11 ]"}
+{"domain": "weather", "utterance": "What time does the sun set this time of year in my city", "semantic_parse": "[IN:GET_SUNSET @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 @ptr_7 @ptr_8 @ptr_9 @ptr_10 @ptr_11 [SL:LOCATION [IN:GET_LOCATION [SL:LOCATION_USER @ptr_12 @ptr_13 ] ] ] ]"}
+{"domain": "weather", "utterance": "How many cm of snow are we expecting ?", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 [SL:MEASUREMENT_UNIT @ptr_3 ] @ptr_4 [SL:WEATHER_ATTRIBUTE @ptr_5 ] @ptr_6 @ptr_7 @ptr_8 @ptr_9 ]"}
+{"domain": "weather", "utterance": "in centimeters, how much rain will we be getting tonight", "semantic_parse": "[IN:GET_WEATHER @ptr_1 [SL:MEASUREMENT_UNIT @ptr_2 ] @ptr_3 @ptr_4 @ptr_5 [SL:WEATHER_ATTRIBUTE @ptr_6 ] @ptr_7 @ptr_8 @ptr_9 @ptr_10 [SL:DATE_TIME @ptr_11 ] ]"}
+{"domain": "weather", "utterance": "whats the weather radar look like near me", "semantic_parse": "[IN:GET_WEATHER @ptr_1 @ptr_2 @ptr_3 @ptr_4 @ptr_5 @ptr_6 [SL:LOCATION [IN:GET_LOCATION [SL:SEARCH_RADIUS @ptr_7 ] [SL:LOCATION_USER @ptr_8 ] ] ] ]"}
