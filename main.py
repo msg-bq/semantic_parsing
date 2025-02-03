@@ -171,21 +171,36 @@ def get_criterion(args):
 
     raise ValueError(f"Unknown criterion: {args.criterion}")
 
+# 定义文件路径
+file_path = "best_metrics.txt"
+# 读取文件中的值，如果文件不存在则初始化为默认值
+def load_best_metrics():
+    if os.path.exists(file_path):
+        with open(file_path, "r") as f:
+            best_accuracy, best_loss = map(float, f.read().split())
+            return best_accuracy, best_loss
+    else:
+        return -1.0, float('inf')  # 默认值
+
+# 保存新的 best_accuracy 和 best_loss
+def save_best_metrics(best_accuracy, best_loss):
+    with open(file_path, "w") as f:
+        f.write(f"{best_accuracy} {best_loss}")
+
 
 from copy import deepcopy
 from testModel import test_model
 def tune_hyperparameters(model, tokenizer, optimizer, dataset, args, model_save_path):
-    best_accuracy = -1.0
-    best_loss = float('inf')
+    best_accuracy , best_loss = load_best_metrics()
     best_model = None
 
     # 初始化模型的副本，以确保每次训练都从相同的初始状态开始
     initial_model = deepcopy(model)
 
     batch_sizes = [8, 32, 64, 128]
-    learn_rates = [1e-5, 1e-4, 1e-3]
-    max_lengths = [128, 256, 512]
-    epochs = [10, 20, 50]
+    learn_rates = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 5e-3]
+    max_lengths = [32, 64, 128, 256]
+    epochs = [10, 20, 50, 100]
 
     for batch_size in batch_sizes:
         for learn_rate in learn_rates:
@@ -214,12 +229,10 @@ def tune_hyperparameters(model, tokenizer, optimizer, dataset, args, model_save_
                         print(f"New best model found! Saving model with Accuracy: {accuracy:.4f} and Loss: {avg_loss:.4f}")
                         best_accuracy = accuracy
                         best_loss = avg_loss
+                        save_best_metrics(best_accuracy, best_loss)
                         best_model = model.state_dict()  # 保存模型的权重
-
-    # 保存最佳模型
-    if best_model is not None:
-        torch.save(best_model, model_save_path)
-        print(f"Best model saved at {model_save_path}")
+                        model.save_pretrained(model_save_path)
+                        tokenizer.save_pretrained(model_save_path)
 
 def main():
     args = args_parse()
