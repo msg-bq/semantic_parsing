@@ -25,6 +25,9 @@ from utils.tokenization import tokenizer_dataset
 from utils.ExtraNameSpace import NameSpace
 
 # import higher
+import ray
+from ray import tune
+from ray.tune import CLIReporter
 
 
 def args_parse():
@@ -171,89 +174,86 @@ def get_criterion(args):
 
     raise ValueError(f"Unknown criterion: {args.criterion}")
 
-# 定义文件路径
-file_path = "best_metrics.txt"
-# 读取文件中的值，如果文件不存在则初始化为默认值
-def load_best_metrics():
-    if os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            best_accuracy, best_loss = map(float, f.read().split())
-            return best_accuracy, best_loss
-    else:
-        return -1.0, float('inf')  # 默认值
-
-# 保存新的 best_accuracy 和 best_loss
-def save_best_metrics(best_accuracy, best_loss):
-    with open(file_path, "w") as f:
-        f.write(f"{best_accuracy} {best_loss}")
-
 
 from copy import deepcopy
 from testModel import test_model
-def tune_hyperparameters(model, tokenizer, optimizer, dataset, args, model_save_path):
-    best_accuracy , best_loss = load_best_metrics()
-    best_model = None
+
+def train_tune(config, args, tokenizer, dataset):
+    """
+    Ray Tune 的试验函数：根据 config 中的超参数训练模型、评估，并报告指标给 Tune。
+    """
+    # 更新超参数
+    args.batch_size = config["batch_size"]
+    args.learn_rate = config["learn_rate"]
+    args.max_length = config["max_length"]
+    args.epoch = config["epoch"]
+
+    # 加载模型并设置设备
+    model = AutoModelForSeq2SeqLM.from_pretrained(args.model_dir)
+    model.to(args.device)
+
+    # 构造优化器（注意每个试验内部新建 optimizer）
+    optimizer = get_optimizer(args.optimizer, model, args)
     
-    batch_sizes = [8, 32, 64, 128]
-    learn_rates = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 5e-3]
-    max_lengths = [32, 64, 128, 256]
-    epochs = [10, 20, 50, 100]
+    # 训练模型
+    model = train_model_self_train(model, tokenizer, optimizer, dataset, args)
+    
+    # 在训练后评估模型
+    accuracy, avg_loss = test_model(model, tokenizer, dataset, args)
+    
+    # 报告指标给 Ray Tune（Ray Tune 会根据这些指标进行调度和选择最佳试验）
+    tune.report({"accuracy": accuracy, "avg_loss": avg_loss})
 
-    for batch_size in batch_sizes:
-        for learn_rate in learn_rates:
-            for max_length in max_lengths:
-                for epoch in epochs:
-                    # -------------------------------
-                    model = AutoModelForSeq2SeqLM.from_pretrained(args.model_dir)
-                    model.to(args.device)
-                    # 更新超参数
-                    args.batch_size = batch_size
-                    args.learn_rate = learn_rate
-                    args.max_length = max_length
-                    args.epoch = epoch
+def tune_hyperparameters_ray(tokenizer, dataset, args, model_save_path):
+    """
+    利用 Ray Tune 进行超参数网格搜索，每个试验分配一个 GPU。
+    """
+    # 定义超参数搜索空间
+    config = {
+        "batch_size": tune.grid_search([4, 8, 16, 32]),
+        "learn_rate": tune.grid_search([1e-7, 5e-7, 1e-6, 5e-6, 1e-5, 5e-5]),
+        "max_length": tune.grid_search([32, 64, 128]),
+        "epoch": tune.grid_search([8, 16, 32, 64])
+    }
+    
+    # 设置一个 CLI 报告器，可以在命令行中看到进度
+    reporter = CLIReporter(
+        metric_columns=["accuracy", "avg_loss", "training_iteration"]
+    )
+    
+    # 调用 tune.run 开始超参数搜索
+    analysis = tune.run(
+        tune.with_parameters(train_tune, args=args, tokenizer=tokenizer, dataset=dataset),
+        resources_per_trial={"gpu": 1},  # 每个试验分配 1 个 GPU；如果你的机器有多 GPU，就能实现不同试验分别在不同卡上运行
+        config=config,
+        metric="accuracy",
+        mode="max",
+        progress_reporter=reporter,
+        storage_path=model_save_path,  # 日志和检查点保存目录
+        name="tune_experiment"
+    )
+    
+    # 输出最佳超参数组合
+    best_config = analysis.get_best_config(metric="accuracy", mode="max")
 
-                    # 打印当前的超参数组合
-                    print(f"Training with batch_size={batch_size}, learn_rate={learn_rate}, max_length={max_length}, epoch={epoch}")
+    with open("best_config","w",encode="utf-8") as f:
+        f.write(str(best_config))
+    print("Best config: ", best_config)
 
-                    # 训练模型
-                    model = train_model_self_train(model, tokenizer, optimizer, dataset, args)
-
-                    # 在每个epoch结束后，评估模型
-                    accuracy, avg_loss = test_model(model, tokenizer, dataset, args)
-                    print(f"Test Accuracy: {accuracy:.4f}, Test Loss: {avg_loss:.4f}")
-
-                    # 如果当前模型效果更好，保存模型
-                    if accuracy > best_accuracy or (accuracy == best_accuracy and avg_loss < best_loss):
-                        print(f"New best model found! Saving model with Accuracy: {accuracy:.4f} and Loss: {avg_loss:.4f}")
-                        best_accuracy = accuracy
-                        best_loss = avg_loss
-                        save_best_metrics(best_accuracy, best_loss)
-                        best_model = model.state_dict()  # 保存模型的权重
-                        model.save_pretrained(model_save_path)
-                        tokenizer.save_pretrained(model_save_path)
 
 def main():
+    # 解析参数，加载 tokenizer、数据集等
     args = args_parse()
-
-    # 如果用指针加词表 _rasize 可以就在这里进行
     tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
-    # # ---下面可以封装成一个函数---
-
-    # model.resize_token_embeddings(len(tokenizer))
-
-    # print(tokenizer)
     dataset = get_dataset(tokenizer, args)
+    model_save_path = "./mt5-base"
 
-    optimizer = get_optimizer(args.optimizer, model, args)
-    criterion = get_criterion(args)
+    # 初始化 Ray（若 Ray 已经初始化，可忽略 ignore_reinit_error 参数）
+    ray.init(ignore_reinit_error=True)
 
-    # train_model_self_train(model, tokenizer, optimizer, dataset, args)
+    # 启动 Ray Tune 超参数搜索
+    tune_hyperparameters_ray(tokenizer, dataset, args, model_save_path)
 
-    model_save_path = "./mt5-base/model"
-    eval_dataset=dataset["validation"]
-
-
-    tune_hyperparameters(model, tokenizer, optimizer, dataset, args, model_save_path)
 
 if __name__ == '__main__':
     main()
