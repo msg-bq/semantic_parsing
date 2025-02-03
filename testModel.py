@@ -169,5 +169,5 @@ def test_model(model, tokenizer, dataset, args):
             total_loss += loss.item()
     # 计算最终准确率
     accuracy = correct / data_length
-    avg_loss = total_loss / len(test_dataloader)
+    avg_loss = total_loss / len(test_loader)
     return accuracy, avg_loss
