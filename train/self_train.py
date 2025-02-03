@@ -107,21 +107,22 @@ class SelfTrainTrainer(Trainer):
                     num_return_sequences=self.args.selftrain_topk, return_dict_in_generate=True, output_scores=True)
         sequences = outputs.sequences  # [:, input_ids.shape[-1]:]
         # 这边得到k个outputs.score后，在每个token的维度上求softmax
-        transition_scores = self.model.compute_transition_scores(
-            # sequences, outputs_scores, outputs_beam_indices, normalize_logits=False
-            outputs.sequences, outputs.scores, outputs.beam_indices, normalize_logits=False
-        )
-        # 在第0个维度上归一化
+        transition_scores = torch.ones((1, 128))
+        # transition_scores = self.model.compute_transition_scores(
+        #     # sequences, outputs_scores, outputs_beam_indices, normalize_logits=False
+        #     outputs.sequences, outputs.scores, outputs.beam_indices, normalize_logits=False
+        # )
+        # # 在第0个维度上归一化
 
-        transition_scores = F.softmax(transition_scores, dim=0)
+        # transition_scores = F.softmax(transition_scores, dim=0)
 
-        if outputs.sequences.shape[1] != len(outputs.scores):
-            transition_scores = self.pad_tensor(transition_scores,self.args.max_length-1)
-            ones = torch.ones(transition_scores.shape[0], 1).to(transition_scores.device)
-            # # 将 ones 张量与原始 tensor 在维度 1 上进行拼接
-            transition_scores = torch.cat((ones, transition_scores), dim=1)
-        else:
-            transition_scores = self.pad_tensor(transition_scores,self.args.max_length)
+        # if outputs.sequences.shape[1] != len(outputs.scores):
+        #     transition_scores = self.pad_tensor(transition_scores,self.args.max_length-1)
+        #     ones = torch.ones(transition_scores.shape[0], 1).to(transition_scores.device)
+        #     # # 将 ones 张量与原始 tensor 在维度 1 上进行拼接
+        #     transition_scores = torch.cat((ones, transition_scores), dim=1)
+        # else:
+        #     transition_scores = self.pad_tensor(transition_scores,self.args.max_length)
             
         # transition_scores = transition_scores.sum(dim=1).exp()
             
@@ -261,6 +262,16 @@ class SelfTrainTrainer(Trainer):
             sentence_score = self.get_beam_search_score(question)
             for sentence, score in sentence_score.items():
                 # print(score)
+                
+                result = tokenizer1.decode(sentence.tolist(), skip_special_tokens=True)
+                import re
+                matches = re.findall(r"@ptr_(\d+)", result)
+                if matches:
+                    last_num_str = matches[-1]  # 获取最后一个匹配结果中的数字部分字符串
+                    num = int(last_num_str)  # 将数字部分字符串转换为整数
+                    if num >= len(question.split(" ")) + 2:
+                        continue
+
                 sentence = sentence.unsqueeze(dim=0) # 为了保持输入的维度还是2维，不要被for循环减少
                 mapp[sentence] = score
                 # 如果不在里面，则用原本的score
@@ -339,7 +350,7 @@ class SelfTrainTrainer(Trainer):
         loss_fct = nn.CrossEntropyLoss(reduction='none',ignore_index=-100)
 
         print(loss_fct(logits.view(-1, logits.size(-1)), labels.view(-1)).shape)
-        loss = (score * loss_fct(logits.view(-1, logits.size(-1)), labels.view(-1)) ).mean()
+        loss = loss_fct(logits.view(-1, logits.size(-1)), labels.view(-1)).mean()
 
         # final_loss = torch.masked_select(loss, labels.view(-1, 1) != -1).mean()
         # return (torch.masked_select(loss, labels.view(-1, 1) != -1).mean(), outputs) if return_outputs else loss
@@ -365,7 +376,7 @@ def occupy_gpu_memory(gpu_ids, size_in_gb):
     return occupied_memory
 
 
-
+tokenizer1 = None
 def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     """
     1. 先训练基础模型
@@ -375,7 +386,8 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     5. 重复2-4
     """
     from transformers import AutoTokenizer, AdamW, get_scheduler
-
+    global tokenizer1
+    tokenizer1 = tokenizer
     train_args = TrainingArguments(output_dir=args.save_dir,
                                    num_train_epochs=50,#args.epoch,  # 这个指每个self_train里面的epoch
                                    per_device_train_batch_size=args.batch_size*args.selftrain_topk,
@@ -412,7 +424,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                               args=train_args,
                               data_collator=mycollate_trainer, # 要么给自己的，要么在定义trainer后面单独写一个data_collator=None，不然代码里有默认collate
                               train_dataset=dataset["train"],
-                              eval_dataset=dataset["train"],#dataset["eval"] if "eval" in dataset else None,
+                              eval_dataset=dataset["validation"],#dataset["eval"] if "eval" in dataset else None,
                               tokenizer=tokenizer,
                               optimizers=(optimizer, None)) # 缺了学习率调度器
 
@@ -439,4 +451,4 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
         
         # model = self_trainer.model
 
-        model.save_pretrained(f"/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing_few_shot_3/mt5-base/mt5_our_data")
+        model.save_pretrained(f"/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing_few_shot_our/mt5-base/mt5_1000_our_data")

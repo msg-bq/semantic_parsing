@@ -3,7 +3,7 @@ from collections import defaultdict
 from typing import Union, Tuple
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "7"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3,4"
 
 import json
 import torch
@@ -36,10 +36,10 @@ def args_parse():
     parser.add_argument("--dataset", type=str, default="topv2",
                         choices=["ours", "topv2", "zcl", "zcl_mixed"])
 
-    parser.add_argument("--train_dataset_dir", type=str, default="/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing_few_shot_3/TOPv2/low_resource_splits/our/data",
+    parser.add_argument("--train_dataset_dir", type=str, default="/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing_few_shot_our_2/TOPv2/low_resource_splits/our/data",
                     help="train dataset dir")
 
-    parser.add_argument("--unlabel_dataset_dir", type=str, default="/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing_few_shot_3/TOPv2/low_resource_splits/retriever/unlabeled.jsonl",
+    parser.add_argument("--unlabel_dataset_dir", type=str, default="/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing_few_shot_2/TOPv2/low_resource_splits/unlabel",
                     help="unlabel dataset dir")
 
     parser.add_argument("--test_dataset_dir", type=str, default="./data/dev",
@@ -49,7 +49,7 @@ def args_parse():
                     help="省得分文件了")
 
     parser.add_argument("--model_dir", type=str,
-                        default="/data/pretrained_models/mt5-base",#"/data/lbq/models/mt5-base-trained-final-500+500-2-7_again",
+                        default="/data/pretrained_models/mt5-base/",#"/data/lbq/models/mt5-base-trained-final-500+500-2-7_again",
     #,"/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again"
                     help="model dir")
 
@@ -62,7 +62,7 @@ def args_parse():
     parser.add_argument("--optimizer", type=str, default="AdamW",
                     help="optimizer")
 
-    parser.add_argument("--lr", type=float, default=1e-5,
+    parser.add_argument("--lr", type=float, default=5e-5,
                     help="learning rate")
 
     parser.add_argument("--criterion", type=str, default="CrossEntropyLoss",
@@ -71,7 +71,7 @@ def args_parse():
     parser.add_argument("--device", type=str, default="cuda",
                     help="device")
 
-    parser.add_argument("--epoch", type=int, default=20,
+    parser.add_argument("--epoch", type=int, default=30,
                     help="epoch")
 
     parser.add_argument("--batch_size", type=int, default=2,
@@ -101,7 +101,7 @@ def args_parse():
     parser.add_argument("--selftrain_iteration", type=int, default=2,
                         help="self train的迭代次数")
 
-    parser.add_argument("--selftrain_topk", type=int, default=4,
+    parser.add_argument("--selftrain_topk", type=int, default=1,
                         help="self train的topk")
 
     parser.add_argument("--given_model", type=bool, default=False,
@@ -148,6 +148,8 @@ def get_dataset(tokenizer, args) -> dict:
         dataset["unlabeled"] = read_unlabeled_dataset(args.unlabel_dataset_dir)
         # 然后self train还有个保存和读入topk的环节，但这个应该也是边训边存
 
+        # dataset["unlabeled"] = dataset["unlabeled"]["input_ids"]
+
         return dataset
 
     raise ValueError(f"Unknown task: {args.task}")
@@ -176,12 +178,6 @@ def main():
     # 如果用指针加词表 _rasize 可以就在这里进行
     tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
     # # ---下面可以封装成一个函数---
-    # import json
-    # with open('/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing_few_shot_3/add_tokens.json', 'r', encoding='utf-8') as file:
-    #     data = json.load(file)
-    # other_tokens = list(data.keys())
-    # tokenizer.add_tokens(other_tokens)
-    # tokenizer.save_pretrained("./tokenizer/")
     # -------------------------------
     model = AutoModelForSeq2SeqLM.from_pretrained(args.model_dir)
     model.to(args.device)
