@@ -390,7 +390,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     tokenizer1 = tokenizer
     train_args = TrainingArguments(output_dir=args.save_dir,
                                    num_train_epochs=args.epoch,#args.epoch,  # 这个指每个self_train里面的epoch
-                                   per_device_train_batch_size=args.batch_size*args.selftrain_topk,
+                                   per_device_train_batch_size=args.batch_size,
                                    save_steps=1000,
                                    save_total_limit=1,
                                    learning_rate=args.lr,
@@ -410,4 +410,4 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     model = trainer.model
     model.to(args.device)
 
-    model.save_pretrained(f"/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing_few_shot_our/mt5-base/mt5_1000_our_data")
+    return model

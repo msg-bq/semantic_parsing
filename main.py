@@ -145,7 +145,7 @@ def get_dataset(tokenizer, args) -> dict:
             dataset[key] = tokenizer_dataset(tokenizer, preprocess_dataset(dataset[key]))
 
         # self train需要正常训练测试+一个无标签数据集，所以需要额外一个读入或者无标签的读入是从训练集or验证集里拆出来的
-        dataset["unlabeled"] = read_unlabeled_dataset(args.unlabel_dataset_dir)
+        # dataset["unlabeled"] = read_unlabeled_dataset(args.unlabel_dataset_dir)
         # 然后self train还有个保存和读入topk的环节，但这个应该也是边训边存
 
         # dataset["unlabeled"] = dataset["unlabeled"]["input_ids"]
@@ -172,6 +172,55 @@ def get_criterion(args):
     raise ValueError(f"Unknown criterion: {args.criterion}")
 
 
+from copy import deepcopy
+from testModel import test_model
+def tune_hyperparameters(model, tokenizer, optimizer, dataset, args, model_save_path):
+    best_accuracy = -1.0
+    best_loss = float('inf')
+    best_model = None
+
+    # 初始化模型的副本，以确保每次训练都从相同的初始状态开始
+    initial_model = deepcopy(model)
+
+    batch_sizes = [8, 32, 64, 128]
+    learn_rates = [1e-5, 1e-4, 1e-3]
+    max_lengths = [128, 256, 512]
+    epochs = [10, 20, 50]
+
+    for batch_size in batch_sizes:
+        for learn_rate in learn_rates:
+            for max_length in max_lengths:
+                for epoch in epochs:
+                    # 在每次循环开始前，重新复制一个初始模型
+                    model = deepcopy(initial_model)  # 保证每次从初始模型开始
+                    # 更新超参数
+                    args.batch_size = batch_size
+                    args.learn_rate = learn_rate
+                    args.max_length = max_length
+                    args.epoch = epoch
+
+                    # 打印当前的超参数组合
+                    print(f"Training with batch_size={batch_size}, learn_rate={learn_rate}, max_length={max_length}, epoch={epoch}")
+
+                    # 训练模型
+                    model = train_model_self_train(model, tokenizer, optimizer, dataset, args)
+
+                    # 在每个epoch结束后，评估模型
+                    accuracy, avg_loss = test_model(model, tokenizer, dataset, args)
+                    print(f"Test Accuracy: {accuracy:.4f}, Test Loss: {avg_loss:.4f}")
+
+                    # 如果当前模型效果更好，保存模型
+                    if accuracy > best_accuracy or (accuracy == best_accuracy and avg_loss < best_loss):
+                        print(f"New best model found! Saving model with Accuracy: {accuracy:.4f} and Loss: {avg_loss:.4f}")
+                        best_accuracy = accuracy
+                        best_loss = avg_loss
+                        best_model = model.state_dict()  # 保存模型的权重
+
+    # 保存最佳模型
+    if best_model is not None:
+        torch.save(best_model, model_save_path)
+        print(f"Best model saved at {model_save_path}")
+
 def main():
     args = args_parse()
 
@@ -190,14 +239,13 @@ def main():
     optimizer = get_optimizer(args.optimizer, model, args)
     criterion = get_criterion(args)
 
+    # train_model_self_train(model, tokenizer, optimizer, dataset, args)
 
-    if args.task == "preliminary":
-        for op in dataset:
-            print("算子是", op)
-            train_model_preliminary(model, optimizer, dataset[op], args)
+    model_save_path = "./mt5-base/model"
+    eval_dataset=dataset["validation"]
 
-    elif args.task == "self-train":
-        train_model_self_train(model, tokenizer, optimizer, dataset, args)
+
+    tune_hyperparameters(model, tokenizer, optimizer, dataset, args, model_save_path)
 
 if __name__ == '__main__':
     main()

@@ -2,9 +2,6 @@ import argparse
 from collections import defaultdict
 from typing import Union, Tuple
 
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "4,7"
-
 import json
 import torch
 import yaml
@@ -17,100 +14,6 @@ from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 from utils.ExtraNameSpace import NameSpace
 # import higher
 from label_utils import label_correct_sentence
-
-
-def args_parse():
-    parser = argparse.ArgumentParser(description="semantic_parser")
-
-    parser.add_argument('--config', type=str, default='config.yaml',
-                    help='config file, 只使用单层的嵌套')
-
-    parser.add_argument("--dataset", type=str, default="topv2",
-                        choices=["ours", "topv2", "zcl", "zcl_mixed"])
-
-    parser.add_argument("--train_dataset_dir", type=str, default="/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing_few_shot/TOPv2/low_resource_splits/weather",
-                    help="train dataset dir")
-
-    parser.add_argument("--unlabel_dataset_dir", type=str, default="/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing_few_shot/TOPv2/low_resource_splits/weather",
-                    help="unlabel dataset dir")
-
-    parser.add_argument("--test_dataset_dir", type=str, default="./data/dev",
-                        help="test dataset dir")
-
-    parser.add_argument("--task", type=str, default="self-train", choices=["preliminary", "self-train"],
-                    help="省得分文件了")
-
-    parser.add_argument("--model_dir", type=str,
-                        default="/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing5/mt5-base/mt5-train",#"/data/lbq/models/mt5-base-trained-final-500+500-2-7_again",
-    #,"/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again"
-                    help="model dir")
-
-    parser.add_argument("--save_dir", type=str, default="./mt5-base",
-                    help="save dir")
-
-    parser.add_argument("--experiment_name", type=str, default="Default", choices=["Default"], # 这个比如10样例、100样例等
-                    help="experiment name")
-
-    parser.add_argument("--optimizer", type=str, default="AdamW",
-                    help="optimizer")
-
-    parser.add_argument("--lr", type=float, default=3e-5,
-                    help="learning rate")
-
-    parser.add_argument("--criterion", type=str, default="CrossEntropyLoss",
-                    help="criterion")
-
-    parser.add_argument("--device", type=str, default="cuda",
-                    help="device")
-
-    parser.add_argument("--epoch", type=int, default=20,
-                    help="epoch")
-
-    parser.add_argument("--batch_size", type=int, default=2,
-                    help="batch size")
-
-    parser.add_argument("--max_length", type=int, default=128,
-                    help="max length")
-
-    parser.add_argument("--operator_num", type=int, default=5,
-                    help="做预实验的算子数量")
-
-    parser.add_argument("--example_num", type=int, default=50,
-                    help="每个算子做预实验的样本数量，包含训练和测试用的总数")
-
-    parser.add_argument("--split", type=float, default=0.05,
-                    help="训练集和测试集的划分比例")
-
-    parser.add_argument("--iterations_per_subset", type=int, default=20,
-                    help="对每个子集迭代20次")
-
-    parser.add_argument("--select_top_percentage", type=float, default=0.8,
-                    help="挑选子集的比例")
-
-    parser.add_argument("--seed", type=int, default=192,
-                    help="random seed")
-
-    parser.add_argument("--selftrain_iteration", type=int, default=2,
-                        help="self train的迭代次数")
-
-    parser.add_argument("--selftrain_topk", type=int, default=4,
-                        help="self train的topk")
-
-    parser.add_argument("--given_model", type=bool, default=False,
-                        help="是否给定模型，如果是的话就直接训self train")
-
-    args = parser.parse_args()
-
-    # if args.config:
-    #     yaml_config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
-    #     # 合并yaml到args里面
-    #     for key, value in yaml_config.items():
-    #         setattr(args, key, value)
-    # #         parser.add_argument(f'--{key}', default=value, help=f'{key} from YAML config')
-    #
-    NameSpace._args = args
-
-    return args
 
 
 import re
@@ -235,72 +138,36 @@ def mycollate_trainer(examples):
 
     return batch
 
-tokenizer = AutoTokenizer.from_pretrained("/data/pretrained_models/mt5-base")
 
-args = args_parse()
 
-dataset = read_dataset("/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing_few_shot_3/TOPv2/low_resource_splits/our/data")
+def test_model(model, tokenizer, dataset, args):
+    # 在 GPU 上测试（如果可用）
+    device = args.device
+    correct = 0
+    data_length = 0
+    total_loss = 0
+    # DataLoader 用于批量测试
+    test_loader = DataLoader(dataset["validation"], batch_size=8, collate_fn=mycollate_trainer)  # 你可以调整 batch_size
+    for i, batch in enumerate(test_loader):
+        batch = {k: v.to(device) for k, v in batch.items()}
+        with torch.no_grad():
+            outputs = model(**batch)
+            logits = outputs.logits
+            # 使用 argmax 获取每个样本的预测类别
+            predicted = logits.argmax(-1)
+            # 检查整个句子是否完全匹配
+            correct_predictions = torch.all(torch.eq(predicted, batch["labels"]), dim=1)
+            num_correct_sentences = correct_predictions.sum().item()
+            correct += num_correct_sentences
+            # gz_correct += gz
+            # 获取句子的数量
+            num_sentences = batch["labels"].size(0)
+            data_length = data_length + num_sentences
 
-dataset["train"] = tokenizer_dataset(tokenizer, preprocess_dataset(dataset["train"]))
-
-model = AutoModelForSeq2SeqLM.from_pretrained("/home/lzx2000/temp/lzx/lzx/test/test/semantic_parsing_few_shot_3/mt5-base/mt5_our_data")
-# 在 GPU 上测试（如果可用）
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model.to(device)
-
-correct = 0
-gz_correct = 0
-data_length = 0
-# DataLoader 用于批量测试
-test_loader = DataLoader(dataset["train"], batch_size=8, collate_fn=mycollate_trainer)  # 你可以调整 batch_size
-
-file1 = open("decoded_predictions1.txt", "w", encoding="utf-8")
-for i, batch in enumerate(test_loader):
-    batch = {k: v.to(device) for k, v in batch.items()}
-    with torch.no_grad():
-        outputs = model(**batch)
-
-        logits = outputs.logits
-        # 使用 argmax 获取每个样本的预测类别
-        predicted = logits.argmax(-1)
-        # 检查整个句子是否完全匹配
-        correct_predictions = torch.all(torch.eq(predicted, batch["labels"]), dim=1)
-        # 解码 predicted 和 labels
-        input_ids = tokenizer.batch_decode(batch["input_ids"], skip_special_tokens=True)
-        decoded_predicted = tokenizer.batch_decode(predicted, skip_special_tokens=True)
-        decoded_labels = tokenizer.batch_decode(batch["labels"], skip_special_tokens=True)
-        print(decoded_predicted)
-        # 将它们组合成一行行写入文件，格式为 "预测值\t标签值"
-        # k = 0
-        #
-        # gz = 0
-        # for input_id, pred, label in zip(input_ids, decoded_predicted, decoded_labels):
-        #     # 把pred 和 label还原成里面的词
-        #     pred_nt = replace_ptr_with_words(input_id, pred)
-        #     pred_nw = label_correct_sentence(input_id, pred_nt)
-        #     # 用label_correct_sentence把predict做一次处理看看
-        #     label_nt = replace_ptr_with_words(input_id, label)
-        #
-        #     if pred_nw == label_nt:
-        #         gz  += 1
-        #
-        #     file1.write(f"excample {k}:\n{input_id}\norigin_label:\n{label}\nlabel:\n{label_nt}\npred_修复前:\n{pred_nt}\npred_修复后:\n{pred_nw}\n")
-        #     file1.flush()  # 手动刷新缓冲区，确保数据写入磁盘
-        #
-        #     k += 1
-
-        # 获取准确的句子数量
-        num_correct_sentences = correct_predictions.sum().item()
-
-        correct += num_correct_sentences
-        # gz_correct += gz
-        # 获取句子的数量
-        num_sentences = batch["labels"].size(0)
-
-        data_length = data_length + num_sentences
-        print(f" \r第{i}个batch Accuracy: {num_correct_sentences / num_sentences}")
-        # print(f" \r第{i}个batch Gz_Accuracy: {gz / num_sentences}")
-
-# 计算最终准确率
-print(f"\rAccuracy: {correct / data_length}\n")
-# print(f"\rGz_Accuracy: {gz_correctcorrect / data_length}\n")
+            # 计算交叉熵损失
+            loss = torch.nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), batch["labels"].view(-1))
+            total_loss += loss.item()
+    # 计算最终准确率
+    accuracy = correct / data_length
+    avg_loss = total_loss / len(test_dataloader)
+    return accuracy, avg_loss
