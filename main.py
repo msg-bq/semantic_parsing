@@ -193,10 +193,7 @@ from testModel import test_model
 def tune_hyperparameters(model, tokenizer, optimizer, dataset, args, model_save_path):
     best_accuracy , best_loss = load_best_metrics()
     best_model = None
-
-    # 初始化模型的副本，以确保每次训练都从相同的初始状态开始
-    initial_model = deepcopy(model)
-
+    
     batch_sizes = [8, 32, 64, 128]
     learn_rates = [1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 5e-3]
     max_lengths = [32, 64, 128, 256]
@@ -206,8 +203,9 @@ def tune_hyperparameters(model, tokenizer, optimizer, dataset, args, model_save_
         for learn_rate in learn_rates:
             for max_length in max_lengths:
                 for epoch in epochs:
-                    # 在每次循环开始前，重新复制一个初始模型
-                    model = deepcopy(initial_model)  # 保证每次从初始模型开始
+                    # -------------------------------
+                    model = AutoModelForSeq2SeqLM.from_pretrained(args.model_dir)
+                    model.to(args.device)
                     # 更新超参数
                     args.batch_size = batch_size
                     args.learn_rate = learn_rate
@@ -240,9 +238,6 @@ def main():
     # 如果用指针加词表 _rasize 可以就在这里进行
     tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
     # # ---下面可以封装成一个函数---
-    # -------------------------------
-    model = AutoModelForSeq2SeqLM.from_pretrained(args.model_dir)
-    model.to(args.device)
 
     # model.resize_token_embeddings(len(tokenizer))
 
