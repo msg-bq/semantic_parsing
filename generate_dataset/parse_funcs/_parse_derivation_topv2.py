@@ -5,19 +5,19 @@ from ._co_namespace import Declared_Operators
 # todo: 这里应当加层校验机制，让它和对应rule的cfg文件保持一致，或者就直接从cfg文件中导出
 get_weather = BaseOperator(
     name="GET_WEATHER",
-    input_type=["DATE_TIME", "WEATHER_TEMPERATURE_UNIT", "LOCATION", "WEATHER_ATTRIBUTE", "WEATHER"],
+    input_type=["DATE_TIME", "WEATHER_TEMPERATURE_UNIT", "LOCATION", "WEATHER_ATTRIBUTE"],
     output_type="WEATHER"
 )
 
 get_sunset = BaseOperator(
     name="GET_SUNSET",
-    input_type=["LOCATION", "DATE_TIME", "WEATHER"],
+    input_type=["LOCATION", "DATE_TIME"],
     output_type="sunset_time"
 )
 
 get_sunrise = BaseOperator(
     name="GET_SUNRISE",
-    input_type=["LOCATION", "DATE_TIME", "WEATHER"],
+    input_type=["LOCATION", "DATE_TIME"],
     output_type="sunrise_time"
 )
 
