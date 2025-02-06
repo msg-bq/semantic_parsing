@@ -3,6 +3,7 @@ import sys
 import os
 import re
 import string
+import random
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from generate_natural_language.generate_nl import CustomDataset, Example
@@ -137,12 +138,23 @@ def _flatten_list(nested_list: List[Any]) -> List[List[str]]:
     return flattened
 
 
+# 设置随机数种子
+random.seed(42)
+def _change_input_sencenten(sentence: str) -> str:
+    if random.random() < 0.5:
+        # 替换
+        if sentence[-1] in string.punctuation:
+            return sentence[:-1]
+    return sentence
+
 def _fill_other_information_topv2(dataset: CustomDataset) -> CustomDataset:
     """
 Move the 10am alarm up 30 minutes.
 [IN:UPDATE_ALARM Move the [SL:ALARM_NAME [IN:GET_TIME [SL:DATE_TIME 10 am ] ] ] alarm [SL:DATE_TIME up 30 minutes ] . ]
     """
     for example in dataset:
+        # 替换标点符号
+        example.input = _change_input_sencenten(example.input)
         # 拆原句input，把pm am : 以及's、标点，给加上空格
         text = _format_time_string(example.input)
         output_lst = example.output[1]
