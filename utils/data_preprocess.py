@@ -313,7 +313,7 @@ def format_time_string(input_string):
     if formatted_string[-1] in english_punctuation and formatted_string[-2]!= " ":
         formatted_string = formatted_string[:-1] + " " + formatted_string[-1]
 
-    return formatted_string
+    return re.sub(r"([a-zA-Z])'s", r"\1 's", formatted_string)
 
 @DatasetsProcessorNameSpace.register("topv2")
 def ptr_change(examples):
