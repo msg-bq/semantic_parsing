@@ -96,7 +96,7 @@ def _format_time_string(input_string: str) -> str:
     if formatted_string[-1] in english_punctuation and formatted_string[-2] != " ":
         formatted_string = formatted_string[:-1] + " " + formatted_string[-1]
     # 使用正则表达式找到字母后面的单引号，并在其前面添加一个空格
-    return re.sub(r"([a-zA-Z])['’]", r"\1 ", formatted_string)
+    return re.sub(r"([a-zA-Z])'s", r"\1 's", formatted_string)
 
 
 # 从列表元组中抽出来每个槽值
