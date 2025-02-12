@@ -362,7 +362,24 @@ def compute_metrics(eval_pred):
     predicted = logits.argmax(-1)
     correct_predictions = torch.all(torch.eq(predicted, labels), dim=1)
     lens = labels.size(0)
-    return {"accuracy": correct_predictions/lens}
+    return {"accuracy": correct_predictions/lens, 'eval_loss': eval_pred.loss.item()}
+
+from transformers import TrainerCallback
+from torch.utils.tensorboard import SummaryWriter
+class TensorBoardCallback(TrainerCallback):
+    def __init__(self, writer):
+        self.writer = writer
+
+    def on_log(self, args, state, control, logs=None, **kwargs):
+        if logs is not None:
+            step = state.global_step
+            if "loss" in logs:
+                self.writer.add_scalar("train/loss", logs["loss"], step)
+            if "eval_loss" in logs:
+                self.writer.add_scalar("eval/loss", logs["eval_loss"], step)
+            if "eval_accuracy" in logs:
+                self.writer.add_scalar("eval/accuracy", logs["eval_accuracy"], step)
+
 
 def occupy_gpu_memory(gpu_ids, size_in_gb):
     """占用指定GPU的显存."""
@@ -385,6 +402,12 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     4. 用topk数据集fine-tune基础模型
     5. 重复2-4
     """
+
+    # 创建一个TensorBoard writer实例
+    writer = SummaryWriter(log_dir=train_args.logging_dir)
+    # 添加TensorBoard回调
+    tensorboard_callback = TensorBoardCallback(writer)
+
     from transformers import AutoTokenizer, AdamW, get_scheduler
     global tokenizer1
     tokenizer1 = tokenizer
@@ -404,7 +427,9 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                         train_dataset=dataset["train"],
                         eval_dataset=dataset["validation"],#dataset["eval"] if "eval" in dataset else None,
                         tokenizer=tokenizer,
-                        optimizers=(optimizer, None)) # 缺了学习率调度器
+                        optimizers=(optimizer, None),
+                        compute_metrics=compute_metrics,  # 传递自定义的评估指标计算函数
+                        callbacks=[tensorboard_callback])  # 添加 TensorBoard 回调) # 缺了学习率调度器
 
     trainer.train()
     model = trainer.model
