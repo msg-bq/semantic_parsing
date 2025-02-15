@@ -358,11 +358,18 @@ class SelfTrainTrainer(Trainer):
     
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
+    # 如果 logits 是元组，取第一个元素
+    logits_tensor = logits[0] if isinstance(logits, tuple) else logits
+    # print("logits")
+    # 如果 logits 和 labels 是 numpy 数组，转换为 Tensor
+    logits_tensor = torch.tensor(logits_tensor) if isinstance(logits_tensor, np.ndarray) else logits_tensor
+    labels_tensor = torch.tensor(labels) if isinstance(labels, np.ndarray) else labels
+    # print(logits)
+    predicted = logits_tensor.argmax(-1)
 
-    predicted = logits.argmax(-1)
-    correct_predictions = torch.all(torch.eq(predicted, labels), dim=1)
-    lens = labels.size(0)
-    return {"accuracy": correct_predictions/lens, 'eval_loss': eval_pred.loss.item()}
+    correct_predictions = torch.all(torch.eq(predicted, labels_tensor), dim=1).sum().item()
+    lens = labels_tensor.size(0)
+    return {"accuracy": correct_predictions/lens}
 
 from transformers import TrainerCallback
 from torch.utils.tensorboard import SummaryWriter
