@@ -5,7 +5,6 @@ from collections import defaultdict
 from pathlib import Path
 
 from mimesis.providers.base import BaseProvider
-
 from ._instance_prompt import _concept_instance_prompt
 from utils.access_llm import async_query_gpt
 

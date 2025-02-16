@@ -134,5 +134,5 @@ def _parse_derivation_topv2(derivation_text: str) -> Assertion:
 
 if __name__ == '__main__':
     derivation_text_example = \
-        'intent:get_sunrise ( [ LOCATION: London ] [ DATE_TIME: Next*spaceFriday ] [ weather: Rainy ] )'
+        'intent:GET_SUNRISE ( [ LOCATION: intent:GET_LOCATION ( [ LOCATION_USER: null ] [ SEARCH_RADIUS: null ] [ LOCATION_MODIFIER: null ] ) ] [ DATE_TIME: null ] )'
     print(_parse_derivation_topv2(derivation_text_example))

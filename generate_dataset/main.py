@@ -23,7 +23,11 @@ def generate_dataset(dataset_name: str, num: int = 2) -> CustomDataset:
 
 if __name__ == '__main__':
     dataset_test = 'topv2'
-    n = 20
+    n = 8
     dataset_test = generate_dataset(dataset_test, n)
-    for e in dataset_test:
-        print(e)
+    with open("output.jsonl","w",encoding="utf-8") as f:
+        for e in dataset_test:
+            import json
+            json.dump({"input":e.input,"output":e.output},f)
+            f.write("\n")
+

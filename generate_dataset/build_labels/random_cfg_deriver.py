@@ -110,6 +110,19 @@ async def _derive_string(current_string, grammar):
     return updated_string
 
 
+def topv2_method(final_string):
+    if ": [ intent" not in final_string:
+        return True
+    else:
+        if random.random() < 0.95:
+            return False
+    final_string = final_string.replace(": [", ":[")
+    parts = final_string.split(": ")[1:]
+    for part in parts:
+        if "null" not in part:
+            return True
+    return False
+
 async def generate_expressions(n: int) -> list:
     """
     :param n: 生成的数量
@@ -161,8 +174,10 @@ async def generate_expressions(n: int) -> list:
     final_exps = set()
     while True:
         final_string = await _derive_string(start_string, the_grammar)  # todo: 最好这里过滤下全null
-        final_exps.add(final_string)
-        print('FINAL STRING:\n{}'.format(final_string))
+        boo = topv2_method(final_string)
+        if boo == True:
+            final_exps.add(final_string)
+            print('FINAL STRING:\n{}'.format(final_string))
 
         if len(final_exps) > n:
             break

@@ -3,6 +3,7 @@ import sys
 import os
 import re
 import string
+import random
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from generate_natural_language.generate_nl import CustomDataset, Example
@@ -95,7 +96,7 @@ def _format_time_string(input_string: str) -> str:
     if formatted_string[-1] in english_punctuation and formatted_string[-2] != " ":
         formatted_string = formatted_string[:-1] + " " + formatted_string[-1]
     # 使用正则表达式找到字母后面的单引号，并在其前面添加一个空格
-    return re.sub(r"([a-zA-Z])['’]", r"\1 ", formatted_string)
+    return re.sub(r"([a-zA-Z])'s", r"\1 's", formatted_string)
 
 
 # 从列表元组中抽出来每个槽值
@@ -137,30 +138,41 @@ def _flatten_list(nested_list: List[Any]) -> List[List[str]]:
     return flattened
 
 
+# 设置随机数种子
+random.seed(42)
+def _change_input_sencenten(sentence: str) -> str:
+    if random.random() < 0.85:
+        # 替换
+        if sentence[-1] in string.punctuation:
+            return sentence[:-1]
+    return sentence
+
 def _fill_other_information_topv2(dataset: CustomDataset) -> CustomDataset:
     """
 Move the 10am alarm up 30 minutes.
 [IN:UPDATE_ALARM Move the [SL:ALARM_NAME [IN:GET_TIME [SL:DATE_TIME 10 am ] ] ] alarm [SL:DATE_TIME up 30 minutes ] . ]
     """
+    result = []
     for example in dataset:
+        # 替换标点符号
+        example.input = _change_input_sencenten(example.input)
         # 拆原句input，把pm am : 以及's、标点，给加上空格
         text = _format_time_string(example.input)
         output_lst = example.output[1]
         # 去掉第一个空格前面的operator，以及最后的 "]"
-        # [['Rainy'], ['London'], ['Next Friday']]
+        # [['Rainy'], ['London'], ['Next Friday']]]
         slot_content_lst = _extract_last_values(output_lst)
         slot_content_lst = _flatten_list(slot_content_lst)
         new_example_output = []
-        # 3.在句子中删掉包括这个词在内的前面的词（新建的对象）删掉，继续匹配，
+        # 3. 在句子中删掉包括这个词在内的前面的词（新建的对象）删掉，继续匹配，
         last_end = 0
         for i, d in enumerate(slot_content_lst):
             sub_sentence = ' '.join(d)
             match = re.search(sub_sentence, text, re.IGNORECASE)
             if match:
                 start, end = match.span()  # 获取匹配的起始和结束位置
-
             else:
-                raise "出错了"
+                continue
             # 看这个start是不是0，否则就取从0到start-1的位置
             insert_sen = text[last_end:start]
             # 把非关键信息插进去
@@ -175,7 +187,10 @@ Move the 10am alarm up 30 minutes.
 
         filled_exp = (example.output[0], new_example_output)
         example.output = _construct_expression(filled_exp)
-    return dataset
+        
+        result.append(example)
+
+    return CustomDataset(result)
 
 
 def _reorder_expression_topv2(dataset: CustomDataset) -> CustomDataset:
