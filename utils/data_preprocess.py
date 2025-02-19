@@ -11,6 +11,8 @@ from utils.ExtraNameSpace import DatasetsReaderNameSpace, DatasetsProcessorNameS
 from utils.dataset import AssertionExample, PreliminaryDataset, SelfTrainDataset
 from utils.operators_concepts import operator_dict
 from utils.text_utils import add_space_after_chinese, find_long_string_in_list
+from utils.remove_non_slot_leaf import remove_non_slot_leaf_nodes
+from utils.sort_label import sort_string
 
 import pandas as pd
 import json
@@ -335,6 +337,12 @@ def ptr_change(examples):
 
     examples["semantic_parse"] = ' '.join(changed_item)
     examples["utterance"] = format_time_string(examples["utterance"])
+
+    # 删标签
+    examples["semantic_parse"] = remove_non_slot_leaf_nodes(examples["semantic_parse"])
+    # 排序
+    examples["semantic_parse"] = sort_string(examples["semantic_parse"])
+
     # print(examples)
     return examples
 
