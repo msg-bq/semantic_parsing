@@ -206,8 +206,6 @@ def test_model_generate(model, dataset, device, tokenizer=None):
             num_sentences = batch["labels"].size(0)
             data_length = data_length + num_sentences
 
-            print("1111")
-
         # 计算最终准确率
     accuracy = correct / data_length
     return accuracy
@@ -268,7 +266,7 @@ if __name__ == "__main__":
 
     dataset = load_dataset("./data/top_train")
     dataset["train"] = tokenizer_dataset(tokenizer, preprocess_dataset(dataset["train"]))
-    dataset["validation"] = tokenizer_dataset(tokenizer, preprocess_dataset(dataset["validation"]))
+    # dataset["validation"] = tokenizer_dataset(tokenizer, preprocess_dataset(dataset["validation"]))
     train_loader = DataLoader(dataset["train"], batch_size=4,
                                       collate_fn=mycollate_trainer)  # 你可以调整 batch_size
 
@@ -288,10 +286,10 @@ if __name__ == "__main__":
     for epoch in range(1, num_epochs + 1):
         train(model, train_loader, optimizer, scheduler, device, epoch)
 
-        if epoch > 10 and epoch % 100 == 0 :
-            # accuracy = test_model(model, dataset, device, tokenizer)
-            accuracy = test_model_generate(model, dataset, device, tokenizer)
-            print(f"Epoch {epoch} 完成，测试集平均 acc: {accuracy:.4f}")
+        # if epoch > 10 and epoch % 100 == 0 :
+        #     # accuracy = test_model(model, dataset, device, tokenizer)
+        #     accuracy = test_model_generate(model, dataset, device, tokenizer)
+        #     print(f"Epoch {epoch} 完成，测试集平均 acc: {accuracy:.4f}")
     #
     # # 保存模型参数
     model.save_pretrained("/home/lzx2000/test/low_resources_semantic_parsing/RoBERTa")
