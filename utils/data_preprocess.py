@@ -221,6 +221,36 @@ def unify_format(example: AssertionExample):
 
     return example
 
+
+# [IN:GET_WEATHER ... ]  -> [IN:GET_WEATHER ... IN:GET_WEATHER]
+def modify_brackets(input_string):
+    stack = []
+    output = []
+
+    i = 0
+    while i < len(input_string):
+        # 检查是否遇到左括号（如: [IN:CREATE_REMINDER）
+        if input_string[i] == '[':
+            # 找到左括号后，截取标签内容
+            end_idx = input_string.find(' ', i)
+            if end_idx == -1:
+                end_idx = input_string.find(']', i)
+            tag = input_string[i + 1:end_idx]
+            stack.append(tag)
+            output.append(input_string[i:end_idx + 1]) # 包括左括号和标签
+            i = end_idx + 1
+        # 检查是否遇到右括号
+        elif input_string[i] == ']':
+            tag = stack.pop() # 弹出栈顶的标签
+            output.append(tag + ']') # 用对应的标签替换右括号
+            i += 1
+        else:
+            # 将普通字符直接加入输出
+            output.append(input_string[i])
+            i += 1
+
+    return ''.join(output)
+
 @DatasetsProcessorNameSpace.register("ours")
 def ptr_change(example: AssertionExample):
 
