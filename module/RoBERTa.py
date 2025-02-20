@@ -493,6 +493,8 @@ class RobertaBiLinearAttentionModel(EncoderDecoderModel):
         new_embeddings = self._get_resized_embeddings(old_embeddings, new_num_tokens)
         self.encoder.embeddings.word_embeddings = new_embeddings
 
+        self.lm_head = nn.Linear(self.hidden_size, new_num_tokens - 64, bias=False)
+
         return self.encoder.embeddings.word_embeddings
 
     def _get_resized_embeddings(self, old_embeddings, new_num_tokens):
