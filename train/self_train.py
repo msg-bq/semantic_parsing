@@ -418,15 +418,21 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     from transformers import AutoTokenizer, AdamW, get_scheduler
     global tokenizer1
     tokenizer1 = tokenizer
-    train_args = TrainingArguments(output_dir=args.save_dir,
-                                   num_train_epochs=args.epoch,#args.epoch,  # 这个指每个self_train里面的epoch
-                                   per_device_train_batch_size=args.batch_size,
-                                   save_steps=1000,
-                                   save_total_limit=1,
-                                   learning_rate=args.lr,
-                                   evaluation_strategy="epoch",
-                                   do_eval=True if "eval" in dataset else False,
-                                   no_cuda=False if args.device == "cuda" else True)
+
+    train_args = TrainingArguments(
+        output_dir=args.save_dir,
+        num_train_epochs=args.epoch,
+        per_device_train_batch_size=args.batch_size,
+        save_steps=1000,
+        save_total_limit=1,
+        learning_rate=args.lr,
+        evaluation_strategy="epoch",
+        do_eval=True if "eval" in dataset else False,
+        no_cuda=False if args.device == "cuda" else True,
+        dataloader_num_workers=4,  # 根据gpu数量调整
+        fp16=True,  # 如果你有显存足够，可以开启fp16加速训练
+        local_rank=int(os.environ.get("LOCAL_RANK", -1)),  # 设置用于分布式训练
+    )
 
     trainer = Trainer(model=model,
                         args=train_args,

@@ -110,6 +110,9 @@ def args_parse():
     parser.add_argument("--given_model", type=bool, default=False,
                         help="是否给定模型，如果是的话就直接训self train")
 
+    parser.add_argument('--local-rank', type=int, default=-1, 
+                        help="local rank for distributed training")
+
     args = parser.parse_args()
 
     # if args.config:
