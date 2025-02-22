@@ -73,10 +73,10 @@ def _valid_response(response_dict: dict, expression: str):
     def __check_original_words(sentence: str, words: list[str]) -> bool:
         # Check if all original words are in the response
         # Check if the word order is preserved
-        sentence = sentence.lower()
+        sentence_words = sentence.lower().split()
         words = [w.lower() for w in words]
         for word in words:
-            if word not in sentence:
+            if word not in sentence_words:
                 warnings.warn(f"Word '{word}' missing in the response sentence {sentence}")
                 return False
             # pos = sentence.lower().find(word.lower())
