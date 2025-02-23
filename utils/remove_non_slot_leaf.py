@@ -86,21 +86,71 @@ def tree_to_string(node):
     s += " ]"
     return s
 
-def process_string(input_string):
-    # 定义一个正则表达式来匹配所有 ] 和 [ 之间的内容
-    pattern = r']\s*(.*?)\s*\['
-    # 定义一个函数用于删除 @ptr_ 前的空格和 @ptr_ 后跟数字的部分
-    def remove_ptr(match):
-        content = match.group(1)
-        # 只有在内容不包含"SL:"或"IN:"时才进行删除操作
-        if "SL:" not in content and "IN:" not in content:
-            # 删除 @ptr_ 后跟数字的部分以及其前的空格
-            content = re.sub(r'@ptr_\d+', '', content)
-        return content
-    # 使用re.sub来逐个处理匹配项，删除不符合条件的部分
-    input_string = re.sub(pattern, lambda m: f"] {remove_ptr(m)} [", input_string)
 
-    return input_string.replace("  "," ")
+def parse_node(s, pos):
+    """
+    递归解析以 '[' 开始的节点，直到匹配的 ']'。
+    返回一个字典表示的节点和新的位置。
+    节点结构：
+        {
+            "tag": 完整的标签（如 "IN:GET_ESTIMATED_DEPARTURE"），
+            "type": 标签类型（"IN" 或 "SL"），
+            "children": 子元素列表（每个元素可能是字符串或节点）
+        }
+    """
+    assert s[pos] == '[', "必须以 [ 开始"
+    pos += 1  # 跳过 '['
+
+    # 读取标签（直到遇到空格或 ']'）
+    tag_start = pos
+    while pos < len(s) and s[pos] not in [' ', ']']:
+        pos += 1
+    tag = s[tag_start:pos]
+
+    # 跳过空格（如果有）
+    if pos < len(s) and s[pos] == ' ':
+        pos += 1
+
+    children = []
+    # 读取节点内部内容，直到遇到匹配的 ']'
+    while pos < len(s) and s[pos] != ']':
+        if s[pos] == '[':
+            # 遇到新的子节点，递归解析
+            child, pos = parse_node(s, pos)
+            children.append(child)
+        else:
+            # 读取文本段，直到遇到 '[' 或 ']'
+            text_start = pos
+            while pos < len(s) and s[pos] not in ['[', ']']:
+                pos += 1
+            segment = s[text_start:pos]
+            children.append(segment)
+    # 跳过匹配的 ']'
+    pos += 1
+
+    node_type = tag.split(':')[0]  # 例如 "IN" 或 "SL"
+    return {"tag": tag, "type": node_type, "children": children}, pos
+
+
+def reconstruct(node):
+    """
+    根据解析后的节点树重构字符串。
+    规则：
+      - 如果当前节点的类型为 IN，则直接子文本将被删除（但子节点依然保留）。
+      - 当追加文本节点时，如果文本内容前面没有空格则补上一个空格，避免像 "[SL:DATE_TIME@ptr_10" 这种情况。
+    """
+    result = "[" + node["tag"]
+    for child in node["children"]:
+        if isinstance(child, dict):
+            result += " " + reconstruct(child)
+        else:
+            if node["type"] != "IN":
+                # 如果文本不以空格开头且结果当前末尾也没有空格，则补一个空格
+                if child and not child[0].isspace() and not result.endswith(" "):
+                    result += " "
+                result += child
+    result += " ]"
+    return re.sub(r'\s{2,}', ' ', result)
 
 # --- 主函数 ---
 def remove_non_slot_leaf_nodes(input_string):
@@ -114,8 +164,11 @@ def remove_non_slot_leaf_nodes(input_string):
     # 对于外层 [IN:...]，其最终子节点为原来的留存部分加上所有被提升的节点（保持顺序，提升节点后接）
     filtered_tree.children.extend(promoted)
     remove_str = tree_to_string(filtered_tree)
-    # 转回字符串
-    return process_string(remove_str)
+
+    node, _ = parse_node(remove_str, 0)
+    st = reconstruct(node)
+
+    return reconstruct(node)
 
 
 # --- 测试 ---
