@@ -86,6 +86,22 @@ def tree_to_string(node):
     s += " ]"
     return s
 
+def process_string(input_string):
+    # 定义一个正则表达式来匹配所有 ] 和 [ 之间的内容
+    pattern = r']\s*(.*?)\s*\['
+    # 定义一个函数用于删除 @ptr_ 前的空格和 @ptr_ 后跟数字的部分
+    def remove_ptr(match):
+        content = match.group(1)
+        # 只有在内容不包含"SL:"或"IN:"时才进行删除操作
+        if "SL:" not in content and "IN:" not in content:
+            # 删除 @ptr_ 后跟数字的部分以及其前的空格
+            content = re.sub(r'@ptr_\d+', '', content)
+        return content
+    # 使用re.sub来逐个处理匹配项，删除不符合条件的部分
+    input_string = re.sub(pattern, lambda m: f"] {remove_ptr(m)} [", input_string)
+
+    return input_string.replace("  "," ")
+
 # --- 主函数 ---
 def remove_non_slot_leaf_nodes(input_string):
     # 分词（这里假定各个标记和词之间以空格分隔）
@@ -97,8 +113,10 @@ def remove_non_slot_leaf_nodes(input_string):
     filtered_tree, promoted = filter_node(tree, in_sl=False)
     # 对于外层 [IN:...]，其最终子节点为原来的留存部分加上所有被提升的节点（保持顺序，提升节点后接）
     filtered_tree.children.extend(promoted)
+    remove_str = tree_to_string(filtered_tree)
     # 转回字符串
-    return tree_to_string(filtered_tree)
+    return process_string(remove_str)
+
 
 # --- 测试 ---
 if __name__ == '__main__':
