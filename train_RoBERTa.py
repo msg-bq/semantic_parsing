@@ -41,6 +41,57 @@ def format_time_string(input_string: str) -> str:
 from utils.remove_non_slot_leaf import remove_non_slot_leaf_nodes
 from utils.sort_label import sort_string
 
+import re
+def in_input(content, input_str):
+    if f" {content} " not in input_str:
+        if f" {content}?" not in input_str and f" {content}." not in input_str and f" {content}," not in input_str:
+            if f" {content}" not in input_str:
+                return False
+            elif input_str.endswith(f" {content}") == False:
+                return False
+
+    return True
+
+def edit_label(examples):
+    input = examples["utterance"]
+    output = examples["semantic_parse"]
+
+    pattern = r"(?<=\[SL:WEATHER_TEMPERATURE_UNIT\s)(.*?)(?=\s\])"
+    if "[SL:WEATHER_TEMPERATURE_UNIT" in output:
+        match = re.search(pattern, output)
+        content = match.group(0).replace(" ","")
+        if in_input(content, input) == False:
+            in_input1 = content.capitalize()
+            if in_input(in_input1, input) == True:
+                output = re.sub(pattern, in_input1, output)
+            elif in_input(content.lower(), input) == True:
+                output = re.sub(pattern, content.lower(), output)
+            else:
+                return examples
+
+    examples["semantic_parse"] = output
+
+    return examples
+
+def filter(examples):
+    input = examples["utterance"]
+    output = examples["semantic_parse"]
+
+    # 过滤掉today误生成的
+    if input.find("today") != -1 and output.find("today") == -1:
+        return False
+    if input.find("Today") != -1 and output.find("Today") == -1:
+        return False
+
+    # 判断[SL:WEATHER_TEMPERATURE_UNIT的内容在label里有没有
+    pattern = r"(?<=\[SL:WEATHER_TEMPERATURE_UNIT\s)(.*?)(?=\s\])"
+    if "[SL:WEATHER_TEMPERATURE_UNIT" in output:
+        match = re.search(pattern, output)
+        content = match.group(0).replace(" ", "")
+        return in_input(content, input)
+
+    return True
+
 def ptr_change(examples):
     """
     将semantic_parse里面的的词，换成utterance里对应的ptr_x
@@ -60,12 +111,14 @@ def ptr_change(examples):
     examples["semantic_parse"] = ' '.join(changed_item)
     examples["semantic_parse"] = remove_non_slot_leaf_nodes(examples["semantic_parse"])
     examples["semantic_parse"] = sort_string(examples["semantic_parse"])
+    # 修改
+    examples["semantic_parse"] = edit_label(examples["semantic_parse"])
     examples["utterance"] = format_time_string(examples["utterance"])
     return examples
 
 def preprocess_dataset(dataset):
     dataset = dataset.map(ptr_change)
-
+    dataset = dataset.filter(ptr_change)
     return dataset
 
 def tokenize_function(examples, tokenizer):
