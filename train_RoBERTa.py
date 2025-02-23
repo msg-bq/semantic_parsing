@@ -42,7 +42,7 @@ from utils.remove_non_slot_leaf import remove_non_slot_leaf_nodes
 from utils.sort_label import sort_string
 
 import re
-def in_input(content, input_str):
+def in_input(content: str, input_str: str) -> bool:
     if f" {content} " not in input_str:
         if f" {content}?" not in input_str and f" {content}." not in input_str and f" {content}," not in input_str:
             if f" {content}" not in input_str:
@@ -52,7 +52,7 @@ def in_input(content, input_str):
 
     return True
 
-def edit_label(examples):
+def edit_label(examples: dict) -> dict:
     input = examples["utterance"]
     output = examples["semantic_parse"]
 
@@ -73,7 +73,7 @@ def edit_label(examples):
 
     return examples
 
-def filter(examples):
+def filter(examples: dict) -> bool:
     input = examples["utterance"]
     output = examples["semantic_parse"]
 
@@ -118,7 +118,7 @@ def ptr_change(examples):
 
 def preprocess_dataset(dataset):
     dataset = dataset.map(ptr_change)
-    dataset = dataset.filter(ptr_change)
+    dataset = dataset.filter(filter)
     return dataset
 
 def tokenize_function(examples, tokenizer):
