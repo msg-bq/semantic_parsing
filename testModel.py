@@ -138,36 +138,42 @@ def mycollate_trainer(examples):
 
     return batch
 
+# 将介词从字符串中去除
+def remove_prepositions(text):
+    prepositions = ["in", "on", "at", "by", "with", "about",
+                     "for", "under", "over", "between", "during",
+                     "through", "of"]
+    words = text.split()
+    filtered_words = [word for word in words if word.lower() not in prepositions]
+    return " ".join(filtered_words)
 
 
-def test_model(model, tokenizer, dataset, args):
-    # 在 GPU 上测试（如果可用）
-    device = args.device
+def test_model(model, tokenizer, dataset, device):
     correct = 0
     data_length = 0
-    total_loss = 0
     # DataLoader 用于批量测试
     test_loader = DataLoader(dataset["validation"], batch_size=8, collate_fn=mycollate_trainer)  # 你可以调整 batch_size
     for i, batch in enumerate(test_loader):
         batch = {k: v.to(device) for k, v in batch.items()}
         with torch.no_grad():
-            outputs = model(**batch)
-            logits = outputs.logits
-            # 使用 argmax 获取每个样本的预测类别
-            predicted = logits.argmax(-1)
-            # 检查整个句子是否完全匹配
-            correct_predictions = torch.all(torch.eq(predicted, batch["labels"]), dim=1)
-            num_correct_sentences = correct_predictions.sum().item()
-            correct += num_correct_sentences
-            # gz_correct += gz
-            # 获取句子的数量
-            num_sentences = batch["labels"].size(0)
-            data_length = data_length + num_sentences
+            generate_ids = model.generate(batch['input_ids'], max_length=64)
 
-            # 计算交叉熵损失
-            loss = torch.nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), batch["labels"].view(-1))
-            total_loss += loss.item()
-    # 计算最终准确率
+            input_ids = tokenizer.batch_decode(batch["input_ids"], skip_special_tokens=True)
+            print("输出", input_ids)
+            decoded_predicted = tokenizer.batch_decode(generate_ids, skip_special_tokens=True)
+            decoded_labels = tokenizer.batch_decode(batch["labels"], skip_special_tokens=True)
+            k = 0
+
+            num_correct_sentences = 0
+            for input_id, pred, label in zip(input_ids, decoded_predicted, decoded_labels):
+                k += 1
+                print("pred, label", pred, label)
+                # if pred == label:
+                if remove_prepositions(pred) == remove_prepositions(label):
+                    num_correct_sentences += 1
+
+            data_length += k
+            correct += num_correct_sentences
+        # 计算最终准确率
     accuracy = correct / data_length
-    avg_loss = total_loss / len(test_loader)
-    return accuracy, avg_loss
+    return accuracy, -1
