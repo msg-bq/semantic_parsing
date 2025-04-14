@@ -2,7 +2,7 @@ import warnings
 
 from utils.access_llm import query_gpt
 
-# Instructions template for natural language generation
+# Instructions template for nawawtural language generation
 generate_nl_instruct = '''You are a learned linguist, now please give some natural phrases to represent the meaning of given logical expression.
 First, you need to understand the semantics of the input expression. In parentheses are some of the things you need to include.
 Then, you should rewrite it into 3 rich natural sentences with different styles and grammatical rules, where:
@@ -16,6 +16,8 @@ Answers should be returned in the following python dictionary format:
 ######### input expression ##########
 logical_expression: {logical_expression}
 words in expression: {words_in_expression}  # Each sentence of answer dictionary should involve all of these words exactly.
+operator description: # Please create words based on the following description.
+{operator_description}
 
 ######### Answers in dictionary format ##########'''
 
@@ -39,9 +41,11 @@ def extract_words_from_expression(expression: str) -> list:
     return words
 
 
-def _gen_nl_prompt(expression: str) -> str:
-    words = extract_words_from_expression(expression)
-    return generate_nl_instruct.format(logical_expression=expression, words_in_expression=' '.join(words))
+def _gen_nl_prompt(expression: tuple[str, str]) -> str:
+    words = extract_words_from_expression(expression[0])
+
+    prompt = generate_nl_instruct.format(logical_expression=expression[0],operator_description=expression[1], words_in_expression=' '.join(words))
+    return generate_nl_instruct.format(logical_expression=expression[0],operator_description=expression[1], words_in_expression=' '.join(words))
 
 
 def __clean_and_parse_response(response: str) -> dict:
@@ -51,6 +55,9 @@ def __clean_and_parse_response(response: str) -> dict:
     response = response.lstrip('logical_expression:').strip()
 
     try:
+        response = response.replace("```python", "").replace("```", "")
+        response = response.replace("]}\n}","]}").replace("]}\n]","]}")
+
         response_dict = eval(response)
         if not isinstance(response_dict, dict):
             raise ValueError("The response is not in the correct format.")
@@ -76,7 +83,7 @@ def _valid_response(response_dict: dict, expression: str):
         sentence_words = sentence.lower().split()
         words = [w.lower() for w in words]
         for word in words:
-            if word not in sentence_words:
+            if word not in sentence_words and word+"?" not in sentence_words and word+"." not in sentence_words and word+"," not in sentence_words:
                 warnings.warn(f"Word '{word}' missing in the response sentence {sentence}")
                 return False
             # pos = sentence.lower().find(word.lower())
@@ -95,7 +102,7 @@ def _valid_response(response_dict: dict, expression: str):
     return response_dict
 
 
-def _generate_nl_topv2(label: str) -> dict:
+def _generate_nl_topv2(label: tuple[str, str]) -> dict:
     prompt = _gen_nl_prompt(label)
     response = query_gpt(prompt)
     result = __clean_and_parse_response(response)
@@ -104,7 +111,7 @@ def _generate_nl_topv2(label: str) -> dict:
     attempt = 0
     while attempt < max_attempts:
         if result:
-            result = _valid_response(result, label)
+            result = _valid_response(result, label[0])
             if result['expression'] and result['sentences']:
                 return result
         # 若条件不满足，可选择再次查询获取新结果，这里简单假设重新获取response

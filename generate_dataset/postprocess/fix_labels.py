@@ -77,25 +77,27 @@ def _construct_expression(reordered):
 
 
 # 按照topv2的特殊格式转换input字符串
-def _format_time_string(input_string: str) -> str:
+def _format_time_string(input_string):
     english_punctuation = string.punctuation.replace(':', '')
     # 正则表达式匹配时间格式
-    time_pattern = r'(\d{1,2})(:)?(\d{2})?(:)?(\d{2})?(am|pm|AM|PM)?'
+    time_pattern = r'(\d{1,2})(:)?(\d{2})?(am|pm|AM|PM)?'
+
     # 替换逻辑
     def replacer(match):
         hour = match.group(1)
         colon = " : " if match.group(2) else ""
         minute = match.group(3) if match.group(3) else ""
-        colon_2 = " : " if match.group(4) else ""
-        second = match.group(5) if match.group(5) else ""
-        period = f" {match.group(6)}" if match.group(6) else ""
-        return f"{hour}{colon}{minute}{colon_2}{second}{period}"
+        period = f" {match.group(4)}" if match.group(4) else ""
+        return f"{hour}{colon}{minute}{period}"
+
     # 对字符串进行替换
     formatted_string = re.sub(time_pattern, replacer, input_string)
+
     # 判断末尾字符是否是english_punctuation内的标点符号且前面无空格
-    if formatted_string[-1] in english_punctuation and formatted_string[-2] != " ":
-        formatted_string = formatted_string[:-1] + " " + formatted_string[-1]
-    # 使用正则表达式找到字母后面的单引号，并在其前面添加一个空格
+    for i in range(len(formatted_string)):
+        if formatted_string[i] in english_punctuation and formatted_string[i-1]!= " ":
+            formatted_string = formatted_string[:i] + " " + formatted_string[i:]
+
     return re.sub(r"([a-zA-Z])'s", r"\1 's", formatted_string)
 
 
@@ -141,7 +143,7 @@ def _flatten_list(nested_list: List[Any]) -> List[List[str]]:
 # 设置随机数种子
 random.seed(42)
 def _change_input_sencenten(sentence: str) -> str:
-    if random.random() < 0.5:
+    if random.random() < 0.85:
         # 替换
         if sentence[-1] in string.punctuation:
             return sentence[:-1]
@@ -152,6 +154,7 @@ def _fill_other_information_topv2(dataset: CustomDataset) -> CustomDataset:
 Move the 10am alarm up 30 minutes.
 [IN:UPDATE_ALARM Move the [SL:ALARM_NAME [IN:GET_TIME [SL:DATE_TIME 10 am ] ] ] alarm [SL:DATE_TIME up 30 minutes ] . ]
     """
+    result = []
     for example in dataset:
         # 替换标点符号
         example.input = _change_input_sencenten(example.input)
@@ -159,20 +162,19 @@ Move the 10am alarm up 30 minutes.
         text = _format_time_string(example.input)
         output_lst = example.output[1]
         # 去掉第一个空格前面的operator，以及最后的 "]"
-        # [['Rainy'], ['London'], ['Next Friday']]
+        # [['Rainy'], ['London'], ['Next Friday']]]
         slot_content_lst = _extract_last_values(output_lst)
         slot_content_lst = _flatten_list(slot_content_lst)
         new_example_output = []
-        # 3.在句子中删掉包括这个词在内的前面的词（新建的对象）删掉，继续匹配，
+        # 3. 在句子中删掉包括这个词在内的前面的词（新建的对象）删掉，继续匹配，
         last_end = 0
         for i, d in enumerate(slot_content_lst):
             sub_sentence = ' '.join(d)
             match = re.search(sub_sentence, text, re.IGNORECASE)
             if match:
                 start, end = match.span()  # 获取匹配的起始和结束位置
-
             else:
-                raise "出错了"
+                continue
             # 看这个start是不是0，否则就取从0到start-1的位置
             insert_sen = text[last_end:start]
             # 把非关键信息插进去
@@ -187,7 +189,10 @@ Move the 10am alarm up 30 minutes.
 
         filled_exp = (example.output[0], new_example_output)
         example.output = _construct_expression(filled_exp)
-    return dataset
+        
+        result.append(example)
+
+    return CustomDataset(result)
 
 
 def _reorder_expression_topv2(dataset: CustomDataset) -> CustomDataset:

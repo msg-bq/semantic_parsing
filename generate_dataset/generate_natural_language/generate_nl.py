@@ -36,7 +36,7 @@ class CustomDataset(Dataset):
 generate_nl_func_dict = {'topv2': _generate_nl_topv2}
 
 
-def generate_nl(labels: list[str], dataset_name: str, workers: int = 200):
+def generate_nl(labels: list[tuple[str, str]], dataset_name: str, workers: int = 200):
     generate_nl_func = generate_nl_func_dict[dataset_name]
     dataset = []
     with ThreadPoolExecutor(max_workers=workers) as executor:

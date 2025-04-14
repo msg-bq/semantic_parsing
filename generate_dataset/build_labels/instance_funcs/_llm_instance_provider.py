@@ -5,7 +5,6 @@ from collections import defaultdict
 from pathlib import Path
 
 from mimesis.providers.base import BaseProvider
-
 from ._instance_prompt import _concept_instance_prompt
 from utils.access_llm import async_query_gpt
 
@@ -29,7 +28,7 @@ def _read_concept_file(path: str) -> list[str]:
 def _write_concept_file(path: str, concept_instances: list[str]) -> None:
     # 避免写入重复元素
     existed_concept_instances = set(_read_concept_file(path)) if os.path.exists(path) else set()
-    concept_instances = set(concept_instances) & existed_concept_instances
+    concept_instances = set(concept_instances) | existed_concept_instances
     with open(path, 'w') as f:
         for concept_instance in concept_instances:
             f.write(concept_instance + '\n')
@@ -54,8 +53,7 @@ async def _llm_concept_instances(concept_name: str) -> list[str]:
         try:
             concept_instances_text = await async_query_gpt(prompt, temperature=0.3)
             concept_instances_text = _clean_instance_response(concept_instances_text)
-            concept_instances = [c.strip()
-                                 for c in concept_instances_text.lstrip('[').rstrip(']').split(',')]
+            concept_instances = eval(concept_instances_text)
             if concept_instances:
                 return concept_instances
         except Exception as e:

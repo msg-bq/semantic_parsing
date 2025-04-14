@@ -21,6 +21,7 @@ def _parse_first_rule(line):
     return variable_name, production
 
 
+
 def _parse_alt_rule(line):
     rule = line.rstrip()
     return rule[1:]
@@ -54,10 +55,12 @@ def _find_references(current_string):
                 begin_index = i
                 end_index = i
             else:  # 不允许非终止符直接续终止符相关的形式，所以直接抛异常
-                raise SyntaxError('non-terminal symbol should be only consist of upper characters or some other'
-                                  f'characters in extra_nonterminal_chars variables. But given {current_string} '
-                                  f'at position {i} with context '
-                                  f'{current_string[max(i-5,0): min(i+5, len(current_string))].replace('*space', ' ')}')
+                raise SyntaxError(
+                    'non-terminal symbol should be only consist of upper characters or some other'
+                    f' characters in extra_nonterminal_chars variables. But given {current_string} '
+                    f'at position {i} with context '
+                    f'{current_string[max(i - 5, 0): min(i + 5, len(current_string))].replace("*space", " ")}'
+                )
 
     # If we've enumerated through the whole string and the variable flag is on,
     # there's a variable that hasn't been added to the list, so add it.
@@ -110,6 +113,19 @@ async def _derive_string(current_string, grammar):
     return updated_string
 
 
+def topv2_method(final_string):
+    if ": [ intent" not in final_string:
+        return True
+    else:
+        if random.random() < 0.95:
+            return False
+    final_string = final_string.replace(": [", ":[")
+    parts = final_string.split(": ")[1:]
+    for part in parts:
+        if "null" not in part:
+            return True
+    return False
+
 async def generate_expressions(n: int) -> list:
     """
     :param n: 生成的数量
@@ -161,8 +177,10 @@ async def generate_expressions(n: int) -> list:
     final_exps = set()
     while True:
         final_string = await _derive_string(start_string, the_grammar)  # todo: 最好这里过滤下全null
-        final_exps.add(final_string)
-        print('FINAL STRING:\n{}'.format(final_string))
+        boo = topv2_method(final_string)
+        if boo == True:
+            final_exps.add(final_string)
+            print('FINAL STRING:\n{}'.format(final_string))
 
         if len(final_exps) > n:
             break

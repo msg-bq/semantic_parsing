@@ -15,6 +15,7 @@ def parse_derivations(derivation_texts: list[str] | str, dataset_name: str) -> _
 
 
 if __name__ == '__main__':
+    # 字符串 -> class
     derivation_text_example = \
         'intent:get_sunrise ( [ location: London ] [ date_time: Next*spaceFriday ] [ weather: Rainy ] )'
     dataset = 'topv2'
