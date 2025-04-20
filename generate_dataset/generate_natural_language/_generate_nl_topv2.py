@@ -1,6 +1,6 @@
 import warnings
 
-from utils.access_llm import query_gpt
+from ..gen_utils.access_llm import query_gpt
 
 # Instructions template for nawawtural language generation
 generate_nl_instruct = '''You are a learned linguist, now please give some natural phrases to represent the meaning of given logical expression.
