@@ -120,13 +120,18 @@ def _contained_word(word1: str, word2: str) -> bool:
 # {"input": "What event involves the pet Tylor", "output": "[IN:GET_EVENT What event involves the [SL:ATTRIBUTE_EVENT
 # pet ] [SL:NAME_EVENT Tylor ] ]")}
 
-def get_full_noun_label(example):
+def get_full_noun_label(sentence: str, label: str) -> tuple[bool, str]:
+    """
+    结合原句子补全标签中不全面的地方，主要是把标签里的词补成短语
+    3.1 remove_non_slot_leaf_nodes （这个好像重复调用了，可以删）。
+    3.2 通过_extract_noun_phrases和_extract_adverbial_phrases获取名词和状语成分，然后保存下来长度 > 1的短语。
+    3.3 找到需要改的地方，通过_get_new_label来得到新的标签。
+    """
     special_words = ["next", "Next", "coming up", "upcoming", "soonest", "new", "first", "second", "third", "fourth",
                      "fifth", "outdoor", "elderly", "family"
                                                     "free", ""]
 
-    sentence = example["input"]
-    label = remove_non_slot_leaf_nodes(example["output"])
+    label = remove_non_slot_leaf_nodes(label)
     label_replace_words = []
     doc = nlp(sentence)
 

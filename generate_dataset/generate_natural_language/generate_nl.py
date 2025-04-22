@@ -35,6 +35,12 @@ class CustomDataset(Dataset):
     def __getitem__(self, idx):
         return self.data[idx]
 
+    def __iter__(self):
+        raise NotImplementedError()
+
+    def __next__(self):
+        raise NotImplementedError()
+
 
 generate_nl_func_dict = {'topv2': _generate_nl_topv2}
 
