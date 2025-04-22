@@ -6,6 +6,12 @@ from parse_funcs import parse_derivations, Assertion, Formula
 from postprocess.fix_labels import fix_labels_topv2
 
 
+# ==============
+# 需要想个办法可以便捷地注册对应的ops
+# Declared_Operators.update()
+
+# ==============
+
 def generate_dataset(dataset_name: str, num: int = 2) -> CustomDataset:
     """
     :param num: 我这边异步比较草率，实际生成的数量可能会略大于num

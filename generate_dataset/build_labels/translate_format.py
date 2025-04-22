@@ -1,10 +1,6 @@
 # 本文件用于将断言语法的结果，输出为特定下游任务所需的格式
-import sys
-import os
+from ..parse_funcs import Assertion, Formula, Term, BaseIndividual
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from parse_funcs import Assertion, Formula, Term, BaseIndividual
 
 def _translate_format_topv2(al_expressions: list[Assertion | Formula]) -> list[tuple[str, str]]:
     """
@@ -36,7 +32,8 @@ def _translate_format_topv2(al_expressions: list[Assertion | Formula]) -> list[t
         else:
             raise TypeError("Unsupported type for assertion logic. Expected Assertion, Formula, Term or Individual.")
 
-    return [(_format(expression),expression.get_des()) for expression in al_expressions]
+    return [(_format(expression), expression.description) for expression in al_expressions]  # 这里有个小瑕疵，我本意希望
+# 最外层的入口还是保留get_des()的命名，但不巧我们有Assertion和Formula两个入口，且Assertion也是被调用的一方，就不好单独命名了，因此统一
 
 
 translate_format_dict = {'topv2': _translate_format_topv2}
@@ -49,7 +46,7 @@ def translate_format(al_expressions: list[Assertion | Formula], dataset_name: st
 
 
 if __name__ == '__main__':
-    from parse_funcs.parse_derivation import parse_derivations
+    from ..parse_funcs.parse_derivation import parse_derivations
 
     derivation_text_example = \
         'intent:GET_SUNRISE ( [ LOCATION: intent:GET_LOCATION ( [ LOCATION_USER: XXX ] [ SEARCH_RADIUS: null ] [ LOCATION_MODIFIER: null ] ) ] [ DATE_TIME: null ] )'

@@ -6,7 +6,7 @@ from pathlib import Path
 
 from mimesis.providers.base import BaseProvider
 from ._instance_prompt import _concept_instance_prompt
-from utils.access_llm import async_query_gpt
+from generate_dataset.gen_utils.access_llm import async_query_gpt
 
 _DATADIR = Path(__file__).parent / 'llm_instance_datadir'
 if not os.path.exists(_DATADIR):
