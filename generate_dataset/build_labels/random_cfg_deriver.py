@@ -21,7 +21,6 @@ def _parse_first_rule(line):
     return variable_name, production
 
 
-
 def _parse_alt_rule(line):
     rule = line.rstrip()
     return rule[1:]
@@ -69,6 +68,19 @@ def _find_references(current_string):
     return variable_references
 
 
+def _roulette_choice_rule(rules: list[str]) -> str:
+    """
+    给定一些可能的derivation的rules，以更高的概率选择非嵌套规则，避免嵌套层级过深
+    todo: 怎么才能让使用者快速注意到这个函数，然后决定自己想不想用或者更改为random.choice
+    """
+    non_terminal_symbols_num = [r.count('$') for r in rules]
+    z_list = [1 / (y+0.1) for y in non_terminal_symbols_num]  # +0.1是平滑一些，避免算概率时出现0
+    total = sum(z_list)
+    probability = [z / total for z in z_list]
+
+    return random.choices(rules, weights=probability, k=1)[0]
+
+
 async def _derive_string(current_string, grammar):
     # While the string is not fully lower case(i.e. contains rules to be replaced
     # with productions):
@@ -82,7 +94,7 @@ async def _derive_string(current_string, grammar):
             return terminal_symbol.lower()  # fixme(lbq): 这里为什么有个未使用的
         return terminal_symbol
 
-    variable_references = []
+    # variable_references = []
     updated_string = None
     while True:
         variable_references = _find_references(current_string)
@@ -90,7 +102,8 @@ async def _derive_string(current_string, grammar):
             break
 
         random_variable = random.choice(variable_references)  # hack: 这个地方酌情优化，未经优化的random会导致大量重复
-        random_production = random.choice(grammar.variable_dict[random_variable.name].rules)
+        # random_production = random.choice(grammar.variable_dict[random_variable.name].rules)
+        random_production = _roulette_choice_rule(grammar.variable_dict[random_variable.name].rules)
 
         terminal_symbols = random_production.split()
         for i, terminal_symbol in enumerate(terminal_symbols):
@@ -102,8 +115,8 @@ async def _derive_string(current_string, grammar):
                 terminal_symbols[i] = concept_instance
         random_production = ' '.join(terminal_symbols)
 
-        updated_string = current_string[:random_variable.start_index] + random_production + current_string[
-                                                                                            random_variable.end_index + 1:]
+        updated_string = (current_string[:random_variable.start_index] + random_production +
+                          current_string[random_variable.end_index + 1:])
         print('In "{}" replacing "{}" with "{}" to obtain "{}"'.format(current_string,
                                                                        random_variable.name,
                                                                        random_production,
@@ -112,19 +125,6 @@ async def _derive_string(current_string, grammar):
 
     return updated_string
 
-
-def topv2_method(final_string):
-    if ": [ intent" not in final_string:
-        return True
-    else:
-        if random.random() < 0.95:
-            return False
-    final_string = final_string.replace(": [", ":[")
-    parts = final_string.split(": ")[1:]
-    for part in parts:
-        if "null" not in part:
-            return True
-    return False
 
 async def generate_expressions(n: int) -> list:
     """
@@ -177,10 +177,8 @@ async def generate_expressions(n: int) -> list:
     final_exps = set()
     while True:
         final_string = await _derive_string(start_string, the_grammar)  # todo: 最好这里过滤下全null
-        boo = topv2_method(final_string)
-        if boo == True:
-            final_exps.add(final_string)
-            print('FINAL STRING:\n{}'.format(final_string))
+        final_exps.add(final_string)
+        print('FINAL STRING:\n{}'.format(final_string))
 
         if len(final_exps) > n:
             break

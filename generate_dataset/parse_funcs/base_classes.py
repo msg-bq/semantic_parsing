@@ -1,5 +1,5 @@
 from __future__ import annotations
-from ._co_namespace import Declared_Operators
+from generate_dataset.modeling.co_namespace import Declared_Operators
 
 
 class DuplicateError(Exception):
@@ -12,11 +12,12 @@ class DuplicateError(Exception):
 
 
 class BaseIndividual(object):
-    def __init__(self, value: str):
+    def __init__(self, value: str, description: str = ""):
         """
         :param value: 语义解析时我们认为仅有str。正常情况下，断言逻辑的individual应当归属于某个concept，自身可以是任意格式
         """
         self.value = value
+        self._description = description
 
     def __eq__(self, other):
         return type(self) is type(other) and self.GetHash() == other.GetHash()
@@ -24,8 +25,9 @@ class BaseIndividual(object):
     def GetHash(self):
         return self.value
 
-    def get_des(self):
-        return None
+    @property
+    def description(self) -> str:
+        return f"{self.value}: {self._description}" if self.description else ""
 
     def __hash__(self):
         return self.GetHash().__hash__()
@@ -38,7 +40,7 @@ class BaseIndividual(object):
 
 
 class BaseOperator(object):
-    def __init__(self, name: str, input_type: list[str], output_type: str, description: str):
+    def __init__(self, name: str, input_type: list[str], output_type: str, description: str = ""):
         if name in Declared_Operators:
             raise DuplicateError("此Operator已声明")
         Declared_Operators[name] = True
@@ -46,12 +48,13 @@ class BaseOperator(object):
         self.inputType = input_type
         self.outputType = output_type
         self.name = name
-        self.description = description
+        self._description = description
 
     def GetHash(self):
         return self.name  # 因为名称唯一，按理来说这就够用了
 
-    def get_des(self):
+    @property
+    def description(self) -> str:
         if self.description == "":
             return self.description
         return f"{self.name}: {self.description}"
@@ -87,19 +90,12 @@ class Term(object):
             var_dict['operator'] = self.operator.GetHash()
         return tuple(var_dict.items())
 
-    def get_des(self):
-        des_lst = []
-        for variable in self.variables:
-            if variable.get_des() != None:
-                des_lst.append(variable.get_des())
+    @property
+    def description(self):
+        des_lst = [variable.description for variable in self.variables if variable.description]
         variables_des = '\n'.join(des_lst)
 
-        term_des = self.operator.get_des()
-
-        if variables_des != "":
-            return f"{self.operator.get_des()}\n{variables_des}"
-        else:
-            return term_des
+        return f"{self.operator.description}\n{variables_des}".strip()
 
     def __getattribute__(self, item):
         return super(Term, self).__getattribute__(item)
@@ -133,8 +129,12 @@ class Assertion:
 
         return tuple(var_dict.items())
 
-    def get_des(self):
-        return f"{self.LHS.get_des()}\n{self.RHS.get_des()})"
+    @property
+    def description(self):
+        """
+        为了便于模型理解operator、concept的含义，允许用户在BaseOperator等处记录算子的解释
+        """
+        return f"{self.LHS.description}\n{self.RHS.description})"
 
     def __eq__(self, other):
         return type(self) is type(other) and self.GetHash() == other.GetHash()
@@ -159,18 +159,18 @@ class Formula:
 
     def GetHash(self):
         left_hash = self.formula_left.GetHash() if isinstance(self.formula_left, Formula) else self.formula_left
-        if self.formula_right != None:
+        if self.formula_right is not None:
             right_hash = self.formula_right.GetHash() if isinstance(self.formula_right, Formula) else self.formula_right
         else:
             right_hash = ""
         connective_hash = hash(self.connective)
         return left_hash, connective_hash, right_hash
 
-    def get_des(self):
-        des = self.formula_left.get_des()
-        if self.formula_right != None:
-            des += "\n"
-            des += self.formula_right.get_des()
+    @property
+    def description(self):
+        des = self.formula_left.description
+        if self.formula_right is not None:
+            des += "\n" + self.formula_right.description
         return des
 
     def __hash__(self):
