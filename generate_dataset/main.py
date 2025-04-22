@@ -3,7 +3,9 @@ import asyncio
 from build_labels import translate_format, generate_expressions
 from generate_natural_language import generate_nl, CustomDataset
 from parse_funcs import parse_derivations, Assertion, Formula
-from postprocess.fix_labels import fix_labels_topv2
+from postprocess.topv2_process_fix_labels import fix_labels_topv2
+import torch
+torch.utils.data
 
 
 # ==============

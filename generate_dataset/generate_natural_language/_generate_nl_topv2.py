@@ -2,7 +2,7 @@ import warnings
 
 from ..gen_utils.access_llm import query_gpt
 
-# Instructions template for nawawtural language generation
+# Instructions template for natural language generation
 generate_nl_instruct = '''You are a learned linguist, now please give some natural phrases to represent the meaning of given logical expression.
 First, you need to understand the semantics of the input expression. In parentheses are some of the things you need to include.
 Then, you should rewrite it into 3 rich natural sentences with different styles and grammatical rules, where:

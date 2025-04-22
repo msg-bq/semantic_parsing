@@ -6,9 +6,12 @@ from torch.utils.data import Dataset
 
 
 class Example:
-    def __init__(self, inp, out):
+    def __init__(self, inp, out, cand_out = None):
+        assert out or cand_out
+
         self.input = inp
         self.output = out
+        self._candidate_output: list = cand_out
 
     def __getitem__(self, item):
         if item == 'input':
