@@ -12,7 +12,7 @@ false_file = open("event_err.tsv", "w", encoding="utf-8")
 
 
 # 英文标点符号
-def format_time_string(input_string):
+def _format_time_string(input_string):  # fixme(lzx): 这个是不有两遍
     english_punctuation = string.punctuation.replace(':', '').replace("'", '')
     # 正则表达式匹配时间格式
     time_pattern = r'(\d{1,2})(:)?(\d{2})?(am|pm|AM|PM)?'
@@ -138,9 +138,9 @@ def get_full_noun_label(sentence: str, label: str) -> tuple[bool, str]:
     noun_phrases, noun_chunks = _extract_noun_phrases(doc)
     adv_phrases = _extract_adverbial_phrases(doc)
 
-    noun_phrases = [format_time_string(noun_phrase) for noun_phrase in noun_phrases if len(noun_phrase.split()) > 1]
+    noun_phrases = [_format_time_string(noun_phrase) for noun_phrase in noun_phrases if len(noun_phrase.split()) > 1]
     noun_chunks = [noun_chunk for noun_chunk in noun_chunks if len(noun_chunk.text.split()) > 1]
-    adv_phrases = [format_time_string(adv_phrase) for adv_phrase in adv_phrases if len(adv_phrase.split()) > 1]
+    adv_phrases = [_format_time_string(adv_phrase) for adv_phrase in adv_phrases if len(adv_phrase.split()) > 1]
 
     print(noun_phrases)
     print(adv_phrases)
@@ -150,7 +150,7 @@ def get_full_noun_label(sentence: str, label: str) -> tuple[bool, str]:
     # 使用 re.findall 查找所有匹配的 BBB 部分
     matches = re.findall(pattern, label)
 
-    matches = [format_time_string(match) for match in matches]
+    matches = [_format_time_string(match) for match in matches]
 
     # 这个matches是个列表
     for i, match in enumerate(matches):

@@ -5,7 +5,7 @@ from generate_dataset.generate_natural_language import CustomDataset, Example
 from test2 import get_full_noun_label
 
 
-def get_new_label(origin_label: str, label_replace_words):
+def _get_new_label(origin_label: str, label_replace_words):
     # 将待替换的部分放在第二个捕获组中
     # pattern = r"(\[SL:[A-Za-z0-9_]+\s)(.*?)(\s\])"
     pattern = r"(\[SL:[A-Za-z0-9_]+\s)([^[]+?)(\s\])"
@@ -74,7 +74,7 @@ def align_sent_label_by_lemmatization(example):
         new_match = " ".join(s)
         replace_match.append(new_match)
 
-    new_label = get_new_label(label, replace_match)
+    new_label = _get_new_label(label, replace_match)
     return new_label
 
 
