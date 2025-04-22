@@ -29,11 +29,10 @@ nlp = spacy.load("en_core_web_sm")
 
 
 # 第一步
-def get_sentence_label(example):
+def align_sent_label_by_lemmatization(example):
     """
-    这个函数是专门用于词母化的吗，看能否改个名之类的，比如lemma_check，不过看起来不单单有词母化
+    词母化 + 根据句子和标签里词母化后的词，把标签里的词改成句子里词母化前的词
     """
-
     sentence = example["input"]
     label = example["output"]
     # 创建一个Doc
@@ -152,7 +151,7 @@ if __name__ == '__main__':
     new_dataset1 = []
     for data in tqdm(dataset):
         data["output"] = remove_non_slot_leaf_nodes(data["output"])
-        label_test = get_sentence_label(data)
+        label_test = align_sent_label_by_lemmatization(data)
         new_example = {"input": data["input"], "output": label_test}
 
         flag_test, new_label_test = get_full_noun_label(new_example)
