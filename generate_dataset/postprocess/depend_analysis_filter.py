@@ -78,18 +78,7 @@ def align_sent_label_by_lemmatization(example):
     return new_label
 
 
-# 第二步 event,me,detail,information,date,what,place special_word = ["weather","sunrise","sunset","temperature","me",
-# "reminder","time","number","reminders","location","recipe","date","what","place","event","events","delete","it",
-# "one","amount","set","times","ones","detail","details"]
-# special_word = ["event", "events", "me", "detail", "details", "information", "date", "what", "place"]
-# hack: 这里怎么理解，以及这个特殊处理在对外宣传时是否可以解释？
-# special_word = ["reminder","time","number","reminders","location","recipe","date","what","place","event","events",
-# "delete","it","one","amount","set","times","ones","detail","details"]
-# obj_err_file = open("reminder_obj_err.txt", "w", encoding="utf-8")
 stopwords = set(open("stopwords.txt", "r", encoding="utf-8").read().splitlines())
-# import requests
-# stopwords_list = requests.get("https://gist.githubusercontent.com/rg089/35e00abf8941d72d419224cfd5b5925d/raw/12d899b70156fd0041fa9778d657330b024b959c/stopwords.txt").content
-# stopwords = set(stopwords_list.decode().splitlines())
 
 
 def keywords_check(example):

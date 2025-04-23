@@ -120,7 +120,7 @@ def _contained_word(word1: str, word2: str) -> bool:
 # {"input": "What event involves the pet Tylor", "output": "[IN:GET_EVENT What event involves the [SL:ATTRIBUTE_EVENT
 # pet ] [SL:NAME_EVENT Tylor ] ]")}
 
-def get_full_noun_label(sentence: str, label: str) -> tuple[bool, str]:
+def get_full_noun_label(sentence: str, label: str) -> str:
     """
     结合原句子补全标签中不全面的地方，主要是把标签里的词补成短语
     3.1 remove_non_slot_leaf_nodes （这个好像重复调用了，可以删）。
@@ -178,4 +178,4 @@ def get_full_noun_label(sentence: str, label: str) -> tuple[bool, str]:
             label_replace_words.append(label_match)
 
     new_label = _get_new_label(label, label_replace_words)
-    return True, new_label
+    return new_label
