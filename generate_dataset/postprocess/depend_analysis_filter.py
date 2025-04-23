@@ -163,9 +163,6 @@ if __name__ == '__main__':
             flag_test, new_label_test = get_full_noun_label(sentence=data["input"],
                                                             label=label_test)
 
-            if not flag_test:
-                continue
-
             # new_example = {"input": data["input"], "output": new_label_test}
             new_example = Example(inp=data["input"],
                                   out=new_label_test)
