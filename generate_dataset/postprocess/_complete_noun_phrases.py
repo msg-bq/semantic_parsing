@@ -1,6 +1,12 @@
+import string
+
 import spacy
 
+from generate_dataset.parse_funcs import BaseIndividual, Assertion, Formula
+from generate_dataset.postprocess._align_lemma import _extract_individuals
+
 nlp = spacy.load("en_core_web_sm")
+stopwords = set(open("stopwords.txt", "r", encoding="utf-8").read().splitlines())
 
 
 def _extract_noun_phrases(doc):
@@ -13,7 +19,6 @@ def _extract_noun_phrases(doc):
     return noun_phrases, noun_chunks
 
 
-# 取里面长度>1的部分
 def _extract_adverbial_phrases(doc):
     """
     提取状语短语：
@@ -31,41 +36,8 @@ def _extract_adverbial_phrases(doc):
     return adv_phrases
 
 
-def _format_time_string(input_string):  # fixme(lzx): 这个是不有两遍
-    english_punctuation = string.punctuation.replace(':', '').replace("'", '')
-    # 正则表达式匹配时间格式
-    time_pattern = r'(\d{1,2})(:)?(\d{2})?(am|pm|AM|PM)?'
-
-    # 替换逻辑
-    def replacer(match):
-        hour = match.group(1)
-        colon = " : " if match.group(2) else ""
-        minute = match.group(3) if match.group(3) else ""
-        period = f" {match.group(4)}" if match.group(4) else ""
-        return f"{hour}{colon}{minute}{period}"
-
-    # 对字符串进行替换
-    formatted_string = re.sub(time_pattern, replacer, input_string)
-
-    def insert_spaces_around_punctuation(s):
-        i = 0
-        while i < len(s):
-            if s[i] in english_punctuation:
-                if i > 0 and s[i - 1] != " ":
-                    s = s[:i] + " " + s[i:]
-                    i += 1  # 跳过新插入的空格
-                if (i + 1) < len(s) and s[i + 1] != " ":
-                    s = s[:i + 1] + " " + s[i + 1:]
-                    i += 1  # 跳过新插入的空格
-            i += 1
-        return s
-
-    formatted_string = insert_spaces_around_punctuation(formatted_string)
-    return re.sub(r"([a-zA-Z0-9])'s", r"\1 's", formatted_string)
-
-
-# 如果槽中的词是限定词或修饰词，那就不需要了
-def _is_insert(chunk, word):
+def _is_same_np(chunk, word):
+    """如果两个词的差异仅含限定词或修饰词，认为算同一个词"""
     # 遍历名词性短语中的每个词
     for token in chunk:
         # 判断是否是形容词或限定词（包括数词）
@@ -86,65 +58,61 @@ def _contained_word(word1: str, word2: str) -> bool:
     return False
 
 
-def get_full_noun_label(sentence: str, label: str) -> str:
+def _clean_string(text: str) -> str:
+    text = text.lower().strip()
+    if text[-1] in string.punctuation:
+        return text[:-1]
+    return text
+
+
+def get_full_noun_label(sentence: str, label: Assertion | Formula) -> Assertion | Formula:
     """
     结合原句子补全标签中不全面的地方，主要是把标签里的词补成短语
-    3.1 remove_non_slot_leaf_nodes （这个好像重复调用了，可以删）。
     3.2 通过_extract_noun_phrases和_extract_adverbial_phrases获取名词和状语成分，然后保存下来长度 > 1的短语。
     3.3 找到需要改的地方，通过_get_new_label来得到新的标签。
 
     ===
     _format_time_string似乎是个特殊情况
     """
-    special_words = ["next", "Next", "coming up", "upcoming", "soonest", "new", "first", "second", "third", "fourth",
-                     "fifth", "outdoor", "elderly", "family"
-                                                    "free", ""]
-
-    label = remove_non_slot_leaf_nodes(label)
-    label_replace_words = []
     doc = nlp(sentence)
 
     noun_phrases, noun_chunks = _extract_noun_phrases(doc)
     adv_phrases = _extract_adverbial_phrases(doc)
 
-    noun_phrases = [_format_time_string(noun_phrase) for noun_phrase in noun_phrases if len(noun_phrase.split()) > 1]
+    noun_phrases: list[str] = [_clean_string(noun_phrase) for noun_phrase in noun_phrases if
+                               len(noun_phrase.split()) > 1]
     noun_chunks = [noun_chunk for noun_chunk in noun_chunks if len(noun_chunk.text.split()) > 1]
-    adv_phrases = [_format_time_string(adv_phrase) for adv_phrase in adv_phrases if len(adv_phrase.split()) > 1]
+    adv_phrases = [_clean_string(adv_phrase) for adv_phrase in adv_phrases if len(adv_phrase.split()) > 1]
 
-    print(noun_phrases)
-    print(adv_phrases)
-    # 正则表达式，匹配 [SL:...] 中的 BBB 部分
-    # pattern = r"\[SL:[A-Za-z0-9_]+\s(.*?)\s\]"
-    pattern = r"\[SL:[A-Za-z0-9_]+\s([^[]+?)\s\]"
-    # 使用 re.findall 查找所有匹配的 BBB 部分
-    matches = re.findall(pattern, label)
-
-    matches = [_format_time_string(match) for match in matches]
+    individuals: list[BaseIndividual] = _extract_individuals(label)  # individual一般对应slots，const/var等相似的含义
+    # fixme: _extract_individuals这个之后不会放到这个函数里
 
     # 这个matches是个列表
-    for i, match in enumerate(matches):
+    for i, individual in enumerate(individuals):
+        match = individual.value
         # 先在名词性中找对应
         label_match = ""
-        for adv_phrase in adv_phrases:
+        if match in adv_phrases:
             # 这里有个问题是Free in Freeway
-            if match.lower() == adv_phrase.lower() or match.lower() == adv_phrase[:-1].lower():
-                label_match = adv_phrase
+            continue
 
         for k, noun_phrase in enumerate(noun_phrases):
-            if match in noun_phrase and _is_insert(noun_chunks[k], match):
+            if match in noun_phrase and _is_same_np(noun_chunks[k], match):  # hack: match in noun_phrase针对
+                # an apple == apple的情况，但是简单用in无法避免app == an apple的情况
                 label_match = noun_phrase
 
-        if label_match == "":
-            label_replace_words.append(match)
-        # 看他的前面后面是不是有和他一样的
-        elif label_match in special_words:
-            label_replace_words.append(match)
-        elif i != 0 and _contained_word(matches[i - 1], label_match):
-            label_replace_words.append(match)
-        elif i != len(matches) - 1 and _contained_word(matches[i + 1], label_match):
-            label_replace_words.append(match)
-        else:
-            label_replace_words.append(label_match)
+        # if label_match in stopwords:  # fixme(lzx): 可能是label_match - match的部分不能在停用词里
+        #     label_replace_words.append(match)
 
-    new_label = _get_new_label(label, label_replace_words)
-    return new_label
+        # if i != 0 and _contained_word(matches[i - 1], label_match):  # topv2才需要
+        #     # 其他的任务是否需要count
+        #     label_replace_words.append(match)
+        #
+        # if i != len(matches) - 1 and _contained_word(matches[i + 1], label_match):
+        #     label_replace_words.append(match)
+        # fixme: 需要纠结
+        # fixme: 如果这里不验，需要在topv2_fix_label里面验掉
+
+    return label
+
+# Bob's teacher is Alice.

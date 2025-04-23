@@ -1,3 +1,5 @@
+import re
+import string
 import warnings
 
 from ..gen_utils.access_llm import query_gpt
@@ -23,7 +25,7 @@ operator description: # Please create words based on the following description.
 
 
 # Function to extract words, skipping "IN" and "SL" tags
-def extract_words_from_expression(expression: str) -> list:
+def _extract_words_from_expression(expression: str) -> list:
     # Remove the square brackets and split the expression by spaces
     # We'll use regex to match everything that is not an "IN" or "SL" tag or brackets
     expression = expression.replace('[', ' ').replace(']', ' ')
@@ -42,13 +44,16 @@ def extract_words_from_expression(expression: str) -> list:
 
 
 def _gen_nl_prompt(expression: tuple[str, str]) -> str:
-    words = extract_words_from_expression(expression[0])
+    """
+    :param expression: expreesion包括assertion的str和其中operator等定义的desc
+    """
+    words = _extract_words_from_expression(expression[0])
 
-    prompt = generate_nl_instruct.format(logical_expression=expression[0],operator_description=expression[1], words_in_expression=' '.join(words))
-    return generate_nl_instruct.format(logical_expression=expression[0],operator_description=expression[1], words_in_expression=' '.join(words))
+    return generate_nl_instruct.format(logical_expression=expression[0], operator_description=expression[1],
+                                       words_in_expression=' '.join(words))
 
 
-def __clean_and_parse_response(response: str) -> dict:
+def __clean_and_parse_response(response: str) -> dict | None:
     response = response.strip()
     response = response.strip('"').strip()
     response = response.rstrip('.').strip()
@@ -56,7 +61,7 @@ def __clean_and_parse_response(response: str) -> dict:
 
     try:
         response = response.replace("```python", "").replace("```", "")
-        response = response.replace("]}\n}","]}").replace("]}\n]","]}")
+        response = response.replace("]}\n}", "]}").replace("]}\n]", "]}")
 
         response_dict = eval(response)
         if not isinstance(response_dict, dict):
@@ -70,12 +75,12 @@ def __clean_and_parse_response(response: str) -> dict:
         print(f"The response is not in the correct format. Response: {response}")
 
 
-def _valid_response(response_dict: dict, expression: str):
+def _valid_response(response_dict: dict, expression: str):  # hack: 可能不限于topv2
     if response_dict['expression'] != expression:  # todo: 这里感觉提示词就没必要生成一遍expression？
         # 毕竟提示词既没什么额外的修复作用。生成完的expression又不保真
         warnings.warn(f"The expression in the response does not match the input expression. Response expression is"
                       f" '{response_dict['expression']}' while input expression is '{expression}'.")
-        response_dict['expression'] = expression   # 目前调成False了
+        response_dict['expression'] = expression  # 目前调成False了
 
     def __check_original_words(sentence: str, words: list[str]) -> bool:
         # Check if all original words are in the response
@@ -83,7 +88,7 @@ def _valid_response(response_dict: dict, expression: str):
         sentence_words = sentence.lower().split()
         words = [w.lower() for w in words]
         for word in words:
-            if word not in sentence_words and word+"?" not in sentence_words and word+"." not in sentence_words and word+"," not in sentence_words:
+            if word not in sentence_words and word + "?" not in sentence_words and word + "." not in sentence_words and word + "," not in sentence_words:
                 warnings.warn(f"Word '{word}' missing in the response sentence {sentence}")
                 return False
             # pos = sentence.lower().find(word.lower())
@@ -96,13 +101,13 @@ def _valid_response(response_dict: dict, expression: str):
         # 暂时不便校验sentence由几句话组成，我们期望是一句话（凑合的判断条件是，句号+问号+分号+叹号的数量==1）
         return True
 
-    original_words = extract_words_from_expression(expression)
+    original_words = _extract_words_from_expression(expression)
     response_dict['sentences'] = [s for s in response_dict['sentences'] if __check_original_words(s, original_words)]
 
     return response_dict
 
 
-def _generate_nl_topv2(label: tuple[str, str]) -> dict:
+def generate_nl_topv2(label: tuple[str, str]) -> dict:
     prompt = _gen_nl_prompt(label)
     response = query_gpt(prompt)
     result = __clean_and_parse_response(response)

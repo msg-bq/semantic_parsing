@@ -11,38 +11,6 @@ true_file = open("event_train6c.tsv", "w", encoding="utf-8")
 false_file = open("event_err.tsv", "w", encoding="utf-8")
 
 
-# 英文标点符号
-def _format_time_string(input_string):  # fixme(lzx): 这个是不有两遍
-    english_punctuation = string.punctuation.replace(':', '').replace("'", '')
-    # 正则表达式匹配时间格式
-    time_pattern = r'(\d{1,2})(:)?(\d{2})?(am|pm|AM|PM)?'
-
-    # 替换逻辑
-    def replacer(match):
-        hour = match.group(1)
-        colon = " : " if match.group(2) else ""
-        minute = match.group(3) if match.group(3) else ""
-        period = f" {match.group(4)}" if match.group(4) else ""
-        return f"{hour}{colon}{minute}{period}"
-
-    # 对字符串进行替换
-    formatted_string = re.sub(time_pattern, replacer, input_string)
-
-    def insert_spaces_around_punctuation(s):
-        i = 0
-        while i < len(s):
-            if s[i] in english_punctuation:
-                if i > 0 and s[i - 1] != " ":
-                    s = s[:i] + " " + s[i:]
-                    i += 1  # 跳过新插入的空格
-                if (i + 1) < len(s) and s[i + 1] != " ":
-                    s = s[:i + 1] + " " + s[i + 1:]
-                    i += 1  # 跳过新插入的空格
-            i += 1
-        return s
-
-    formatted_string = insert_spaces_around_punctuation(formatted_string)
-    return re.sub(r"([a-zA-Z0-9])'s", r"\1 's", formatted_string)
 
 
 # 取里面长度大于1的部分
@@ -57,36 +25,6 @@ def _extract_noun_phrases(doc):
     return noun_phrases, noun_chunks
 
 
-# 如果槽中的词是限定词或修饰词，那就不需要了
-def _is_insert(chunk, word):
-    # 遍历名词性短语中的每个词
-    for token in chunk:
-        # 判断是否是形容词或限定词（包括数词）
-        if token.pos_ == 'ADV' or token.pos_ == 'ADJ' or token.pos_ == 'DET':
-            if token.pos_ == 'ADV' or token.pos_ == 'ADJ':
-                return True
-
-            if word == token.text or token.text in word:
-                return False
-
-    return False
-
-# 取里面长度>1的部分
-def _extract_adverbial_phrases(doc):
-    """
-    提取状语短语：
-    遍历文档中所有 token，若 token 的依存标签为 "advmod" 或 "npadvmod"（例如 "this evening" 中 evening 的标签），
-    则利用该 token 的 subtree 拼接成短语。
-    """
-    adv_phrases = []
-    for token in doc:
-        if token.dep_ in {"advmod", "npadvmod"}:
-            # 利用 token.subtree 获取以该 token 为根的所有依存子树
-            subtree_tokens = list(token.subtree)
-            subtree_tokens.sort(key=lambda t: t.i)
-            phrase = " ".join([t.text for t in subtree_tokens])
-            adv_phrases.append(phrase)
-    return adv_phrases
 
 
 # event	I'm interested in the third charity event for children featuring Morrissey on November 11, 2022, in Mumbai	[

@@ -1,7 +1,7 @@
 import random
 from concurrent.futures import ThreadPoolExecutor
 
-from ._generate_nl_topv2 import _generate_nl_topv2
+from ._generate_nl_topv2 import generate_nl_topv2
 from torch.utils.data import Dataset
 
 
@@ -11,7 +11,7 @@ class Example:
 
         self.input = inp
         self.output = out
-        self._candidate_output: list = cand_out
+        self._candidate_output: list = cand_out  # fixme: cand_out该不该留
 
     def __getitem__(self, item):
         if item == 'input':
@@ -42,7 +42,7 @@ class CustomDataset(Dataset):
         raise NotImplementedError()
 
 
-generate_nl_func_dict = {'topv2': _generate_nl_topv2}
+generate_nl_func_dict = {'topv2': generate_nl_topv2}
 
 
 def generate_nl(labels: list[tuple[str, str]], dataset_name: str, workers: int = 200):

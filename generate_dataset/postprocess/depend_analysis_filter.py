@@ -31,8 +31,6 @@ nlp = spacy.load("en_core_web_sm")
 
 # 第一步
 
-
-
 stopwords = set(open("stopwords.txt", "r", encoding="utf-8").read().splitlines())
 
 

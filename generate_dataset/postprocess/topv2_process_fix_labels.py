@@ -75,9 +75,9 @@ def _construct_expression(reordered) -> str:
     return result
 
 
-# 按照topv2的特殊格式转换input字符串
 def _format_time_string(input_string):
-    english_punctuation = string.punctuation.replace(':', '')
+    """按照topv2的特殊格式转换input字符串，2:00 → 2 : 00"""
+    english_punctuation = string.punctuation.replace(':', '').replace("'", '')
     # 正则表达式匹配时间格式
     time_pattern = r'(\d{1,2})(:)?(\d{2})?(am|pm|AM|PM)?'
 
@@ -92,12 +92,21 @@ def _format_time_string(input_string):
     # 对字符串进行替换
     formatted_string = re.sub(time_pattern, replacer, input_string)
 
-    # 判断末尾字符是否是english_punctuation内的标点符号且前面无空格
-    for i in range(len(formatted_string)):
-        if formatted_string[i] in english_punctuation and formatted_string[i-1] != " ":
-            formatted_string = formatted_string[:i] + " " + formatted_string[i:]
+    def insert_spaces_around_punctuation(s):
+        i = 0
+        while i < len(s):
+            if s[i] in english_punctuation:
+                if i > 0 and s[i - 1] != " ":
+                    s = s[:i] + " " + s[i:]
+                    i += 1  # 跳过新插入的空格
+                if (i + 1) < len(s) and s[i + 1] != " ":
+                    s = s[:i + 1] + " " + s[i + 1:]
+                    i += 1  # 跳过新插入的空格
+            i += 1
+        return s
 
-    return re.sub(r"([a-zA-Z])'s", r"\1 's", formatted_string)
+    formatted_string = insert_spaces_around_punctuation(formatted_string)
+    return re.sub(r"([a-zA-Z0-9])'s", r"\1 's", formatted_string)
 
 
 # 从列表元组中抽出来每个槽值
