@@ -126,6 +126,9 @@ def get_full_noun_label(sentence: str, label: str) -> str:
     3.1 remove_non_slot_leaf_nodes （这个好像重复调用了，可以删）。
     3.2 通过_extract_noun_phrases和_extract_adverbial_phrases获取名词和状语成分，然后保存下来长度 > 1的短语。
     3.3 找到需要改的地方，通过_get_new_label来得到新的标签。
+
+    ===
+    _format_time_string似乎是个特殊情况
     """
     special_words = ["next", "Next", "coming up", "upcoming", "soonest", "new", "first", "second", "third", "fourth",
                      "fifth", "outdoor", "elderly", "family"
