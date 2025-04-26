@@ -1,6 +1,7 @@
 import random
 from concurrent.futures import ThreadPoolExecutor
 
+from generate_dataset.parse_funcs import Assertion, Formula
 from ._generate_nl_topv2 import generate_nl_topv2
 from torch.utils.data import Dataset
 
@@ -45,7 +46,9 @@ class CustomDataset(Dataset):
 generate_nl_func_dict = {'topv2': generate_nl_topv2}
 
 
-def generate_nl(labels: list[tuple[str, str]], dataset_name: str, workers: int = 200):
+def generate_nl(labels: list[Assertion | Formula], dataset_name: str, workers: int = 200):
+    # 将assertion的结构转为tuple[str, str]，即assertion对应的文本描述 + assertion中涉及的operator等的desc
+
     generate_nl_func = generate_nl_func_dict[dataset_name]
     dataset = []
     with ThreadPoolExecutor(max_workers=workers) as executor:

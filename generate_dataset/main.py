@@ -26,8 +26,9 @@ def generate_dataset(dataset_name: str, num: int = 2) -> CustomDataset:
     # [IN:GET_WEATHER [SL:DATE_TIME Next Monday ] [SL:LOCATION the riverbank ] [SL:WEATHER_ATTRIBUTE hail ] ]
     al_exps: list[Assertion | Formula] = parse_derivations(derivation_texts, dataset_name)
 
+    dataset: CustomDataset = generate_nl(al_exps, dataset_name=dataset_name)
     gen_labels: list[tuple[str,str]] = translate_format(al_exps, dataset_name=dataset_name)
-    dataset: CustomDataset = generate_nl(gen_labels, dataset_name=dataset_name)
+
 
     if dataset_name == 'topv2':
         dataset: CustomDataset = fix_labels_topv2(dataset)
@@ -43,6 +44,6 @@ if __name__ == '__main__':
         with open(f"./other_data_gpt/exchange_top_output_{i}.jsonl","w",encoding="utf-8") as f:
             for e in dataset_test:
                 import json
-                json.dump({"input":e.input,"output":e.output},f)
+                json.dump({"input":e.input,"output":e.output}, f)
                 f.write("\n")
 
