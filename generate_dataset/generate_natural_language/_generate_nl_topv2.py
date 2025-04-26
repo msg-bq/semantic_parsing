@@ -1,8 +1,8 @@
-import re
-import string
 import warnings
 
+from ..build_labels.translate_format import _translate_format_topv2
 from ..gen_utils.access_llm import query_gpt
+from ..parse_funcs.base_classes import FACT_T, FACT_TYPE
 
 # Instructions template for natural language generation
 generate_nl_instruct = '''You are a learned linguist, now please give some natural phrases to represent the meaning of given logical expression.
@@ -53,7 +53,7 @@ def _gen_nl_prompt(expression: tuple[str, str]) -> str:
                                        words_in_expression=' '.join(words))
 
 
-def __clean_and_parse_response(response: str) -> dict | None:
+def __clean_and_parse_response(response: str) -> dict[str, str] | None:
     response = response.strip()
     response = response.strip('"').strip()
     response = response.rstrip('.').strip()
@@ -107,10 +107,15 @@ def _valid_response(response_dict: dict, expression: str):  # hack: 可能不限
     return response_dict
 
 
-def generate_nl_topv2(label: tuple[str, str]) -> dict:
-    prompt = _gen_nl_prompt(label)
+def generate_nl_topv2(label: FACT_T) -> dict[str, FACT_T | list[str]]:
+    # 将assertion的结构转为tuple[str, str]，即assertion对应的文本描述 + assertion中涉及的operator等的desc
+    # todo: 这个函数似乎可以作为default，不需要叫topv2
+
+    label_str = _translate_format_topv2([label])[0]  # hack: 先这样丑一点了，可以调整为自动的判断。也不应当访问protected member
+    prompt = _gen_nl_prompt((label_str, label.description))
     response = query_gpt(prompt)
     result = __clean_and_parse_response(response)
+    result['expression'] = label  # hack: 需要丢弃LLM出来的expr，考虑一下对比校验之类的情况
 
     max_attempts = 3
     attempt = 0

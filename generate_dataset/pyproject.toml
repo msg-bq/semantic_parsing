@@ -12,6 +12,7 @@ torch = "*"  # 在generate dataset里面，torch是有点蠢的。如果回头�
 faker = "*"
 mimesis = "*"
 asyncio = "*"
+spacy = "^3.8.2"
 
 [[tool.poetry.source]]
 name = "tuna"

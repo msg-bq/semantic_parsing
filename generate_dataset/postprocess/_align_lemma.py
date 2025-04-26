@@ -2,6 +2,7 @@
 import spacy
 
 from generate_dataset.parse_funcs import Assertion, Formula, BaseIndividual, Term
+from generate_dataset.parse_funcs.base_classes import FACT_T
 
 nlp = spacy.load("en_core_web_sm")  # fixme: 重复加载
 
@@ -24,7 +25,7 @@ def _extract_individuals(value: Assertion | Formula | Term | BaseIndividual):
         raise TypeError
 
 
-def align_sent_label_by_lemmatization(sentence: str, label: Assertion | Formula) -> Assertion | Formula:
+def align_sent_label_by_lemmatization(sentence: str, label: FACT_T) -> FACT_T:
     """
     修复句子和标签不匹配的情况，比如句子中是apples，标签中是apple，可以认为是同一个词，并将标签替换为apples。
     使用词母化 + 根据句子和标签里词母化后的词，把标签里的词改成句子里词母化前的词

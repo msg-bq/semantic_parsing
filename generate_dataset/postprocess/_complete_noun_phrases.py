@@ -2,7 +2,8 @@ import string
 
 import spacy
 
-from generate_dataset.parse_funcs import BaseIndividual, Assertion, Formula
+from generate_dataset.parse_funcs import BaseIndividual
+from generate_dataset.parse_funcs.base_classes import FACT_T
 from generate_dataset.postprocess._align_lemma import _extract_individuals
 
 nlp = spacy.load("en_core_web_sm")
@@ -65,9 +66,12 @@ def _clean_string(text: str) -> str:
     return text
 
 
-def get_full_noun_label(sentence: str, label: Assertion | Formula) -> Assertion | Formula:
+def get_full_noun_label(sentence: str, label: FACT_T) -> FACT_T:
     """
-    结合原句子补全标签中不全面的地方，主要是把标签里的词补成短语
+    结合原句子补全标签中不全面的地方，主要是把标签里的词补成短语。
+    例子: todo(lzx): 帮忙补个简短的例子，半截句子也可以
+
+
     3.2 通过_extract_noun_phrases和_extract_adverbial_phrases获取名词和状语成分，然后保存下来长度 > 1的短语。
     3.3 找到需要改的地方，通过_get_new_label来得到新的标签。
 
@@ -100,9 +104,18 @@ def get_full_noun_label(sentence: str, label: Assertion | Formula) -> Assertion 
             if match in noun_phrase and _is_same_np(noun_chunks[k], match):  # hack: match in noun_phrase针对
                 # an apple == apple的情况，但是简单用in无法避免app == an apple的情况
                 label_match = noun_phrase
+                break
 
         # if label_match in stopwords:  # fixme(lzx): 可能是label_match - match的部分不能在停用词里
         #     label_replace_words.append(match)
+
+        if label_match:
+            individual.value = label_match
+
+        # hack: 需要校验当前individual的修复不会干扰到其他的assertion。比如topv2要求输入和输出包含完全一致的单词，这里
+        # 就会校验修正后的名词不会与其他slot的名词重叠。但同理conic10k就不需要
+        # 本工作将下面的代码在post_process执行后进行的，所以只需要判断当前slot前后两个slot是否有交集_contained_word
+        # todo: 暂定README里提一下吧
 
         # if i != 0 and _contained_word(matches[i - 1], label_match):  # topv2才需要
         #     # 其他的任务是否需要count
@@ -110,8 +123,6 @@ def get_full_noun_label(sentence: str, label: Assertion | Formula) -> Assertion 
         #
         # if i != len(matches) - 1 and _contained_word(matches[i + 1], label_match):
         #     label_replace_words.append(match)
-        # fixme: 需要纠结
-        # fixme: 如果这里不验，需要在topv2_fix_label里面验掉
 
     return label
 

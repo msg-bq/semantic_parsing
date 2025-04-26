@@ -1,11 +1,13 @@
 import asyncio
 
-from build_labels import translate_format, generate_expressions
-from generate_natural_language import generate_nl, CustomDataset
-from parse_funcs import parse_derivations, Assertion, Formula
-from postprocess.topv2_process_fix_labels import fix_labels_topv2
 import torch
-torch.utils.data
+
+from build_labels import generate_expressions
+from generate_dataset.build_labels import translate_format
+from generate_dataset.parse_funcs.base_classes import FACT_TYPE
+from generate_natural_language import generate_nl, CustomDataset
+from parse_funcs import parse_derivations
+from postprocess.topv2_process_fix_labels import fix_labels_topv2
 
 
 # ==============
@@ -24,14 +26,13 @@ def generate_dataset(dataset_name: str, num: int = 2) -> CustomDataset:
     # 用断言的方式表达
     # 遵循断言（表达能力更强）的语法结构处理
     # [IN:GET_WEATHER [SL:DATE_TIME Next Monday ] [SL:LOCATION the riverbank ] [SL:WEATHER_ATTRIBUTE hail ] ]
-    al_exps: list[Assertion | Formula] = parse_derivations(derivation_texts, dataset_name)
+    al_exps: list[FACT_TYPE] = parse_derivations(derivation_texts, dataset_name)
 
     dataset: CustomDataset = generate_nl(al_exps, dataset_name=dataset_name)
-    gen_labels: list[tuple[str,str]] = translate_format(al_exps, dataset_name=dataset_name)
-
+    dataset_in_task_language: CustomDataset = translate_format(dataset, dataset_name=dataset_name)
 
     if dataset_name == 'topv2':
-        dataset: CustomDataset = fix_labels_topv2(dataset)
+        dataset: CustomDataset = fix_labels_topv2(dataset_in_task_language)
 
     return dataset
 
@@ -41,9 +42,9 @@ if __name__ == '__main__':
     n = 200
     for i in range(1):
         dataset_test = generate_dataset(dataset_name, n)
-        with open(f"./other_data_gpt/exchange_top_output_{i}.jsonl","w",encoding="utf-8") as f:
+        with open(f"./other_data_gpt/exchange_top_output_{i}.jsonl", "w", encoding="utf-8") as f:
             for e in dataset_test:
                 import json
-                json.dump({"input":e.input,"output":e.output}, f)
-                f.write("\n")
 
+                json.dump({"input": e.input, "output": e.output}, f)
+                f.write("\n")
