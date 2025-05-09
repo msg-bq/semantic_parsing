@@ -1,7 +1,7 @@
 # 之后你应该改成topv2_weather, topv2_event.....等
 # todo: 这里应当加层校验机制，让它和对应rule的cfg文件保持一致，或者就直接从cfg文件中导出
 # 应该反过来，先设置这个再导出cfg文件
-from generate_dataset.parse_funcs import BaseOperator
+from .base_classes import BaseOperator
 
 get_weather = BaseOperator(
     name="GET_WEATHER",

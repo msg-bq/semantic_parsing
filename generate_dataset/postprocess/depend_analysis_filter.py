@@ -25,7 +25,7 @@ def _get_new_label(origin_label: str, label_replace_words):
 # infant ] [SL:DATE_TIME Diwali ] ]"
 
 # 加载英语模型
-nlp = spacy.load("en_core_web_sm")
+nlp = load_spacy_model("en_core_web_sm")
 
 
 # 第一步

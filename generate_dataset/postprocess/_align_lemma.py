@@ -1,10 +1,9 @@
 # 考虑输入和label在lemmatization层面的对齐
-import spacy
+from generate_dataset.gen_utils.spacy_load import load_spacy_model
+from generate_dataset.modeling import FACT_T, Assertion, Formula, Term, BaseIndividual
 
-from generate_dataset.parse_funcs import Assertion, Formula, BaseIndividual, Term
-from generate_dataset.parse_funcs.base_classes import FACT_T
 
-nlp = spacy.load("en_core_web_sm")  # fixme: 重复加载
+nlp = load_spacy_model("en_core_web_sm")  # fixme: 重复加载
 
 
 def _extract_individuals(value: Assertion | Formula | Term | BaseIndividual):

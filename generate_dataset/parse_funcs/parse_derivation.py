@@ -1,5 +1,5 @@
 from ._parse_derivation_topv2 import _parse_derivation_topv2
-from .base_classes import Assertion, Formula
+from generate_dataset.modeling.base_classes import Assertion, Formula
 
 
 _FACT_TYPE = Assertion | Formula

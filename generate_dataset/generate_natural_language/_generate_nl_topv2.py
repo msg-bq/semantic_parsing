@@ -1,8 +1,8 @@
 import warnings
 
-from ..build_labels.translate_format import _translate_format_topv2
-from ..gen_utils.access_llm import query_gpt
-from ..parse_funcs.base_classes import FACT_T, FACT_TYPE
+from generate_dataset.build_labels.translate_format import _translate_format_topv2
+from generate_dataset.modeling.base_classes import FACT_T
+from generate_dataset.gen_utils.access_llm import query_gpt
 
 # Instructions template for natural language generation
 generate_nl_instruct = '''You are a learned linguist, now please give some natural phrases to represent the meaning of given logical expression.

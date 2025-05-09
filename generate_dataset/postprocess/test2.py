@@ -5,7 +5,7 @@ import spacy
 from remove_non_slot_leaf import remove_non_slot_leaf_nodes
 
 # 加载英文模型，如果处理中文，请使用合适的中文模型
-nlp = spacy.load("en_core_web_sm")
+nlp = load_spacy_model("en_core_web_sm")
 
 true_file = open("event_train6c.tsv", "w", encoding="utf-8")
 false_file = open("event_err.tsv", "w", encoding="utf-8")
