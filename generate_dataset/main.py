@@ -1,7 +1,5 @@
 import asyncio
 
-import torch
-
 from build_labels import generate_expressions
 from generate_dataset.build_labels import translate_format
 from generate_dataset.parse_funcs.base_classes import FACT_TYPE

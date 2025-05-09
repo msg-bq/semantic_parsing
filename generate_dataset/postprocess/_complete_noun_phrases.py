@@ -115,7 +115,8 @@ def get_full_noun_label(sentence: str, label: FACT_T) -> FACT_T:
         # hack: 需要校验当前individual的修复不会干扰到其他的assertion。比如topv2要求输入和输出包含完全一致的单词，这里
         # 就会校验修正后的名词不会与其他slot的名词重叠。但同理conic10k就不需要
         # 本工作将下面的代码在post_process执行后进行的，所以只需要判断当前slot前后两个slot是否有交集_contained_word
-        # todo: 暂定README里提一下吧
+        # todo: 暂定README里提一下吧，另外topv2的要求也可以暂时不实现，毕竟已经生成过了。加个fixme: 这里有个忽略topv2的地方，没写检查
+        # 感觉可以弄到最终去做一次检验，单独放一个函数。无非就是有些浪费nl的pair
 
         # if i != 0 and _contained_word(matches[i - 1], label_match):  # topv2才需要
         #     # 其他的任务是否需要count

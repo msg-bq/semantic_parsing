@@ -2,7 +2,6 @@ import spacy
 import re
 
 from generate_dataset.generate_natural_language import CustomDataset, Example
-from test2 import get_full_noun_label
 
 
 def _get_new_label(origin_label: str, label_replace_words):

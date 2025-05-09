@@ -13,6 +13,7 @@ faker = "*"
 mimesis = "*"
 asyncio = "*"
 spacy = "^3.8.2"
+openai = "^0.28"
 
 [[tool.poetry.source]]
 name = "tuna"
