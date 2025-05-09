@@ -277,7 +277,8 @@ def _reorder_expression_topv2(dataset: CustomDataset) -> CustomDataset:
             continue
 
         # Update the label with the reordered expression
-        example.output = reordered_exp
+        example.output = reordered_exp  # hack: 这里的原地更换不太好，会影响Example原定的数据类型。但考虑到这里是数据集自身的小代码
+        # 非主线代码，因而暂时不做修复
 
     dataset = CustomDataset(data=[d for d in dataset if d.output])
     return dataset
