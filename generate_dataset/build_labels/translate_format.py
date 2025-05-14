@@ -1,8 +1,9 @@
 # 本文件用于将断言语法的结果，输出为特定下游任务所需的格式
-from ..parse_funcs import Assertion, Formula, Term, BaseIndividual
+from generate_dataset.generate_natural_language.dataset_class import CustomDataset
+from generate_dataset.modeling import FACT_TYPE, Assertion, Formula, Term, BaseIndividual
 
 
-def _translate_format_topv2(al_expressions: list[Assertion | Formula]) -> list[tuple[str, str]]:
+def _translate_format_topv2(al_expressions: list[Assertion | Formula]) -> list[str]:
     """
     Converts Assertions or Formulas instance to TOPv2 string format.
 
@@ -32,25 +33,35 @@ def _translate_format_topv2(al_expressions: list[Assertion | Formula]) -> list[t
         else:
             raise TypeError("Unsupported type for assertion logic. Expected Assertion, Formula, Term or Individual.")
 
-    return [(_format(expression), expression.description) for expression in al_expressions]  # 这里有个小瑕疵，我本意希望
+    return [_format(expression) for expression in al_expressions]  # 这里有个小瑕疵，我本意希望
 # 最外层的入口还是保留get_des()的命名，但不巧我们有Assertion和Formula两个入口，且Assertion也是被调用的一方，就不好单独命名了，因此统一
 
 
 translate_format_dict = {'topv2': _translate_format_topv2}
 
 
-def translate_format(al_expressions: list[Assertion | Formula], dataset_name: str) -> list[tuple[str, str]]:
+def translate_format(dataset: CustomDataset, dataset_name: str) -> CustomDataset:
+    """
+    用于将AL表示的表达式转化为数据集需要的字符串格式
+    """
     trans_func = translate_format_dict[dataset_name]
 
-    return trans_func(al_expressions)
+    al_expressions: list[FACT_TYPE] = [d.out for d in dataset]
+    converted_exps: list[str] = trans_func(al_expressions)
+    for d, e in zip(dataset, converted_exps):
+        d.out = e
+
+    return dataset
 
 
 if __name__ == '__main__':
     from ..parse_funcs.parse_derivation import parse_derivations
 
     derivation_text_example = \
-        'intent:GET_SUNRISE ( [ LOCATION: intent:GET_LOCATION ( [ LOCATION_USER: XXX ] [ SEARCH_RADIUS: null ] [ LOCATION_MODIFIER: null ] ) ] [ DATE_TIME: null ] )'
-    dataset = 'topv2'
-    al_exp = parse_derivations(derivation_text_example, dataset)
-    # ['[IN:GET_SUNRISE [SL:LOCATION [intent:GET_LOCATION([LOCATION_USER:Toronto][SEARCH_RADIUS:null][LOCATION_MODIFIER:null])]] [SL:DATE_TIME yesterday]]']
-    print(translate_format([al_exp], dataset_name=dataset))
+        ('intent:GET_SUNRISE ( [ LOCATION: intent:GET_LOCATION ( [ LOCATION_USER: XXX ] [ SEARCH_RADIUS: null ] [ '
+         'LOCATION_MODIFIER: null ] ) ] [ DATE_TIME: null ] )')
+    dataset_type = 'topv2'
+    al_exp = parse_derivations(derivation_text_example, dataset_type)
+    # ['[IN:GET_SUNRISE [SL:LOCATION [intent:GET_LOCATION([LOCATION_USER:Toronto][SEARCH_RADIUS:null][
+    # LOCATION_MODIFIER:null])]] [SL:DATE_TIME yesterday]]']]
+    print(_translate_format_topv2([al_exp]))

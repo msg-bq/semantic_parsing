@@ -1,5 +1,4 @@
-from .base_classes import Assertion, BaseOperator, Term, BaseIndividual
-import generate_dataset.modeling.topv2  # hack: 这里这个实现肯定时不妥当的，需要有个策略导入，比检验
+from generate_dataset.modeling.base_classes import Assertion, BaseOperator, Term, BaseIndividual
 # Declared_Operator必须得先被导入某个建模后，才可以使用
 from generate_dataset.modeling.co_namespace import Declared_Operators
 

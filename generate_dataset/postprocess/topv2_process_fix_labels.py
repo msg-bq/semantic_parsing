@@ -1,12 +1,11 @@
-from typing import Any, List
-import sys
-import os
+from typing import Any
 import re
 import string
 import random
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from generate_natural_language.generate_nl import CustomDataset, Example
+from generate_dataset.generate_natural_language.generate_nl import CustomDataset, Example
+# 设置随机数种子
+random.seed(42)
 
 
 def _parse_expression_topv2(expression: str) -> tuple:
@@ -55,7 +54,7 @@ def _parse_expression_topv2(expression: str) -> tuple:
 
 
 # Construct the reordered expression back into string form
-def _construct_expression(reordered):
+def _construct_expression(reordered) -> str:
     result = ""
     if isinstance(reordered, tuple):
         element_type, content = reordered
@@ -76,9 +75,9 @@ def _construct_expression(reordered):
     return result
 
 
-# 按照topv2的特殊格式转换input字符串
 def _format_time_string(input_string):
-    english_punctuation = string.punctuation.replace(':', '')
+    """按照topv2的特殊格式转换input字符串，2:00 → 2 : 00"""
+    english_punctuation = string.punctuation.replace(':', '').replace("'", '')
     # 正则表达式匹配时间格式
     time_pattern = r'(\d{1,2})(:)?(\d{2})?(am|pm|AM|PM)?'
 
@@ -93,17 +92,27 @@ def _format_time_string(input_string):
     # 对字符串进行替换
     formatted_string = re.sub(time_pattern, replacer, input_string)
 
-    # 判断末尾字符是否是english_punctuation内的标点符号且前面无空格
-    for i in range(len(formatted_string)):
-        if formatted_string[i] in english_punctuation and formatted_string[i-1]!= " ":
-            formatted_string = formatted_string[:i] + " " + formatted_string[i:]
+    def insert_spaces_around_punctuation(s):
+        i = 0
+        while i < len(s):
+            if s[i] in english_punctuation:
+                if i > 0 and s[i - 1] != " ":
+                    s = s[:i] + " " + s[i:]
+                    i += 1  # 跳过新插入的空格
+                if (i + 1) < len(s) and s[i + 1] != " ":
+                    s = s[:i + 1] + " " + s[i + 1:]
+                    i += 1  # 跳过新插入的空格
+            i += 1
+        return s
 
-    return re.sub(r"([a-zA-Z])'s", r"\1 's", formatted_string)
+    formatted_string = insert_spaces_around_punctuation(formatted_string)
+    return re.sub(r"([a-zA-Z0-9])'s", r"\1 's", formatted_string)
 
 
 # 从列表元组中抽出来每个槽值
-def _extract_last_values(output_lst: List[Any]) -> List[Any]:
+def _extract_last_values(output_lst: list[Any]) -> list[Any]:
     result = []
+
     def extract_value(element):
         if isinstance(element, list):
             return [extract_value(item) for item in element]
@@ -118,9 +127,9 @@ def _extract_last_values(output_lst: List[Any]) -> List[Any]:
     return result
 
 
-def _flatten_list(nested_list: List[Any]) -> List[List[str]]:
+def _flatten_list(nested_list: list[Any]) -> list[list[str]]:
     # 铺平多层的槽值列表->1维的列表
-    def flatten(nested_list: List[Any]) -> List[str]:
+    def flatten(nested_list: list[Any]) -> list[str]:
         flat_list = []
         for item in nested_list:
             if isinstance(item, list):  # 如果元素是列表，则递归展平
@@ -140,14 +149,14 @@ def _flatten_list(nested_list: List[Any]) -> List[List[str]]:
     return flattened
 
 
-# 设置随机数种子
-random.seed(42)
 def _change_input_sencenten(sentence: str) -> str:
+    """topv2部分样例有标点，部分没有，为了在这方面进行多样性的对齐而设置"""
     if random.random() < 0.85:
         # 替换
         if sentence[-1] in string.punctuation:
             return sentence[:-1]
     return sentence
+
 
 def _fill_other_information_topv2(dataset: CustomDataset) -> CustomDataset:
     """
@@ -171,10 +180,10 @@ Move the 10am alarm up 30 minutes.
         for i, d in enumerate(slot_content_lst):
             sub_sentence = ' '.join(d)
             match = re.search(sub_sentence, text, re.IGNORECASE)
-            if match:
-                start, end = match.span()  # 获取匹配的起始和结束位置
-            else:
+            if not match:
                 continue
+
+            start, end = match.span()  # 获取匹配的起始和结束位置
             # 看这个start是不是0，否则就取从0到start-1的位置
             insert_sen = text[last_end:start]
             # 把非关键信息插进去
@@ -268,7 +277,8 @@ def _reorder_expression_topv2(dataset: CustomDataset) -> CustomDataset:
             continue
 
         # Update the label with the reordered expression
-        example.output = reordered_exp
+        example.output = reordered_exp  # hack: 这里的原地更换不太好，会影响Example原定的数据类型。但考虑到这里是数据集自身的小代码
+        # 非主线代码，因而暂时不做修复
 
     dataset = CustomDataset(data=[d for d in dataset if d.output])
     return dataset

@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+from typing import TypeVar
+
 from generate_dataset.modeling.co_namespace import Declared_Operators
 
 
@@ -190,3 +193,7 @@ class Formula:
     def __repr__(self):
         return (f"Formula(formula_left={self.formula_left}, connective={self.connective}, "
                 f"formula_right={self.formula_right})")
+
+
+FACT_TYPE = Assertion | Formula
+FACT_T = TypeVar('FACT_T', Assertion, Formula)
