@@ -1,5 +1,8 @@
 from __future__ import annotations
-from ._co_namespace import Declared_Operators
+
+from typing import TypeVar
+
+from generate_dataset.modeling.co_namespace import Declared_Operators
 
 
 class DuplicateError(Exception):
@@ -12,17 +15,22 @@ class DuplicateError(Exception):
 
 
 class BaseIndividual(object):
-    def __init__(self, value: str):
+    def __init__(self, value: str, description: str = ""):
         """
         :param value: 语义解析时我们认为仅有str。正常情况下，断言逻辑的individual应当归属于某个concept，自身可以是任意格式
         """
         self.value = value
+        self._description = description
 
     def __eq__(self, other):
         return type(self) is type(other) and self.GetHash() == other.GetHash()
 
     def GetHash(self):
         return self.value
+
+    @property
+    def description(self) -> str:
+        return f"{self.value}: {self._description}" if self.description else ""
 
     def __hash__(self):
         return self.GetHash().__hash__()
@@ -35,7 +43,7 @@ class BaseIndividual(object):
 
 
 class BaseOperator(object):
-    def __init__(self, name: str, input_type: list[str], output_type: str):
+    def __init__(self, name: str, input_type: list[str], output_type: str, description: str = ""):
         if name in Declared_Operators:
             raise DuplicateError("此Operator已声明")
         Declared_Operators[name] = True
@@ -43,9 +51,16 @@ class BaseOperator(object):
         self.inputType = input_type
         self.outputType = output_type
         self.name = name
+        self._description = description
 
     def GetHash(self):
         return self.name  # 因为名称唯一，按理来说这就够用了
+
+    @property
+    def description(self) -> str:
+        if self.description == "":
+            return self.description
+        return f"{self.name}: {self.description}"
 
     def __hash__(self):
         return self.GetHash().__hash__()
@@ -77,6 +92,13 @@ class Term(object):
             var_dict[var_name] = var.GetHash()
             var_dict['operator'] = self.operator.GetHash()
         return tuple(var_dict.items())
+
+    @property
+    def description(self):
+        des_lst = [variable.description for variable in self.variables if variable.description]
+        variables_des = '\n'.join(des_lst)
+
+        return f"{self.operator.description}\n{variables_des}".strip()
 
     def __getattribute__(self, item):
         return super(Term, self).__getattribute__(item)
@@ -110,6 +132,13 @@ class Assertion:
 
         return tuple(var_dict.items())
 
+    @property
+    def description(self):
+        """
+        为了便于模型理解operator、concept的含义，允许用户在BaseOperator等处记录算子的解释
+        """
+        return f"{self.LHS.description}\n{self.RHS.description})"
+
     def __eq__(self, other):
         return type(self) is type(other) and self.GetHash() == other.GetHash()
 
@@ -126,16 +155,26 @@ class Assertion:
 class Formula:
     def __init__(self, formula_left: Assertion | Formula,
                  connective: str,
-                 formula_right: Assertion | Formula):
+                 formula_right: Assertion | Formula | None):
         self.formula_left = formula_left
         self.connective = connective
         self.formula_right = formula_right
 
     def GetHash(self):
         left_hash = self.formula_left.GetHash() if isinstance(self.formula_left, Formula) else self.formula_left
-        right_hash = self.formula_right.GetHash() if isinstance(self.formula_right, Formula) else self.formula_right
+        if self.formula_right is not None:
+            right_hash = self.formula_right.GetHash() if isinstance(self.formula_right, Formula) else self.formula_right
+        else:
+            right_hash = ""
         connective_hash = hash(self.connective)
         return left_hash, connective_hash, right_hash
+
+    @property
+    def description(self):
+        des = self.formula_left.description
+        if self.formula_right is not None:
+            des += "\n" + self.formula_right.description
+        return des
 
     def __hash__(self):
         return self.GetHash().__hash__()
@@ -154,3 +193,7 @@ class Formula:
     def __repr__(self):
         return (f"Formula(formula_left={self.formula_left}, connective={self.connective}, "
                 f"formula_right={self.formula_right})")
+
+
+FACT_TYPE = Assertion | Formula
+FACT_T = TypeVar('FACT_T', Assertion, Formula)

@@ -54,16 +54,31 @@ def _find_references(current_string):
                 begin_index = i
                 end_index = i
             else:  # 不允许非终止符直接续终止符相关的形式，所以直接抛异常
-                raise SyntaxError('non-terminal symbol should be only consist of upper characters or some other'
-                                  f'characters in extra_nonterminal_chars variables. But given {current_string} '
-                                  f'at position {i} with context '
-                                  f'{current_string[max(i-5,0): min(i+5, len(current_string))].replace('*space', ' ')}')
+                raise SyntaxError(
+                    'non-terminal symbol should be only consist of upper characters or some other'
+                    f' characters in extra_nonterminal_chars variables. But given {current_string} '
+                    f'at position {i} with context '
+                    f'{current_string[max(i - 5, 0): min(i + 5, len(current_string))].replace("*space", " ")}'
+                )
 
     # If we've enumerated through the whole string and the variable flag is on,
     # there's a variable that hasn't been added to the list, so add it.
     if is_variable:
         variable_references.append(VariableReference(current_string, begin_index, end_index))
     return variable_references
+
+
+def _roulette_choice_rule(rules: list[str]) -> str:
+    """
+    给定一些可能的derivation的rules，以更高的概率选择非嵌套规则，避免嵌套层级过深
+    todo: 怎么才能让使用者快速注意到这个函数，然后决定自己想不想用或者更改为random.choice
+    """
+    non_terminal_symbols_num = [r.count('$') for r in rules]
+    z_list = [1 / (y+0.1) for y in non_terminal_symbols_num]  # +0.1是平滑一些，避免算概率时出现0
+    total = sum(z_list)
+    probability = [z / total for z in z_list]
+
+    return random.choices(rules, weights=probability, k=1)[0]
 
 
 async def _derive_string(current_string, grammar):
@@ -79,7 +94,7 @@ async def _derive_string(current_string, grammar):
             return terminal_symbol.lower()  # fixme(lbq): 这里为什么有个未使用的
         return terminal_symbol
 
-    variable_references = []
+    # variable_references = []
     updated_string = None
     while True:
         variable_references = _find_references(current_string)
@@ -87,7 +102,8 @@ async def _derive_string(current_string, grammar):
             break
 
         random_variable = random.choice(variable_references)  # hack: 这个地方酌情优化，未经优化的random会导致大量重复
-        random_production = random.choice(grammar.variable_dict[random_variable.name].rules)
+        # random_production = random.choice(grammar.variable_dict[random_variable.name].rules)
+        random_production = _roulette_choice_rule(grammar.variable_dict[random_variable.name].rules)
 
         terminal_symbols = random_production.split()
         for i, terminal_symbol in enumerate(terminal_symbols):
@@ -99,8 +115,8 @@ async def _derive_string(current_string, grammar):
                 terminal_symbols[i] = concept_instance
         random_production = ' '.join(terminal_symbols)
 
-        updated_string = current_string[:random_variable.start_index] + random_production + current_string[
-                                                                                            random_variable.end_index + 1:]
+        updated_string = (current_string[:random_variable.start_index] + random_production +
+                          current_string[random_variable.end_index + 1:])
         print('In "{}" replacing "{}" with "{}" to obtain "{}"'.format(current_string,
                                                                        random_variable.name,
                                                                        random_production,

@@ -1,5 +1,5 @@
 from ._parse_derivation_topv2 import _parse_derivation_topv2
-from .base_classes import Assertion, Formula
+from generate_dataset.modeling.base_classes import Assertion, Formula
 
 
 _FACT_TYPE = Assertion | Formula
@@ -15,6 +15,7 @@ def parse_derivations(derivation_texts: list[str] | str, dataset_name: str) -> _
 
 
 if __name__ == '__main__':
+    # 字符串 -> class
     derivation_text_example = \
         'intent:get_sunrise ( [ location: London ] [ date_time: Next*spaceFriday ] [ weather: Rainy ] )'
     dataset = 'topv2'

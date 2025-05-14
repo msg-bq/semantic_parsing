@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "通过cfg derivation和llm构造数据，用于semantic parsing的训练"
 authors = ["Your Name <your@email.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -12,6 +13,8 @@ torch = "*"  # 在generate dataset里面，torch是有点蠢的。如果回头�
 faker = "*"
 mimesis = "*"
 asyncio = "*"
+spacy = "^3.8.2"
+openai = "^1.58"
 
 [[tool.poetry.source]]
 name = "tuna"

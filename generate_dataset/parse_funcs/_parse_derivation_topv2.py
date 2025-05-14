@@ -1,46 +1,6 @@
-from parse_funcs.base_classes import Assertion, Formula, BaseOperator, Term, BaseIndividual
-from ._co_namespace import Declared_Operators
-
-
-# todo: 这里应当加层校验机制，让它和对应rule的cfg文件保持一致，或者就直接从cfg文件中导出
-get_weather = BaseOperator(
-    name="GET_WEATHER",
-    input_type=["DATE_TIME", "WEATHER_TEMPERATURE_UNIT", "LOCATION", "WEATHER_ATTRIBUTE"],
-    output_type="WEATHER"
-)
-
-get_sunset = BaseOperator(
-    name="GET_SUNSET",
-    input_type=["LOCATION", "DATE_TIME"],
-    output_type="sunset_time"
-)
-
-get_sunrise = BaseOperator(
-    name="GET_SUNRISE",
-    input_type=["LOCATION", "DATE_TIME"],
-    output_type="sunrise_time"
-)
-
-get_location = BaseOperator(
-    name="GET_LOCATION",
-    input_type=["LOCATION_USER", "SEARCH_RADIUS", "LOCATION_MODIFIER"],
-    output_type="LOCATION"
-)
-
-dummy_operator = BaseOperator(
-    name="dummy_operator",
-    input_type=[],
-    output_type=''
-)
-
-
-Declared_Operators.update({
-    "GET_WEATHER": get_weather,
-    "GET_SUNSET": get_sunset,
-    "GET_SUNRISE": get_sunrise,
-    "GET_LOCATION": get_location,
-    "dummy_operator": dummy_operator
-})
+from generate_dataset.modeling.base_classes import Assertion, BaseOperator, Term, BaseIndividual
+# Declared_Operator必须得先被导入某个建模后，才可以使用
+from generate_dataset.modeling.co_namespace import Declared_Operators
 
 
 def __clean_text(text: str) -> str:
@@ -77,6 +37,9 @@ def __extract_variables(variables_text: str, operator: BaseOperator) -> list[Bas
         """
         Finds the index of the matching closing bracket for a nested structure.
         """
+        print("text")
+        print(text)
+
         stack = 1  # The opening bracket at 'start' is already found
         for i in range(start + 1, len(text)):
             if text[i] == '[':
@@ -134,5 +97,5 @@ def _parse_derivation_topv2(derivation_text: str) -> Assertion:
 
 if __name__ == '__main__':
     derivation_text_example = \
-        'intent:get_sunrise ( [ LOCATION: London ] [ DATE_TIME: Next*spaceFriday ] [ weather: Rainy ] )'
+        'intent:GET_EVENT ( [ CATEGORY_EVENT: null ] [ DATE_TIME: later*spacetoday ] [ LOCATION: null ] [ ATTRIBUTE_EVENT: families ] [ NAME_EVENT: null ] [ ORDINAL: null ] [ ORGANIZER_EVENT: null ] )'
     print(_parse_derivation_topv2(derivation_text_example))
