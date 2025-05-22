@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+import json
 
 # 获取父目录路径并添加到 sys.path
 parent_dir = str(Path(__file__).resolve().parent.parent)
@@ -22,7 +23,7 @@ def generate_dataset(dataset_name: str, num: int = 2) -> CustomDataset:
     :param num: 我这边异步比较草率，实际生成的数量可能会略大于num
     """
     # 生成完后的标签了
-    derivation_texts: list[str] = asyncio.run(generate_expressions(n=num))
+    derivation_texts: list[str] = asyncio.run(generate_expressions(dataset_name, n=num))
     return derivation_texts
 
     # 用断言的方式表达
@@ -40,14 +41,13 @@ def generate_dataset(dataset_name: str, num: int = 2) -> CustomDataset:
 
 
 if __name__ == '__main__':
-    dataset_name = 'topv2'
-    n = 200
+    # dataset_name = r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset\rules\topv2_weather.cfg'
+    dataset_name = r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset\rules\conic10k.cfg'
+    n = 5000
     for i in range(1):
         dataset_test = generate_dataset(dataset_name, n)
         print(dataset_test)
-        # with open(f"./other_data_gpt/exchange_top_output_{i}.jsonl", "w", encoding="utf-8") as f:
-        #     for e in dataset_test:
-        #         import json
-        #
-        #         json.dump({"input": e.input, "output": e.output}, f)
-        #         f.write("\n")
+        with open(f"D:\\桌面\\6023\\generate_dataset\\semantic_parsing-q_upload_change\\generate_dataset\\assertions_output\\conic10k_output_5.jsonl", "a", encoding="utf-8") as f:
+            for e in dataset_test:
+                json.dump({"assertion": e}, f)
+                f.write("\n")
