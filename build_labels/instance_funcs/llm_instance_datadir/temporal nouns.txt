@@ -1,0 +1,10 @@
+holiday
+afternoon
+dusk
+dawn
+evening
+morning
+weekend
+midday
+night
+weekday

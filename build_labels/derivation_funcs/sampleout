@@ -1,0 +1,14 @@
+Loading grammar from "teatime.cfg"...
+Found 14 variables and 57 total rules.
+In "START" replacing "START" with "SELECTION, SWEETNESS" to obtain "SELECTION, SWEETNESS"
+In "SELECTION, SWEETNESS" replacing "SELECTION" with "SIZE DRINK with ADDON" to obtain "SIZE DRINK with ADDON, SWEETNESS"
+In "SIZE DRINK with ADDON, SWEETNESS" replacing "SIZE" with "large" to obtain "large DRINK with ADDON, SWEETNESS"
+In "large DRINK with ADDON, SWEETNESS" replacing "DRINK" with "hot SYRUP TEA" to obtain "large hot SYRUP TEA with ADDON, SWEETNESS"
+In "large hot SYRUP TEA with ADDON, SWEETNESS" replacing "ADDON" with "BOBATYPE boba" to obtain "large hot SYRUP TEA with BOBATYPE boba, SWEETNESS"
+In "large hot SYRUP TEA with BOBATYPE boba, SWEETNESS" replacing "SWEETNESS" with "less sweet" to obtain "large hot SYRUP TEA with BOBATYPE boba, less sweet"
+In "large hot SYRUP TEA with BOBATYPE boba, less sweet" replacing "SYRUP" with "brown sugar" to obtain "large hot brown sugar TEA with BOBATYPE boba, less sweet"
+In "large hot brown sugar TEA with BOBATYPE boba, less sweet" replacing "BOBATYPE" with "popping" to obtain "large hot brown sugar TEA with popping boba, less sweet"
+In "large hot brown sugar TEA with popping boba, less sweet" replacing "TEA" with "TEATYPE tea" to obtain "large hot brown sugar TEATYPE tea with popping boba, less sweet"
+In "large hot brown sugar TEATYPE tea with popping boba, less sweet" replacing "TEATYPE" with "black" to obtain "large hot brown sugar black tea with popping boba, less sweet"
+FINAL STRING:
+large hot brown sugar black tea with popping boba, less sweet

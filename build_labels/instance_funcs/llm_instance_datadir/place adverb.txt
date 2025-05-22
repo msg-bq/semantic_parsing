@@ -1,0 +1,10 @@
+below
+above
+nearby
+far away
+alongside
+around
+outside
+between
+across
+inside

@@ -1,0 +1,10 @@
+UV index
+cloud cover
+precipitation
+humidity
+dew point
+wind speed
+temperature
+air pressure
+storm severity
+visibility
