@@ -48,7 +48,7 @@ def _find_references(current_string):
         # Save the reference to the list and reset the variable flag, begin, and
         # end index.
         elif is_variable:
-            if c == ' ' or c == ',':
+            if c == ' ':
                 variable_references.append(VariableReference(current_string, begin_index, end_index))
                 is_variable = False
                 begin_index = i
