@@ -48,7 +48,7 @@ def _find_references(current_string):
         # Save the reference to the list and reset the variable flag, begin, and
         # end index.
         elif is_variable:
-            if c == ' ':
+            if c == ' ' or c == ',':
                 variable_references.append(VariableReference(current_string, begin_index, end_index))
                 is_variable = False
                 begin_index = i
@@ -126,19 +126,21 @@ async def _derive_string(current_string, grammar):
     return updated_string
 
 
-async def generate_expressions(n: int) -> list:
+# async def generate_expressions(n: int) -> list:
+async def generate_expressions(datasetname: str, n: int) -> list:
     """
     :param n: 生成的数量
     :return 断言逻辑表示的表达式
     """
 
-    if len(sys.argv) != 2:
-        print('Required usage: python3 random_cfg_deriver.py <filename>')
-        print('Where filename is the name of a .cfg file.')
-        exit()
+    # if len(sys.argv) != 2:
+    #     print('Required usage: python3 random_cfg_deriver.py <filename>')
+    #     print('Where filename is the name of a .cfg file.')
+    #     exit()
 
     # Collect command line argument
-    filename = sys.argv[1]
+    # filename = sys.argv[1]
+    filename = datasetname
 
     # Parse file into variable objects for our grammar
     print('Loading grammar from "{}"...'.format(filename))

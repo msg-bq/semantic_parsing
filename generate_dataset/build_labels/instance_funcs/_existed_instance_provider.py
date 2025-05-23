@@ -1,4 +1,5 @@
 import random
+import string
 from mimesis import Generic, BaseProvider, BaseDataProvider
 from mimesis.locales import Locale
 
@@ -761,6 +762,24 @@ class Reminder_Provider(FakerProvider):
 
         return random.choice(category_event)
 
+class Capital_Provider(FakerProvider):
+    @staticmethod
+    def capital() -> str:
+        random_letter = chr(random.choice([random.randint(65, 90), random.randint(97, 122)]))
+        return random_letter
+    
+class Capitals_Provider(FakerProvider):
+    @staticmethod
+    def capitals() -> str:
+        random_letters = ', '.join(random.sample(string.ascii_uppercase, 2))
+        return random_letters
+    
+class Number_Provider(FakerProvider):
+    @staticmethod
+    def number() -> str:
+        random_number = random.randint(-100, 100)
+        return random_number
+
 
 def __get_existed_provider_from_mimesis(mimesis_generator) -> list[BaseProvider]:
     providers = []
@@ -812,6 +831,9 @@ def _get_existed_generator_faker(language='EN') -> dict[str, callable]:
     fake.add_provider(Location_Provider)
     fake.add_provider(Event_Attribute_Provider)
     fake.add_provider(Reminder_Provider)
+    fake.add_provider(Capital_Provider)
+    fake.add_provider(Capitals_Provider)
+    fake.add_provider(Number_Provider)
     funcs = {fn.replace('_', ' '): fake.__getattr__(fn)
              for fn in dir(fake.factories[0]) if not fn.startswith('_')}  # 正常情况len(factories)就是==1的
     return funcs

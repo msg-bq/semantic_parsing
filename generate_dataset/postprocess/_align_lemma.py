@@ -1,6 +1,8 @@
 # 考虑输入和label在lemmatization层面的对齐
-from generate_dataset.gen_utils.spacy_load import load_spacy_model
-from generate_dataset.modeling import FACT_T, Assertion, Formula, Term, BaseIndividual
+import sys 
+sys.path.append(r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset')
+from gen_utils.spacy_load import load_spacy_model
+from modeling import FACT_T, Assertion, Formula, Term, BaseIndividual
 
 
 nlp = load_spacy_model("en_core_web_sm")  # fixme: 重复加载

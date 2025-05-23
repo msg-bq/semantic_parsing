@@ -4,9 +4,12 @@ import random
 from collections import defaultdict
 from pathlib import Path
 
+import sys 
+sys.path.append(r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset')
+
 from mimesis.providers.base import BaseProvider
-from ._instance_prompt import _concept_instance_prompt
-from generate_dataset.gen_utils.access_llm import async_query_gpt
+from build_labels.instance_funcs._instance_prompt import _concept_instance_prompt
+from gen_utils.access_llm import async_query_gpt
 
 _DATADIR = Path(__file__).parent / 'llm_instance_datadir'
 if not os.path.exists(_DATADIR):
