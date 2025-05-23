@@ -70,7 +70,7 @@ def query_gpt(user_prompt: str, model=model, temperature=0.3) -> str:
     while try_call:
         try_call -= 1
         try:
-            response = client.chat.completions.create(
+            response = client.chat.completions.create(  # fixme: conic分支后有报错，后期处理下
                 model=model,
                 messages=prompt,
                 temperature=temperature
