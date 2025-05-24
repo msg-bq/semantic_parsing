@@ -2,9 +2,10 @@
 #### Grace Hadiyanto
 #### CS439 FA14
 import asyncio
+import re
 import sys
 import random
-
+from typing import Literal
 
 from .instance_funcs import get_concept_instance
 from .derivation_funcs import *  # 因为是别人的包，我就按原始的方式直接import *了
@@ -26,49 +27,116 @@ def _parse_alt_rule(line):
     return rule[1:]
 
 
-def _find_references(current_string):
-    variable_references = []
-    begin_index = 0
-    end_index = 0
-    is_variable = False
-    for i, c in enumerate(current_string):
-        # If the character is an upper case and the variable flag is off, we've
-        # hit the beginning of a new variable, so turn the variable flag on, and
-        # reset the begin and end index.
-        if c == _NON_TERMINAL_SYMBOL and not is_variable:
-            is_variable = True
-            begin_index = i
-            end_index = i
-        # Here we increment the end index of the current variable reference
-        # we are counting.
-        elif (c.isupper() or c in extra_nonterminal_chars) and is_variable:
-            end_index += 1
-        # If the character is not an upper case alphabet character and the
-        # variable flag is on, it's the end of our variable reference substring.
-        # Save the reference to the list and reset the variable flag, begin, and
-        # end index.
-        elif is_variable:
-            if c == ' ':
-                variable_references.append(VariableReference(current_string, begin_index, end_index))
-                is_variable = False
+SymbolType = Literal['variable', 'terminal']
+
+
+class Symbol:
+    def __init__(self, content: str, depth: int = 0):
+        self.name = content
+        self.type = self._get_type()
+        self.depth = depth
+
+    def _get_type(self) -> SymbolType:
+        end_index = 0
+        is_variable = False
+
+        for i, c in enumerate(self.name):
+            if c == _NON_TERMINAL_SYMBOL and not is_variable:
+                is_variable = True
                 begin_index = i
                 end_index = i
-            else:  # 不允许非终止符直接续终止符相关的形式，所以直接抛异常
+            elif (c.isupper() or c in extra_nonterminal_chars) and is_variable:
+                end_index += 1
+            elif is_variable:
                 raise SyntaxError(
                     'non-terminal symbol should be only consist of upper characters or some other'
-                    f' characters in extra_nonterminal_chars variables. But given {current_string} '
+                    f' characters in extra_nonterminal_chars variables. But given {self.name} '
                     f'at position {i} with context '
-                    f'{current_string[max(i - 5, 0): min(i + 5, len(current_string))].replace("*space", " ")}'
+                    f'{self.name[max(i - 5, 0): min(i + 5, len(self.name))].replace("*space", " ")}'
                 )
 
-    # If we've enumerated through the whole string and the variable flag is on,
-    # there's a variable that hasn't been added to the list, so add it.
-    if is_variable:
-        variable_references.append(VariableReference(current_string, begin_index, end_index))
+        if is_variable:
+            return 'variable'
+        else:
+            return 'terminal'
+
+    def __eq__(self, other):
+        if isinstance(other, Symbol):
+            return self.name == other.name and self.type == other.type
+        elif isinstance(other, str):
+            return self.name == other
+        else:
+            raise TypeError("Invalid type for comparison")
+
+    def __str__(self):
+        return str((self.name, self.type, self.depth))
+
+
+class ExpandStr:
+    _delimiter: list[str] = [' ']
+
+    def __init__(self, string: str = None, symbols: list[Symbol] = None, init_depth: int = 0):
+        if string is None and symbols is None:
+            raise ValueError("Either string or symbols must be provided")
+
+        self.symbols = self._convert(string) if string else symbols
+
+        for s in self.symbols:
+            s.depth += init_depth
+
+    def _split(self, string: str) -> list[str]:
+        return re.split('|'.join(self._delimiter), string)
+
+    def _convert(self, string: str) -> list[Symbol]:
+        texts = self._split(string)
+        return [Symbol(t) for t in texts]
+
+    def __add__(self, other):
+        if isinstance(other, str):
+            self.symbols.extend(self._convert(other))
+        elif isinstance(other, Symbol):
+            self.symbols.append(other)
+        elif isinstance(other, ExpandStr):
+            self.symbols.extend(other.symbols)
+        else:
+            raise TypeError("Invalid type for addition")
+
+        return self
+
+    def __getitem__(self, item):
+        if isinstance(item, int):
+            return self.symbols[item]
+        elif isinstance(item, slice):
+            return ExpandStr(symbols=self.symbols[item], init_depth=0)
+
+    def __iter__(self):
+        return iter(self.symbols)
+
+    def _trans_str(self):
+        return ' '.join(symbol.name for symbol in self.symbols)
+
+    @property
+    def text(self):
+        return self._trans_str()
+
+    def __eq__(self, other):
+        if isinstance(other, ExpandStr):
+            return self._trans_str() == other._trans_str()
+        elif isinstance(other, str):
+            return self._trans_str() == other
+        else:
+            raise TypeError("Invalid type for comparison")
+
+    def __str__(self):
+        return self._trans_str()
+
+
+def _find_references(current_string: ExpandStr) -> list[tuple[int, Symbol]]:
+    variable_references = [(i, s) for i, s in enumerate(current_string) if s.type == 'variable']
     return variable_references
 
 
-def _roulette_choice_rule(rules: list[str]) -> str:
+def _roulette_choice_rule(current_variable: Symbol, rules: list[str]) -> str:
     """
     给定一些可能的derivation的rules，以更高的概率选择非嵌套规则，避免嵌套层级过深
     todo: 怎么才能让使用者快速注意到这个函数，然后决定自己想不想用或者更改为random.choice
@@ -81,7 +149,7 @@ def _roulette_choice_rule(rules: list[str]) -> str:
     return random.choices(rules, weights=probability, k=1)[0]
 
 
-async def _derive_string(current_string, grammar):
+async def _derive_string(current_string: ExpandStr, grammar) -> ExpandStr:
     # While the string is not fully lower case(i.e. contains rules to be replaced
     # with productions):
     # 1. find variable references in the current string
@@ -97,26 +165,25 @@ async def _derive_string(current_string, grammar):
     # variable_references = []
     updated_string = None
     while True:
-        variable_references = _find_references(current_string)
+        variable_references: list[tuple[int, Symbol]] = _find_references(current_string)
         if not variable_references:
             break
 
-        random_variable = random.choice(variable_references)  # hack: 这个地方酌情优化，未经优化的random会导致大量重复
-        # random_production = random.choice(grammar.variable_dict[random_variable.name].rules)
-        random_production = _roulette_choice_rule(grammar.variable_dict[random_variable.name].rules)
+        variable_index, random_variable = random.choice(variable_references)
+        random_production = _roulette_choice_rule(random_variable, grammar.variable_dict[random_variable.name].rules)
 
         terminal_symbols = random_production.split()
         for i, terminal_symbol in enumerate(terminal_symbols):
             if terminal_symbol.endswith('_generate'):
                 concept_name = terminal_symbol[:len(terminal_symbol) - len('_generate')]
                 concept_instance: str = await get_concept_instance(concept_name.lower().replace('_', ' '))
-                # todo: 每次都调取一遍llm太慢了，也容易重复。其实一次性就能返回10个，然后囤起来就是了。
                 concept_instance = concept_instance.replace(' ', '*space')
                 terminal_symbols[i] = concept_instance
         random_production = ' '.join(terminal_symbols)
 
-        updated_string = (current_string[:random_variable.start_index] + random_production +
-                          current_string[random_variable.end_index + 1:])
+        production_expand = ExpandStr(random_production, init_depth=random_variable.depth+1)
+        updated_string = (current_string[:variable_index] + production_expand +
+                          current_string[variable_index + 1:])
         print('In "{}" replacing "{}" with "{}" to obtain "{}"'.format(current_string,
                                                                        random_variable.name,
                                                                        random_production,
@@ -176,8 +243,9 @@ async def generate_expressions(n: int) -> list:
     # Derive a random string from the grammar until all the variables are used
     final_exps = set()
     while True:
-        final_string = await _derive_string(start_string, the_grammar)  # todo: 最好这里过滤下全null
-        final_exps.add(final_string)
+        start_expand_str = ExpandStr(string=start_string)
+        final_string = await _derive_string(start_expand_str, the_grammar)  # todo: 最好这里过滤下全null
+        final_exps.add(final_string.text)
         print('FINAL STRING:\n{}'.format(final_string))
 
         if len(final_exps) > n:

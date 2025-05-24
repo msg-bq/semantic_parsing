@@ -36,6 +36,7 @@ client_gpt = OpenAI(api_key=api_key,
 # )
 
 async def async_query_gpt(user_prompt: str, model=model, temperature=NOT_GIVEN) -> str:
+    return "['example']"
     response = await aclient_gpt.chat.completions.create(
         model=model,
         messages=[
@@ -49,6 +50,7 @@ async def async_query_gpt(user_prompt: str, model=model, temperature=NOT_GIVEN) 
 
 
 def query_gpt(user_prompt: str, model=model, temperature=NOT_GIVEN) -> str:
+    return ''
     if isinstance(user_prompt, str):
         prompt = [{"role": "user", "content": user_prompt}]
     else:
