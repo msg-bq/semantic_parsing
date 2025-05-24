@@ -169,7 +169,7 @@ def _find_references(current_string: ExpandStr) -> list[tuple[int, Symbol]]:
     return variable_references
 
 
-def _roulette_choice_rule(rules: list[str]) -> str:
+def _roulette_choice_rule(current_variable: Symbol, rules: list[str]) -> str:
     """
     给定一些可能的derivation的rules，以更高的概率选择非嵌套规则，避免嵌套层级过深
     todo: 怎么才能让使用者快速注意到这个函数，然后决定自己想不想用或者更改为random.choice
@@ -204,7 +204,7 @@ async def _derive_string(current_string: ExpandStr, grammar) -> ExpandStr:
 
         variable_index, random_variable = random.choice(variable_references)
         # random_production = random.choice(grammar.variable_dict[random_variable.name].rules)
-        random_production = _roulette_choice_rule(grammar.variable_dict[random_variable.name].rules)
+        random_production = _roulette_choice_rule(random_variable, grammar.variable_dict[random_variable.name].rules)
 
         terminal_symbols = random_production.split()
         for i, terminal_symbol in enumerate(terminal_symbols):
