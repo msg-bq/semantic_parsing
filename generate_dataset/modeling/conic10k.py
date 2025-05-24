@@ -1,5 +1,6 @@
 from .base_classes import BaseOperator
 
+
 Coordinate = BaseOperator(
     name="Coordinate",
     input_type=["POINT"],
