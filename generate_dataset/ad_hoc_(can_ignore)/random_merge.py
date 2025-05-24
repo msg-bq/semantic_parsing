@@ -1,8 +1,12 @@
+# hack:  # fixme: 这个文件本身应当通过START ← Assertions + Assertions ← Assertion Assertions来处理
+# 这个文件只能算是特殊处理的方案。但既然已经写了就放在这里
+
 # 随机组合assertions，得到一个问题
 
 import random
 from typing import List, Dict, Tuple, Optional
 import json
+
 
 def preprocess_data(data: List[Dict]) -> List[Dict]:
     """预处理数据，过滤掉declarations或facts为None的元素"""
