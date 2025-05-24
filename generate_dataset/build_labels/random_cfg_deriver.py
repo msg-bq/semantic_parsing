@@ -125,8 +125,8 @@ class ExpandStr:
         return self._trans_str()
 
 
-def _find_references(current_string: ExpandStr) -> list[Symbol]:
-    variable_references = [s for s in current_string if s.type == 'variable']
+def _find_references(current_string: ExpandStr) -> list[tuple[int, Symbol]]:
+    variable_references = [(i, s) for i, s in enumerate(current_string) if s.type == 'variable']
     # begin_index = 0
     # end_index = 0
     # is_variable = False
@@ -196,12 +196,11 @@ async def _derive_string(current_string: ExpandStr, grammar) -> ExpandStr:
     # variable_references = []
     updated_string = None
     while True:
-        variable_references: list[Symbol] = _find_references(current_string)
+        variable_references: list[tuple[int, Symbol]] = _find_references(current_string)
         if not variable_references:
             break
 
-        variable_index = random.randint(0, len(variable_references)-1)
-        random_variable: Symbol = variable_references[variable_index]
+        variable_index, random_variable = random.choice(variable_references)
         # random_production = random.choice(grammar.variable_dict[random_variable.name].rules)
         random_production = _roulette_choice_rule(grammar.variable_dict[random_variable.name].rules)
 
@@ -215,7 +214,7 @@ async def _derive_string(current_string: ExpandStr, grammar) -> ExpandStr:
                 terminal_symbols[i] = concept_instance
         random_production = ' '.join(terminal_symbols)
 
-        production_expand = ExpandbStr(random_production, init_depth=random_variable.depth+1)
+        production_expand = ExpandStr(random_production, init_depth=random_variable.depth+1)
         updated_string = (current_string[:variable_index] + production_expand +
                           current_string[variable_index + 1:])
         print('In "{}" replacing "{}" with "{}" to obtain "{}"'.format(current_string,
