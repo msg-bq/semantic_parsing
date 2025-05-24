@@ -115,6 +115,10 @@ class ExpandStr:
     def _trans_str(self):
         return ' '.join(symbol.name for symbol in self.symbols)
 
+    @property
+    def text(self):
+        return self._trans_str()
+
     def __eq__(self, other):
         if isinstance(other, ExpandStr):
             return self._trans_str() == other._trans_str()
@@ -129,43 +133,6 @@ class ExpandStr:
 
 def _find_references(current_string: ExpandStr) -> list[tuple[int, Symbol]]:
     variable_references = [(i, s) for i, s in enumerate(current_string) if s.type == 'variable']
-    # begin_index = 0
-    # end_index = 0
-    # is_variable = False
-    # for i, symbol in enumerate(current_string):
-        # If the character is an upper case and the variable flag is off, we've
-        # hit the beginning of a new variable, so turn the variable flag on, and
-        # reset the begin and end index.
-        # if symbol.type == 'variable':
-        #     is_variable = True
-            # begin_index = i
-            # end_index = i
-        # Here we increment the end index of the current variable reference
-        # we are counting.
-        # elif (symbol.isupper() or symbol in extra_nonterminal_chars) and is_variable:
-        #     end_index += 1
-        # If the character is not an upper case alphabet character and the
-        # variable flag is on, it's the end of our variable reference substring.
-        # Save the reference to the list and reset the variable flag, begin, and
-        # end index.
-        # elif is_variable:
-            # if symbol == ' ':
-            # variable_references.append(symbol)
-                # is_variable = False
-                # begin_index = i
-                # end_index = i
-            # else:  # 不允许非终止符直接续终止符相关的形式，所以直接抛异常
-            #     raise SyntaxError(
-            #         'non-terminal symbol should be only consist of upper characters or some other'
-            #         f' characters in extra_nonterminal_chars variables. But given {current_string} '
-            #         f'at position {i} with context '
-            #         f'{current_string[max(i - 5, 0): min(i + 5, len(current_string))].replace("*space", " ")}'
-            #     )
-
-    # If we've enumerated through the whole string and the variable flag is on,
-    # there's a variable that hasn't been added to the list, so add it.
-    # if is_variable:
-    #     variable_references.append(VariableReference(current_string, begin_index, end_index))
     return variable_references
 
 
@@ -203,7 +170,6 @@ async def _derive_string(current_string: ExpandStr, grammar) -> ExpandStr:
             break
 
         variable_index, random_variable = random.choice(variable_references)
-        # random_production = random.choice(grammar.variable_dict[random_variable.name].rules)
         random_production = _roulette_choice_rule(random_variable, grammar.variable_dict[random_variable.name].rules)
 
         terminal_symbols = random_production.split()
@@ -211,7 +177,6 @@ async def _derive_string(current_string: ExpandStr, grammar) -> ExpandStr:
             if terminal_symbol.endswith('_generate'):
                 concept_name = terminal_symbol[:len(terminal_symbol) - len('_generate')]
                 concept_instance: str = await get_concept_instance(concept_name.lower().replace('_', ' '))
-                # todo: 每次都调取一遍llm太慢了，也容易重复。其实一次性就能返回10个，然后囤起来就是了。
                 concept_instance = concept_instance.replace(' ', '*space')
                 terminal_symbols[i] = concept_instance
         random_production = ' '.join(terminal_symbols)
@@ -280,7 +245,7 @@ async def generate_expressions(n: int) -> list:
     while True:
         start_expand_str = ExpandStr(string=start_string)
         final_string = await _derive_string(start_expand_str, the_grammar)  # todo: 最好这里过滤下全null
-        final_exps.add(final_string)
+        final_exps.add(final_string.text)
         print('FINAL STRING:\n{}'.format(final_string))
 
         if len(final_exps) > n:

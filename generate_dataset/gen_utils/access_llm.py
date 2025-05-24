@@ -36,7 +36,7 @@ client_gpt = OpenAI(api_key=api_key,
 # )
 
 async def async_query_gpt(user_prompt: str, model=model, temperature=NOT_GIVEN) -> str:
-    return "sds"
+    return "['example']"
     response = await aclient_gpt.chat.completions.create(
         model=model,
         messages=[
