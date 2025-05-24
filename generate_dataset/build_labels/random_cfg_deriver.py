@@ -215,7 +215,7 @@ async def _derive_string(current_string: ExpandStr, grammar) -> ExpandStr:
                 terminal_symbols[i] = concept_instance
         random_production = ' '.join(terminal_symbols)
 
-        production_expand = ExpandStr(random_production, init_depth=random_variable.depth+1)
+        production_expand = ExpandbStr(random_production, init_depth=random_variable.depth+1)
         updated_string = (current_string[:variable_index] + production_expand +
                           current_string[variable_index + 1:])
         print('In "{}" replacing "{}" with "{}" to obtain "{}"'.format(current_string,
@@ -277,7 +277,8 @@ async def generate_expressions(n: int) -> list:
     # Derive a random string from the grammar until all the variables are used
     final_exps = set()
     while True:
-        final_string = await _derive_string(start_string, the_grammar)  # todo: 最好这里过滤下全null
+        start_expand_str = ExpandStr(string=start_string)
+        final_string = await _derive_string(start_expand_str, the_grammar)  # todo: 最好这里过滤下全null
         final_exps.add(final_string)
         print('FINAL STRING:\n{}'.format(final_string))
 
