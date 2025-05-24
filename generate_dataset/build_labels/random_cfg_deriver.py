@@ -101,6 +101,8 @@ class ExpandStr:
         else:
             raise TypeError("Invalid type for addition")
 
+        return self
+
     def __getitem__(self, item):
         if isinstance(item, int):
             return self.symbols[item]
