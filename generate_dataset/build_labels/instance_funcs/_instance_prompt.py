@@ -17,7 +17,7 @@ def _concept_instance_prompt(concept: str) -> str:
 # Question: Please randomly give an instance about "{}"\nAnswer:'''
 
 
-    # ====conic10k提示词=======
+    # ====conic10k提示词=======  # todo: 此刻的替代品是"无法顾名思义的concept，就单独提供一个provider"
     instruct = '''You are an example generator. When I give you a concept "EXPRESSION", you need to give some specific examples about it.
 "EXPRESSION" means the equation of a curve in a rectangular coordinate system.
 Do not give the process or any extra text, just return 10 different examples. Also, do not use extra text and punctuation.
