@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TypeVar
 
+from . import dummy_operator
 from .co_namespace import Declared_Operators
 
 
@@ -116,9 +117,9 @@ class Term(object):
         return self.__dict__[item]
 
     def __str__(self):
-        if self.variables != None:
+        if self.variables is not None:
             variables_str = ", ".join(map(str, self.variables))
-            if self.operator == None:
+            if self.operator == dummy_operator:
                 return f"{variables_str}"
             else:
                 return f"{self.operator.name}({variables_str})"
