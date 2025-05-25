@@ -128,66 +128,85 @@ get_stock_price = BaseOperator(
 #
 get_event = BaseOperator(
     name="GET_EVENT",
-    input_type=["CATEGORY_EVENT", "DATE_TIME", "LOCATION", "ATTRIBUTE_EVENT", "NAME_EVENT", "ORDINAL", "ORGANIZER_EVENT"],
+    input_type=["CATEGORY_EVENT", "DATE_TIME", "LOCATION",
+                "ATTRIBUTE_EVENT", "NAME_EVENT", "ORDINAL", "ORGANIZER_EVENT"],
     output_type="event or activity information",
-    description="get event or activity information\t[SL:CATEGORY_EVENT: event category\t[SL:DATE_TIME: event occurrence time\t[SL:LOCATION: event occurrence location"
-                "\t[SL:ATTRIBUTE_EVENT: some attribute with the event\t[SL:NAME_EVENT: event name\t[SL:ORDINAL: the ordinal number of the selected reminder or pointing towards the future"
+    description="get event or activity information\t[SL:CATEGORY_EVENT: event category\t[SL:DATE_TIME: event "
+                "occurrence time\t[SL:LOCATION: event occurrence location"
+                "\t[SL:ATTRIBUTE_EVENT: some attribute with the event\t[SL:NAME_EVENT: event name\t[SL:ORDINAL: the "
+                "ordinal number of the selected reminder or pointing towards the future"
 )
 
 create_reminder = BaseOperator(
     name="CREATE_REMINDER",
     input_type=["PERSON_REMINDED", "REMINDER_DATE_TIME", "TODO", "RECURRING_DATE_TIME"],
     output_type="create reminder",
-    description="create reminder.\t[SL:PERSON_REMINDED: the reminded target\t[SL:REMINDER_DATE_TIME: reminder date time\t[SL:TODO: reminder of things to do\t[SL:ORDINAL: reminder of things to do\t[SL:RECURRING_DATE_TIME: number and duration of recurring"
+    description="create reminder.\t[SL:PERSON_REMINDED: the reminded target\t[SL:REMINDER_DATE_TIME: reminder date "
+                "time\t[SL:TODO: reminder of things to do\t[SL:ORDINAL: reminder of things to do\t["
+                "SL:RECURRING_DATE_TIME: number and duration of recurring"
 )
 
 delete_reminder = BaseOperator(
     name="DELETE_REMINDER",
     input_type=["PERSON_REMINDED", "REMINDER_DATE_TIME", "TODO", "AMOUNT", "ORDINAL", "RECURRING_DATE_TIME"],
     output_type="delete reminder",
-    description="delete previously set reminders.\t[SL:PERSON_REMINDED: the reminded target\t[SL:REMINDER_DATE_TIME: reminder date time\t[SL:TODO: reminder of things to do\t[SL:AMOUNT: number of selected or pointed reminders\t[SL:ORDINAL: the ordinal number of the selected reminder\t[SL:RECURRING_DATE_TIME: number and duration of recurring"
+    description="delete previously set reminders.\t[SL:PERSON_REMINDED: the reminded target\t[SL:REMINDER_DATE_TIME: "
+                "reminder date time\t[SL:TODO: reminder of things to do\t[SL:AMOUNT: number of selected or pointed "
+                "reminders\t[SL:ORDINAL: the ordinal number of the selected reminder\t[SL:RECURRING_DATE_TIME: number "
+                "and duration of recurring"
 )
 
 get_reminder = BaseOperator(
     name="GET_REMINDER",
     input_type=["PERSON_REMINDED", "REMINDER_DATE_TIME", "TODO", "AMOUNT", "ORDINAL", "METHOD_RETRIEVAL_REMINDER"],
     output_type="get reminder information",
-    description="get previously set reminder content.\t[SL:PERSON_REMINDED: the reminded target\t[SL:REMINDER_DATE_TIME: reminder date time\t[SL:TODO: reminder of things to do\t[SL:AMOUNT: number of selected or pointed reminders\t[SL:ORDINAL: the ordinal number of the selected reminder\t[SL:METHOD_RETRIEVAL_REMINDER: Reminder method"
+    description="get previously set reminder content.\t[SL:PERSON_REMINDED: the reminded target\t["
+                "SL:REMINDER_DATE_TIME: reminder date time\t[SL:TODO: reminder of things to do\t[SL:AMOUNT: number of "
+                "selected or pointed reminders\t[SL:ORDINAL: the ordinal number of the selected reminder\t["
+                "SL:METHOD_RETRIEVAL_REMINDER: Reminder method"
 )
 
 get_reminder_amount = BaseOperator(
     name="GET_REMINDER_AMOUNT",
     input_type=["PERSON_REMINDED", "REMINDER_DATE_TIME", "TODO"],
     output_type="get reminder amount",
-    description="get number of times the reminder has been set\t[SL:PERSON_REMINDED: the reminded target\t[SL:REMINDER_DATE_TIME: reminder date time\t[SL:TODO: reminder of things to do"
+    description="get number of times the reminder has been set\t[SL:PERSON_REMINDED: the reminded target\t["
+                "SL:REMINDER_DATE_TIME: reminder date time\t[SL:TODO: reminder of things to do"
 )
 
 get_reminder_date_time = BaseOperator(
     name="GET_REMINDER_DATE_TIME",
     input_type=["PERSON_REMINDED", "DATE_TIME", "TODO", "AMOUNT", "ORDINAL"],
     output_type="get reminder date time",
-    description="get the reminder time for the previously set reminder\t[SL:PERSON_REMINDED: the reminded target\t[SL:DATE_TIME: current date time\t[SL:TODO: reminder of things to do\t[SL:AMOUNT: number of selected or pointed reminders\t[SL:ORDINAL: the ordinal number of the selected reminder"
+    description="get the reminder time for the previously set reminder\t[SL:PERSON_REMINDED: the reminded target\t["
+                "SL:DATE_TIME: current date time\t[SL:TODO: reminder of things to do\t[SL:AMOUNT: number of selected "
+                "or pointed reminders\t[SL:ORDINAL: the ordinal number of the selected reminder"
 )
 
 get_reminder_location = BaseOperator(
     name="GET_REMINDER_LOCATION",
     input_type=["PERSON_REMINDED", "REMINDER_DATE_TIME", "TODO", "ORDINAL", "METHOD_RETRIEVAL_REMINDER"],
     output_type="get reminder location",
-    description="get the event sending location of the previously set reminder\t[SL:PERSON_REMINDED: the reminded target\t[SL:REMINDER_DATE_TIME: reminder date time\t[SL:TODO: reminder of things to do\t[SL:ORDINAL: the ordinal number of the selected reminder\t[SL:METHOD_RETRIEVAL_REMINDER: Reminder method"
+    description="get the event sending location of the previously set reminder\t[SL:PERSON_REMINDED: the reminded "
+                "target\t[SL:REMINDER_DATE_TIME: reminder date time\t[SL:TODO: reminder of things to do\t[SL:ORDINAL: "
+                "the ordinal number of the selected reminder\t[SL:METHOD_RETRIEVAL_REMINDER: Reminder method"
 )
 
 update_reminder_todo = BaseOperator(
     name="UPDATE_REMINDER_TODO",
     input_type=["PERSON_REMINDED", "REMINDER_DATE_TIME", "TODO", "TODO_NEW", "RECURRING_DATE_TIME"],
     output_type="update reminder todo",
-    description="Update the reminder memory from Todo to the new Todo\t[SL:PERSON_REMINDED: the reminded target\t[SL:REMINDER_DATE_TIME: reminder date time\t[SL:TODO: reminder content set in the past\t[SL:TODO_NEW: Updated reminder content\t[SL:RECURRING_DATE_TIME: number and duration of recurring"
+    description="Update the reminder memory from Todo to the new Todo\t[SL:PERSON_REMINDED: the reminded target\t["
+                "SL:REMINDER_DATE_TIME: reminder date time\t[SL:TODO: reminder content set in the past\t[SL:TODO_NEW: "
+                "Updated reminder content\t[SL:RECURRING_DATE_TIME: number and duration of recurring"
 )
 
 get_todo = BaseOperator(
     name="GET_TODO",
     input_type=["TODO_ANOTHER", "TODO_DATE_TIME", "ATTENDEE"],
     output_type="get todo information",
-    description="get todo information\t[SL:TODO_ANOTHER: reminder of things to do\t[SL:TODO_DATE_TIME:todo occurrence time\t[SL:ATTENDEE:todo occurrence time\t[SL:ATTENDEE:attendee"
+    description="get todo information\t[SL:TODO_ANOTHER: reminder of things to do\t[SL:TODO_DATE_TIME:todo occurrence "
+                "time\t[SL:ATTENDEE:todo occurrence time\t[SL:ATTENDEE:attendee"
 )
 
 get_contact = BaseOperator(
@@ -201,7 +220,7 @@ get_recurring_date_time = BaseOperator(
     name="GET_RECURRING_DATE_TIME",
     input_type=["FREQUENCY", "DATE_TIME"],
     output_type="number and duration of recurring",
-    description = "number and duration of recurring\t[SL:FREQUENCY: cycle frequency\t[SL:DATE_TIME: cycle time period"
+    description="number and duration of recurring\t[SL:FREQUENCY: cycle frequency\t[SL:DATE_TIME: cycle time period"
 )
 
 dummy_operator = BaseOperator(
@@ -211,8 +230,7 @@ dummy_operator = BaseOperator(
     description=''
 )
 
-
-all_operators = {
+all_operators_topv2 = {
     "GET_WEATHER": get_weather,
     "GET_SUNSET": get_sunset,
     "GET_SUNRISE": get_sunrise,

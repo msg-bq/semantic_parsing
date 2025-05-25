@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import TypeVar
 
-from generate_dataset.modeling.co_namespace import Declared_Operators
+from . import dummy_operator
+from .co_namespace import Declared_Operators
 
 
 class DuplicateError(Exception):
@@ -82,6 +83,7 @@ class Term(object):
     """
     def __init__(self, operator: BaseOperator, variables: list[BaseIndividual | Term]):
         self.operator = operator
+
         self.variables = variables
         assert len(variables) == len(operator.inputType), \
             f"variables {variables} do not match inputType {operator.inputType} of operator {operator.name}"
@@ -113,8 +115,14 @@ class Term(object):
         return self.__dict__[item]
 
     def __str__(self):
-        variables_str = ", ".join(map(str, self.variables))
-        return f"{self.operator.name}({variables_str})"
+        if self.variables:
+            variables_str = ", ".join(map(str, self.variables))
+            if self.operator == dummy_operator:
+                return f"{variables_str}"
+            else:
+                return f"{self.operator.name}({variables_str})"
+        else:
+            return "None"  # hack: 这里应该是一个代表空值的特殊标记
 
     def __repr__(self):
         variables_str = ", ".join(map(str, self.variables))

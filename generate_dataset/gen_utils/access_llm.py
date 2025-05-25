@@ -1,22 +1,24 @@
 import time
 
-from openai import AsyncOpenAI, OpenAI, NOT_GIVEN
+from openai import AsyncOpenAI, OpenAI
 
 
-# model = "deepseek-chat"
-# api_key = 'sk-bd3ccb0c1ceb43e0b8210a90657b7bb4'
-# aclient_gpt = AsyncOpenAI(api_key=api_key,
-#                           base_url="https://api.deepseek.com/")
+model = "deepseek-chat"
+api_key = 'sk-bd3ccb0c1ceb43e0b8210a90657b7bb4'
+aclient_gpt = AsyncOpenAI(api_key=api_key,
+                          base_url="https://api.deepseek.com/")
 # client_gpt = OpenAI(api_key=api_key,
 #                           base_url="https://api.deepseek.com/")
 # deepseek-chat
 
-model = "gpt-4o-mini"
-api_key = 'sk-CrQb5MFkrdZafRMnoNTfpNEyRiRJrzjIXOn3iF0BxQuB0F0M'
-aclient_gpt = AsyncOpenAI(api_key=api_key,
-                          base_url="https://api.chatanywhere.tech/v1")
-client_gpt = OpenAI(api_key=api_key,
-                    base_url="https://api.chatanywhere.tech/v1")
+# model = "gpt-4o-mini"
+# api_key = 'sk-56a4ejBaNLcRbTiZfnbIX6L6i3lDzuCdscWRhPO1TR5tQfnJ'
+# aclient_gpt = AsyncOpenAI(api_key=api_key,
+#                           base_url="https://api.chatanywhere.tech/v1")
+# client_gpt = OpenAI(api_key=api_key,
+#                     base_url="https://api.chatanywhere.tech/v1")
+
+
 #chatgpt
 
 
@@ -35,7 +37,17 @@ client_gpt = OpenAI(api_key=api_key,
 #     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
 # )
 
-async def async_query_gpt(user_prompt: str, model=model, temperature=NOT_GIVEN) -> str:
+# client = OpenAI(api_key="6137bd4d-1a18-4159-ad53-8dded07d3e1d", base_url="https://ark.cn-beijing.volces.com/api/v3")
+# model = "deepseek-v3-241226"
+
+async def async_query_gpt(user_prompt: str, model=model, temperature=0.3) -> str:
+    # response = await client.chat.completions.create(
+    #             model=model,
+    #             messages=[
+    #                 {"role": "system", "content": "You are a helpful assistant"},
+    #                 {"role": "user", "content": user_prompt},
+    #             ],
+    #         )
     response = await aclient_gpt.chat.completions.create(
         model=model,
         messages=[
@@ -48,7 +60,7 @@ async def async_query_gpt(user_prompt: str, model=model, temperature=NOT_GIVEN) 
     return response.choices[0].message.content
 
 
-def query_gpt(user_prompt: str, model=model, temperature=NOT_GIVEN) -> str:
+def query_gpt(user_prompt: str, model=model, temperature=0.3) -> str:
     if isinstance(user_prompt, str):
         prompt = [{"role": "user", "content": user_prompt}]
     else:
@@ -58,7 +70,7 @@ def query_gpt(user_prompt: str, model=model, temperature=NOT_GIVEN) -> str:
     while try_call:
         try_call -= 1
         try:
-            response = client_gpt.chat.completions.create(
+            response = client.chat.completions.create(  # fixme: conic分支后有报错，后期处理下
                 model=model,
                 messages=prompt,
                 temperature=temperature

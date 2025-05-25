@@ -4,9 +4,12 @@ import random
 from collections import defaultdict
 from pathlib import Path
 
+import sys 
+sys.path.append(r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset')
+
 from mimesis.providers.base import BaseProvider
-from ._instance_prompt import _concept_instance_prompt
-from generate_dataset.gen_utils.access_llm import async_query_gpt
+from build_labels.instance_funcs._instance_prompt import _concept_instance_prompt
+from gen_utils.access_llm import async_query_gpt
 
 _DATADIR = Path(__file__).parent / 'llm_instance_datadir'
 if not os.path.exists(_DATADIR):
@@ -48,7 +51,8 @@ _CONCEPT_CANDIDATES = defaultdict(list)  # hack: 这里的实现有点丑，我�
 
 
 async def _llm_concept_instances(concept_name: str) -> list[str]:
-    prompt = _concept_instance_prompt(concept_name)
+    prompt = _concept_instance_prompt(concept_name)  # todo(lbq): 如果允许传入concept的描述会更好一些。此刻的替代品是无法顾名思义
+    # 的concept，就单独提供一个provider来干。https://github.com/msg-bq/semantic_parsing/pull/24/files#r2103713390
     while True:  # hack: 这里给个最大的try_cnt会好一点
         try:
             concept_instances_text = await async_query_gpt(prompt, temperature=0.3)

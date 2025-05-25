@@ -1,8 +1,8 @@
 import warnings
 
-from generate_dataset.build_labels.translate_format import _translate_format_topv2
-from generate_dataset.modeling.base_classes import FACT_T
-from generate_dataset.gen_utils.access_llm import query_gpt
+from build_labels.translate_format import _translate_format_topv2
+from modeling.base_classes import FACT_T
+from gen_utils.access_llm import query_gpt
 
 # Instructions template for natural language generation
 generate_nl_instruct = '''You are a learned linguist, now please give some natural phrases to represent the meaning of given logical expression.
@@ -110,7 +110,6 @@ def _valid_response(response_dict: dict, expression: str):  # hack: 可能不限
 def generate_nl_topv2(label: FACT_T) -> dict[str, FACT_T | list[str]]:
     # 将assertion的结构转为tuple[str, str]，即assertion对应的文本描述 + assertion中涉及的operator等的desc
     # todo: 这个函数似乎可以作为default，不需要叫topv2
-
     label_str = _translate_format_topv2([label])[0]  # hack: 先这样丑一点了，可以调整为自动的判断。也不应当访问protected member
     prompt = _gen_nl_prompt((label_str, label.description))
     response = query_gpt(prompt)
@@ -128,5 +127,4 @@ def generate_nl_topv2(label: FACT_T) -> dict[str, FACT_T | list[str]]:
         response = query_gpt(prompt)
         result = __clean_and_parse_response(response)
         attempt += 1
-
     return {}  # 若三次尝试都未满足条件，返回空字典

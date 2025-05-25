@@ -1,6 +1,4 @@
-from generate_dataset.modeling.base_classes import Assertion, BaseOperator, Term, BaseIndividual
-# Declared_Operator必须得先被导入某个建模后，才可以使用
-from generate_dataset.modeling.co_namespace import Declared_Operators
+from generate_dataset.modeling import Assertion, BaseOperator, Term, BaseIndividual, Declared_Operators
 
 
 def __clean_text(text: str) -> str:
@@ -33,6 +31,7 @@ def __extract_variables(variables_text: str, operator: BaseOperator) -> list[Bas
     Example: "[LOCATION:null][DATE_TIME:get_next_day(...)][weather:Rainy]"
     returns [BaseIndividual("LOCATION", null), Term(get_next_day, [...]), BaseIndividual("WEATHER", "Rainy")]
     """
+
     def find_matching_bracket(text: str, start: int) -> int:
         """
         Finds the index of the matching closing bracket for a nested structure.
@@ -51,12 +50,12 @@ def __extract_variables(variables_text: str, operator: BaseOperator) -> list[Bas
         raise ValueError("Mismatched brackets in variables text")
 
     variables = []
-    i = 0
-    while i < len(variables_text):
-        if variables_text[i] == '[':
+    p = 0
+    while p < len(variables_text):
+        if variables_text[p] == '[':
             # Find the closing bracket for this variable
-            end = find_matching_bracket(variables_text, i)
-            inner_text = variables_text[i + 1:end]  # Strip the outer brackets
+            end = find_matching_bracket(variables_text, p)
+            inner_text = variables_text[p + 1:end]  # Strip the outer brackets
             name, value = inner_text.split(":", 1)
 
             assert name in operator.inputType + [operator.outputType], \
@@ -71,9 +70,9 @@ def __extract_variables(variables_text: str, operator: BaseOperator) -> list[Bas
                 value = __clean_text(value)
                 variables.append(BaseIndividual(value=value))
 
-            i = end + 1
+            p = end + 1
         else:
-            i += 1
+            p += 1
 
     return variables
 
@@ -97,5 +96,6 @@ def _parse_derivation_topv2(derivation_text: str) -> Assertion:
 
 if __name__ == '__main__':
     derivation_text_example = \
-        'intent:GET_EVENT ( [ CATEGORY_EVENT: null ] [ DATE_TIME: later*spacetoday ] [ LOCATION: null ] [ ATTRIBUTE_EVENT: families ] [ NAME_EVENT: null ] [ ORDINAL: null ] [ ORGANIZER_EVENT: null ] )'
+        ('intent:GET_EVENT ( [ CATEGORY_EVENT: null ] [ DATE_TIME: later*spacetoday ] [ LOCATION: null ] [ '
+         'ATTRIBUTE_EVENT: families ] [ NAME_EVENT: null ] [ ORDINAL: null ] [ ORGANIZER_EVENT: null ] )')
     print(_parse_derivation_topv2(derivation_text_example))

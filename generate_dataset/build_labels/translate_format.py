@@ -1,6 +1,6 @@
 # 本文件用于将断言语法的结果，输出为特定下游任务所需的格式
-from generate_dataset.generate_natural_language.dataset_class import CustomDataset
-from generate_dataset.modeling import FACT_TYPE, Assertion, Formula, Term, BaseIndividual
+from generate_natural_language.dataset_class import CustomDataset
+from modeling import FACT_TYPE, Assertion, Formula, Term, BaseIndividual
 
 
 def _translate_format_topv2(al_expressions: list[Assertion | Formula]) -> list[str]:

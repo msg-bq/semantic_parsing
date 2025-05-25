@@ -1,13 +1,14 @@
 import string
-
-from generate_dataset.gen_utils.spacy_load import load_spacy_model
-from generate_dataset.modeling import FACT_T, BaseIndividual
-from generate_dataset.postprocess._align_lemma import _extract_individuals
+import sys 
+sys.path.append(r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset')
+from gen_utils.spacy_load import load_spacy_model
+from modeling import FACT_T, BaseIndividual
+from postprocess._align_lemma import _extract_individuals
 
 
 nlp = load_spacy_model("en_core_web_sm")
-stopwords = set(open(r"C:\Users\YueG_W\Documents\GitHub\semantic_parsing\generate_dataset\postprocess\stopwords.txt", "r", encoding="utf-8").read().splitlines())
-# hack: 不知道为什么相对路径不对，先用绝对的了
+stopwords = set(open(r"D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset\postprocess\stopwords.txt", "r", encoding="utf-8").read().splitlines())
+# XXX: 不知道为什么相对路径不对，先用绝对的了
 
 
 def _extract_noun_phrases(doc):

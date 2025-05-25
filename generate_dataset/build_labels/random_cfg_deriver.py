@@ -101,7 +101,7 @@ async def _derive_string(current_string, grammar):
         if not variable_references:
             break
 
-        random_variable = random.choice(variable_references)  # hack: 这个地方酌情优化，未经优化的random会导致大量重复
+        random_variable = random.choice(variable_references)  # XXX: 这个地方酌情优化，未经优化的random会导致大量重复
         # random_production = random.choice(grammar.variable_dict[random_variable.name].rules)
         random_production = _roulette_choice_rule(grammar.variable_dict[random_variable.name].rules)
 
@@ -126,19 +126,20 @@ async def _derive_string(current_string, grammar):
     return updated_string
 
 
-async def generate_expressions(n: int) -> list:
+# async def generate_expressions(n: int) -> list:
+async def generate_expressions(n: int, dataset_file: str | None = None) -> list:
     """
     :param n: 生成的数量
     :return 断言逻辑表示的表达式
     """
 
-    if len(sys.argv) != 2:
+    if len(sys.argv) == 1 and dataset_file is None:
         print('Required usage: python3 random_cfg_deriver.py <filename>')
         print('Where filename is the name of a .cfg file.')
         exit()
 
     # Collect command line argument
-    filename = sys.argv[1]
+    filename = sys.argv[1] if len(sys.argv) == 2 else dataset_file
 
     # Parse file into variable objects for our grammar
     print('Loading grammar from "{}"...'.format(filename))
