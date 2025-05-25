@@ -9,7 +9,7 @@ def __split_operator_variables(derivation_text: str) -> tuple[str, str]:
     returns ("get_sunset", "[LOCATION:null][DATE_TIME:get_next_day(...)][weather:Rainy]")
     """
 
-    ## TODO
+    # TODO
     # 对于'InterReciprocal(Eccentricity(CONICSECTION:s)),NumIntersection(LeftPart(HYPERBOLA:d),CURVE:n)'这样的另写,相当于一个算子里的2个输入都是嵌套
     # 目前合成的数据都是直接把这样的丢掉
 
@@ -22,7 +22,8 @@ def __split_operator_variables(derivation_text: str) -> tuple[str, str]:
     return operator_name, variables_text
 
 
-def __extract_variables_al(variables_text: str, operator: BaseOperator) -> tuple[list[BaseIndividual | Term], list[str]]:
+def __extract_variables_al(variables_text: str, operator: BaseOperator) \
+        -> tuple[list[BaseIndividual | Term], list[str]]:
     """
     Extracts variables from the variables text and returns them as a list of BaseIndividual or Term objects.
     Example: "(LOCATION:null, DATE_TIME:get_next_day(...))"
@@ -91,8 +92,8 @@ def _parse_derivation_conic10k(derivation_text: str) -> Assertion | None:
     derivation_text = derivation_text.replace(' ', '')
     count = derivation_text.count("equals")
     if count >= 2:
-        ## TODO
-        ## 这是为了识别 Negation(Term = Term) = BOOL 这样的表达式，可以直接丢掉
+        # TODO
+        # 这是为了识别 Negation(Term = Term) = BOOL 这样的表达式，可以直接丢掉
 
         # left_part, sep, right_part = derivation_text.rpartition("equals")
         # left_assertion, left_declarations = _parse_derivation_conic10k(left_part)
@@ -122,7 +123,7 @@ def _parse_derivation_conic10k(derivation_text: str) -> Assertion | None:
         term_lhs = Term(operator=operator,
                         variables=variables)
         term_rhs = Term(operator=dummy_operator,
-                        variables=None)
+                        variables=[])
 
         fact = Assertion(lhs=term_lhs, rhs=term_rhs)
         Declaration_record[fact] = declarations
@@ -137,10 +138,10 @@ def _parse_derivation_conic10k(derivation_text: str) -> Assertion | None:
         term_lhs = Term(operator=left_operator,
                         variables=left_variables)
 
-        if "(" in right_part and not "EXPRESSION" in right_part:  # 右式也是一个Operator(variable)的形式
+        if "(" in right_part and "EXPRESSION" not in right_part:  # 右式也是一个Operator(variable)的形式
             right_operator_name, right_variable_text = __split_operator_variables(right_part)
 
-            ## TODO
+            # TODO
             # 需要解决Point(p) = (Number, Number)的特殊右式表达式，目前直接忽略
             if right_operator_name == '':
                 return None
@@ -151,7 +152,7 @@ def _parse_derivation_conic10k(derivation_text: str) -> Assertion | None:
                             variables=right_variables
                             )
         else:  # 右式直接是Concept: variable的形式
-            right_variables = right_part.split(":")[-1]
+            right_variables = [BaseIndividual(right_part.split(":")[-1])]
             right_concepts = right_part.split(":")[0]
             right_declarations = [f"{right_variables}: {right_concepts}"]
             term_rhs = Term(operator=dummy_operator,
@@ -164,6 +165,7 @@ def _parse_derivation_conic10k(derivation_text: str) -> Assertion | None:
 
 if __name__ == '__main__':
     derivation_text_example = \
-        "Coordinate ( LeftFocus ( CONICSECTION: T ) ) equals ( sqrt ( Quadrant ( POINT: t ) ), DotProduct ( VECTOR: k, VECTOR: D ) )"
+        ("Coordinate ( LeftFocus ( CONICSECTION: T ) ) equals ( sqrt ( Quadrant ( POINT: t ) ), DotProduct ( VECTOR: "
+         "k, VECTOR: D ) )")
     assertions = _parse_derivation_conic10k(derivation_text_example)
     print(f"{'; '.join(Declaration_record[assertions])}\n{assertions}")
