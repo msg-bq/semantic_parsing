@@ -8,7 +8,7 @@ from postprocess._align_lemma import _extract_individuals
 
 nlp = load_spacy_model("en_core_web_sm")
 stopwords = set(open(r"D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset\postprocess\stopwords.txt", "r", encoding="utf-8").read().splitlines())
-# hack: 不知道为什么相对路径不对，先用绝对的了
+# XXX: 不知道为什么相对路径不对，先用绝对的了
 
 
 def _extract_noun_phrases(doc):

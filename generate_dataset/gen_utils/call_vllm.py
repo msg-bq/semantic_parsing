@@ -43,24 +43,29 @@ Query: {}
 Output mathematical problem：
 '''
 
-def find_concepts(all_concepts, concepts_name):
+
+def find_concepts(concepts, concepts_name):
     concept_prompt = []
     for index, concept in enumerate(concepts_name):
-        if concept in all_concepts.keys():
-            concept_prompt.append(f"{index+1}. {concept.capitalize()}: {all_concepts[concept.capitalize()]}")
+        if concept in concepts.keys():
+            concept_prompt.append(f"{index + 1}. {concept.capitalize()}: {concepts[concept.capitalize()]}")
     return '\n'.join(concept_prompt)
 
-def find_operators(all_operators, operators_name):
+
+def find_operators(operators, operators_name):
     opeartor_prompt = []
     for index, operator in enumerate(operators_name):
-        if operator in all_operators.keys():
-            opeartor_prompt.append(f"{index+1}. {operator.capitalize()}: {all_operators[operator.capitalize()]}")
+        if operator in operators.keys():
+            opeartor_prompt.append(f"{index + 1}. {operator.capitalize()}: {operators[operator.capitalize()]}")
     return '\n'.join(opeartor_prompt)
 
 
 if __name__ == '__main__':
     client = OpenAI(api_key="xxx", base_url="https://ark.cn-beijing.volces.com/api/v3")
-    file = open(r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset\assertions_output\merge_assertions\conic10k_output_1_new.json', 'r', encoding='utf-8')
+    file = open(
+        r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset\assertions_output'
+        r'\merge_assertions\conic10k_output_1_new.json',
+        'r', encoding='utf-8')
     datas = json.load(file)
 
     operator_file = open(r'../ad_hoc_(can_ignore)/operators.json', 'r', encoding='utf-8')
@@ -69,7 +74,9 @@ if __name__ == '__main__':
     concept_file = open(r'../ad_hoc_(can_ignore)/concepts.json', 'r', encoding='utf-8')
     all_concepts = json.load(concept_file)
 
-    new_file = open(r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset\assertions_output\problems', 'a', encoding='utf-8')
+    new_file = open(
+        r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset\assertions_output\problems',
+        'a', encoding='utf-8')
 
     res = []
     pattern = r'([A-Za-z_]\w*)\('
@@ -98,12 +105,12 @@ if __name__ == '__main__':
         # prompt = assertion_knowledge + '\n\n' + prompts
 
         completion = client.chat.completions.create(
-                model="deepseek-v3-241226",
-                messages=[
-                    {"role": "system", "content": assertion_knowledge},
-                    {"role": "user", "content": prompts},
-                ],
-            )
+            model="deepseek-v3-241226",
+            messages=[
+                {"role": "system", "content": assertion_knowledge},
+                {"role": "user", "content": prompts},
+            ],
+        )
         ans = completion.choices[0].message.content
         data["math_problem"] = ans
 

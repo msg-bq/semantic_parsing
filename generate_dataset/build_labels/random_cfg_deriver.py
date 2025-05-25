@@ -101,7 +101,7 @@ async def _derive_string(current_string, grammar):
         if not variable_references:
             break
 
-        random_variable = random.choice(variable_references)  # hack: 这个地方酌情优化，未经优化的random会导致大量重复
+        random_variable = random.choice(variable_references)  # XXX: 这个地方酌情优化，未经优化的random会导致大量重复
         # random_production = random.choice(grammar.variable_dict[random_variable.name].rules)
         random_production = _roulette_choice_rule(grammar.variable_dict[random_variable.name].rules)
 
