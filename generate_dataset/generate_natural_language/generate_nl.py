@@ -4,7 +4,8 @@ import json
 import sys
 
 # 获取父目录路径并添加到 sys.path
-parent_dir = str(Path(__file__).resolve().parent.parent)
+parent_dir = str(Path(__file__).resolve().parent.parent)  # 你用这行帮助移除generate_dataset作为模块的一部分
+# 不过如果这样的话，感觉不如直接在main.py的位置就导致第一级的目录叭，而不是这里？ fixme(zcl): 你确认一下？我改是可以的
 sys.path.append(parent_dir)
 
 from concurrent.futures import ThreadPoolExecutor
