@@ -3,6 +3,8 @@ from pathlib import Path
 import json
 import sys
 
+from generate_dataset.postprocess.conic10k_ad_hoc import Declaration_record
+
 # 获取父目录路径并添加到 sys.path
 parent_dir = str(Path(__file__).resolve().parent.parent)  # 你用这行帮助移除generate_dataset作为模块的一部分
 # 不过如果这样的话，感觉不如直接在main.py的位置就导致第一级的目录叭，而不是这里？ fixme(zcl): 你确认一下？我改是可以的
@@ -52,7 +54,8 @@ if __name__ == '__main__':
         data = json.loads(line)
         if "}" not in data["assertion"]:
             derivation_text_example = data["assertion"]
-            al_exp, al_declarations = parse_derivations(derivation_text_example, dataset_type)
+            al_exp = parse_derivations(derivation_text_example, dataset_type)
+            al_declarations = Declaration_record.get(al_exp, None)
             data["id"] = i
             if al_declarations == None:
                 data["declarations"] = None

@@ -12,7 +12,7 @@ def parse_derivations(derivation_texts: list[str] | str, dataset_name: str) -> _
     if isinstance(derivation_texts, str):
         return parse_func(derivation_texts)
 
-    return [parse_func(d) for d in derivation_texts]
+    return [parse_func(d) for d in derivation_texts if d]  # 可能有不合法的情况，从而为None
 
 
 if __name__ == '__main__':
