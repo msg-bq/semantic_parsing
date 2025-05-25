@@ -1,9 +1,9 @@
-import sys 
+import sys  # fixme(lbq): 这一页的类型标注错误比较多，回头检查下
 sys.path.append(r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change')
 
 from generate_dataset.modeling.base_classes import Assertion, BaseOperator, Term, BaseIndividual
 # Declared_Operator必须得先被导入某个建模后，才可以使用
-from generate_dataset.modeling.topv2 import all_operators
+from generate_dataset.modeling import Declared_Operators
 
 
 def __clean_text(text: str) -> str:
@@ -72,7 +72,7 @@ def __extract_variables(variables_text: str, operator: BaseOperator) -> list[Bas
 
             if value.startswith("intent:"):
                 sub_operator_name, sub_variables_text = __split_operator_variables(value)
-                sub_operator = all_operators[sub_operator_name]
+                sub_operator = Declared_Operators[sub_operator_name]
                 sub_variables = __extract_variables(sub_variables_text, sub_operator)
                 variables.append(Term(operator=sub_operator, variables=sub_variables))
             else:
@@ -129,7 +129,7 @@ def __extract_variables_al(variables_text: str, operator: BaseOperator) -> list[
         inner_variable_text = inner_variable_text.strip()
         if "(" in inner_variable_text:    # 说明有嵌套
             sub_operator_name, sub_variables_text = __split_operator_variables(inner_variable_text)
-            sub_operator = all_operators[sub_operator_name]
+            sub_operator = Declared_Operators[sub_operator_name]
             sub_variables, sub_declarations = __extract_variables_al(sub_variables_text, sub_operator)
             variables.append(Term(operator=sub_operator, variables=sub_variables))
             declarations.extend(sub_declarations)
@@ -146,7 +146,7 @@ def __extract_variables_al(variables_text: str, operator: BaseOperator) -> list[
                 variables.append(BaseIndividual(value=value))
                 declarations.append(f"{value}: {name}")
 
-    return variables,declarations
+    return variables, declarations
 
 
 def _parse_derivation_topv2(derivation_text: str) -> Assertion:
@@ -156,11 +156,11 @@ def _parse_derivation_topv2(derivation_text: str) -> Assertion:
     """
     derivation_text = derivation_text.replace(' ', '')
     operator_name, variables_text = __split_operator_variables(derivation_text)
-    operator =  all_operators[operator_name]
+    operator =  Declared_Operators[operator_name]
     variables = __extract_variables(variables_text, operator)
     term_lhs = Term(operator=operator,
                     variables=variables)
-    term_rhs = Term( all_operators['dummy_operator'],
+    term_rhs = Term(Declared_Operators['dummy_operator'],
                     variables=[])
 
     return Assertion(lhs=term_lhs, rhs=term_rhs)
@@ -183,7 +183,7 @@ def _parse_derivation_conic10k(derivation_text: str) -> Assertion:
         
         # if "(" in right_part:   # 右式也是一个Operator(variable)的形式
         #     right_operator_name, right_variable_text = __split_operator_variables(right_part)
-        #     right_operator = all_operators[right_operator_name]
+        #     right_operator = Declared_Operators[right_operator_name]
         #     right_variables, right_declarations = __extract_variables_al(right_variable_text, right_operator)
         #     term_rhs = Term(operator=right_operator,
         #                     variables=right_variables
@@ -199,7 +199,7 @@ def _parse_derivation_conic10k(derivation_text: str) -> Assertion:
     
     elif count == 0:
         operator_name, variable_text = __split_operator_variables(derivation_text)
-        operator =  all_operators[operator_name]
+        operator =  Declared_Operators[operator_name]
         variables, declarations = __extract_variables_al(variable_text, operator)
         term_lhs = Term(operator=operator,
                     variables=variables)
@@ -211,7 +211,7 @@ def _parse_derivation_conic10k(derivation_text: str) -> Assertion:
         left_part = derivation_text.split("equals")[0]
         right_part = derivation_text.split("equals")[-1]
         left_operator_name, left_variable_text = __split_operator_variables(left_part)
-        left_operator =  all_operators[left_operator_name]
+        left_operator =  Declared_Operators[left_operator_name]
         left_variables, left_declarations = __extract_variables_al(left_variable_text, left_operator)
         term_lhs = Term(operator=left_operator,
                         variables=left_variables)
@@ -224,7 +224,7 @@ def _parse_derivation_conic10k(derivation_text: str) -> Assertion:
             if right_operator_name == '':
                 return None, None
             
-            right_operator = all_operators[right_operator_name]
+            right_operator = Declared_Operators[right_operator_name]
             right_variables, right_declarations = __extract_variables_al(right_variable_text, right_operator)
             term_rhs = Term(operator=right_operator,
                             variables=right_variables

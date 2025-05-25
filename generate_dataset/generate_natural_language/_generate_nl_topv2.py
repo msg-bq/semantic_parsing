@@ -1,8 +1,5 @@
 import warnings
 
-# import sys 
-# sys.path.append(r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset')
-
 from build_labels.translate_format import _translate_format_topv2
 from modeling.base_classes import FACT_T
 from gen_utils.access_llm import query_gpt

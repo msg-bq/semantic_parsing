@@ -63,10 +63,10 @@ if __name__ == '__main__':
     file = open(r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset\assertions_output\merge_assertions\conic10k_output_1_new.json', 'r', encoding='utf-8')
     datas = json.load(file)
 
-    operator_file = open(r'../assertions_output/operators.json', 'r', encoding='utf-8')
+    operator_file = open(r'../ad_hoc_(can_ignore)/operators.json', 'r', encoding='utf-8')
     all_operators = json.load(operator_file)
 
-    concept_file = open(r'../assertions_output/concepts.json', 'r', encoding='utf-8')
+    concept_file = open(r'../ad_hoc_(can_ignore)/concepts.json', 'r', encoding='utf-8')
     all_concepts = json.load(concept_file)
 
     new_file = open(r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset\assertions_output\problems', 'a', encoding='utf-8')

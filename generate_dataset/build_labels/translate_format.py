@@ -1,6 +1,4 @@
 # 本文件用于将断言语法的结果，输出为特定下游任务所需的格式
-# import sys 
-# sys.path.append(r'D:\桌面\6023\generate_dataset\semantic_parsing-q_upload_change\generate_dataset')
 from generate_natural_language.dataset_class import CustomDataset
 from modeling import FACT_TYPE, Assertion, Formula, Term, BaseIndividual
 
