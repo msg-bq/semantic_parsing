@@ -57,7 +57,7 @@ if __name__ == '__main__':
             al_exp = parse_derivations(derivation_text_example, dataset_type)
             al_declarations = Declaration_record.get(al_exp, None)
             data["id"] = i
-            if al_declarations == None:
+            if al_declarations is None:
                 data["declarations"] = None
             else:
                 data["declarations"] = '; '.join(al_declarations)

@@ -83,7 +83,7 @@ class Term(object):
     """
     def __init__(self, operator: BaseOperator, variables: list[BaseIndividual | Term]):
         self.operator = operator
-        
+
         self.variables = variables
         assert len(variables) == len(operator.inputType), \
             f"variables {variables} do not match inputType {operator.inputType} of operator {operator.name}"
