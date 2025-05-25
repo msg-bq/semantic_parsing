@@ -23,7 +23,7 @@ def generate_dataset(dataset_name: str, num: int = 2) -> CustomDataset:
     :param num: 我这边异步比较草率，实际生成的数量可能会略大于num
     """
     # 生成完后的标签了
-    derivation_texts: list[str] = asyncio.run(generate_expressions(dataset_name, n=num))
+    derivation_texts: list[str] = asyncio.run(generate_expressions(n=num))  # 如果需要靠传参指明路径的话，可以往dataset_file传
     return derivation_texts
 
     # 用断言的方式表达

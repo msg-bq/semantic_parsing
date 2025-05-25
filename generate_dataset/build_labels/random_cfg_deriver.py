@@ -127,20 +127,19 @@ async def _derive_string(current_string, grammar):
 
 
 # async def generate_expressions(n: int) -> list:
-async def generate_expressions(datasetname: str, n: int) -> list:
+async def generate_expressions(n: int, dataset_file: str | None = None) -> list:
     """
     :param n: 生成的数量
     :return 断言逻辑表示的表达式
     """
 
-    # if len(sys.argv) != 2:
-    #     print('Required usage: python3 random_cfg_deriver.py <filename>')
-    #     print('Where filename is the name of a .cfg file.')
-    #     exit()
+    if len(sys.argv) == 1 and dataset_file is None:
+        print('Required usage: python3 random_cfg_deriver.py <filename>')
+        print('Where filename is the name of a .cfg file.')
+        exit()
 
     # Collect command line argument
-    # filename = sys.argv[1]
-    filename = datasetname
+    filename = sys.argv[1] if len(sys.argv) == 2 else dataset_file
 
     # Parse file into variable objects for our grammar
     print('Loading grammar from "{}"...'.format(filename))
