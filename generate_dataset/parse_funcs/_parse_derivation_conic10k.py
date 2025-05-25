@@ -1,4 +1,5 @@
 from generate_dataset.modeling import Assertion, BaseOperator, Term, BaseIndividual, Declared_Operators, dummy_operator
+from generate_dataset.postprocess.conic10k_ad_hoc import Declaration_record
 
 
 def __split_operator_variables(derivation_text: str) -> tuple[str, str]:
@@ -82,7 +83,7 @@ def __merge_variables(variables_list: list[str]) -> list[str]:
     return merged_list
 
 
-def _parse_derivation_conic10k(derivation_text: str) -> Assertion:
+def _parse_derivation_conic10k(derivation_text: str) -> Assertion | None:
     """
     把生成的表达式转为assertion logic的格式
     Operator(variable) = concept_individual
@@ -112,7 +113,7 @@ def _parse_derivation_conic10k(derivation_text: str) -> Assertion:
         #     term_rhs = Term(operator=dummy_operator,
         #                     variables=right_variables)
         # return Assertion(lhs=term_lhs, rhs=term_rhs), left_declarations + right_declarations
-        return None, None
+        return None
 
     elif count == 0:  # fixme: 为什么会有无equals的情况
         operator_name, variable_text = __split_operator_variables(derivation_text)
@@ -122,7 +123,10 @@ def _parse_derivation_conic10k(derivation_text: str) -> Assertion:
                         variables=variables)
         term_rhs = Term(operator=dummy_operator,
                         variables=None)
-        return Assertion(lhs=term_lhs, rhs=term_rhs), declarations
+
+        fact = Assertion(lhs=term_lhs, rhs=term_rhs)
+        Declaration_record[fact] = declarations
+        return fact
 
     else:
         left_part = derivation_text.split("equals")[0]
@@ -139,7 +143,7 @@ def _parse_derivation_conic10k(derivation_text: str) -> Assertion:
             ## TODO
             # 需要解决Point(p) = (Number, Number)的特殊右式表达式，目前直接忽略
             if right_operator_name == '':
-                return None, None
+                return None
 
             right_operator = Declared_Operators[right_operator_name]
             right_variables, right_declarations = __extract_variables_al(right_variable_text, right_operator)
@@ -152,11 +156,14 @@ def _parse_derivation_conic10k(derivation_text: str) -> Assertion:
             right_declarations = [f"{right_variables}: {right_concepts}"]
             term_rhs = Term(operator=dummy_operator,
                             variables=right_variables)
-        return Assertion(lhs=term_lhs, rhs=term_rhs), left_declarations + right_declarations
+
+        fact = Assertion(lhs=term_lhs, rhs=term_rhs)
+        Declaration_record[fact] = left_declarations + right_declarations
+        return fact
 
 
 if __name__ == '__main__':
     derivation_text_example = \
         "Coordinate ( LeftFocus ( CONICSECTION: T ) ) equals ( sqrt ( Quadrant ( POINT: t ) ), DotProduct ( VECTOR: k, VECTOR: D ) )"
-    assertions, declarations = _parse_derivation_conic10k(derivation_text_example)
-    print(f"{'; '.join(declarations)}\n{assertions}")
+    assertions = _parse_derivation_conic10k(derivation_text_example)
+    print(f"{'; '.join(Declaration_record[assertions])}\n{assertions}")
