@@ -51,7 +51,8 @@ _CONCEPT_CANDIDATES = defaultdict(list)  # hack: 这里的实现有点丑，我�
 
 
 async def _llm_concept_instances(concept_name: str) -> list[str]:
-    prompt = _concept_instance_prompt(concept_name)
+    prompt = _concept_instance_prompt(concept_name)  # todo(lbq): 如果允许传入concept的描述会更好一些。此刻的替代品是无法顾名思义
+    # 的concept，就单独提供一个provider来干。https://github.com/msg-bq/semantic_parsing/pull/24/files#r2103713390
     while True:  # hack: 这里给个最大的try_cnt会好一点
         try:
             concept_instances_text = await async_query_gpt(prompt, temperature=0.3)
