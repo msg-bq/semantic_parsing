@@ -187,7 +187,7 @@ get_todo = BaseOperator(
     name="GET_TODO",
     input_type=["TODO_ANOTHER", "TODO_DATE_TIME", "ATTENDEE"],
     output_type="get todo information",
-    description="get todo information\t[SL:TODO_ANOTHER: reminder of things to do\t[SL:TODO_DATE_TIME:todo occurrence time\t[SL:ATTENDEE:todo occurrence time\t[SL:ATTENDEE:attendee"
+    description="get todo information\t[SL:TODO_ANOTHER: reminder of things to do\t[SL:TODO_DATE_TIME:todo occurrence time\t[SL:ATTENDEE:todo occurrence time"
 )
 
 get_contact = BaseOperator(
