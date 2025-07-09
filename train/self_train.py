@@ -9,6 +9,9 @@ from torch import device
 from torch.utils.data import DataLoader
 from transformers import TrainingArguments, Trainer
 
+import json
+import jsonlines
+
 from utils.dataset import mycollate_trainer, self_train_collate, AssertionExample, SelfTrainDataset
 
 import torch.nn.functional as F
@@ -147,19 +150,19 @@ class SelfTrainTrainer(Trainer):
             for example in new_examples:
                 example.weight /= sum_scores
 
-    def calc_weighted_loss(loss_fct, outputs, batch, scores):
-        inputs, labels = batch["input_ids"], batch["labels"]
-        loss_per_token = loss_fct(outputs.logits.view(-1, model.config.vocab_size), labels.view(-1))
-
-        # 由于每个样例的长度不同，需要计算每个样例的平均loss
-        loss_per_token = loss_per_token.view(inputs.size(0), -1)
-        loss_per_example = loss_per_token.sum(dim=1) / (labels != tokenizer.pad_token_id).sum(dim=1)
-
-        whole_loss = sum([l * s for l, s in zip(loss_per_example, scores)]) / len(scores)
-        # 打印每个样例的loss
-        #     for i, loss in enumerate(loss_per_example):
-        # ImportError}: {loss.item()}")
-        return whole_loss
+    # def calc_weighted_loss(loss_fct, outputs, batch, scores):
+    #     inputs, labels = batch["input_ids"], batch["labels"]
+    #     loss_per_token = loss_fct(outputs.logits.view(-1, model.config.vocab_size), labels.view(-1))
+    #
+    #     # 由于每个样例的长度不同，需要计算每个样例的平均loss
+    #     loss_per_token = loss_per_token.view(inputs.size(0), -1)
+    #     loss_per_example = loss_per_token.sum(dim=1) / (labels != tokenizer.pad_token_id).sum(dim=1)
+    #
+    #     whole_loss = sum([l * s for l, s in zip(loss_per_example, scores)]) / len(scores)
+    #     # 打印每个样例的loss
+    #     #     for i, loss in enumerate(loss_per_example):
+    #     # ImportError}: {loss.item()}")
+    #     return whole_loss
 
     def compute_loss(self, model, inputs, return_outputs=False):  ## compute loss这个步骤实际上定义了 forward和loss的计算过程
         score = torch.tensor(inputs.pop("weight"))
