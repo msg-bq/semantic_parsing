@@ -6,6 +6,7 @@ import torch.nn as nn
 import heapq
 
 from torch import device
+from torch.utils.data import DataLoader
 from transformers import TrainingArguments, Trainer
 
 from utils.dataset import mycollate_trainer, self_train_collate, AssertionExample, SelfTrainDataset
@@ -177,6 +178,35 @@ class SelfTrainTrainer(Trainer):
 
 from tqdm import tqdm
 import torch.nn.functional as F
+
+
+def unlabel_filter(data, domain):
+    weather = ["[IN:UNSUPPORTED_WEATHER", "[IN:GET_WEATHER", "[IN:GET_SUNSET", "[IN:GET_SUNRISE", "[IN:GET_LOCATION",
+               "[SL:DATE_TIME", "[SL:WEATHER_TEMPERATURE_UNIT", "[SL:LOCATION", "[SL:WEATHER_ATTRIBUTE",
+               "[SL:LOCATION_USER", "[SL:SEARCH_RADIUS", "[SL:LOCATION_MODIFIER"]
+    reminder = ["IN:GET_MESSAGE]", "[SL:CONTACT", "[SL:MUTUAL_EMPLOYER", "[SL:METHOD_RETRIEVAL_REMINDER", "[SL:TODO",
+                "[SL:RECIPIENT", "[IN:DELETE_REMINDER", "[SL:CATEGORY_EVENT", "[IN:GET_REMINDER", "[IN:GET_TODO",
+                "SL:ATTENDEE_EVENT]", "[IN:GET_RECURRING_DATE_TIME", "SL:CONTENT_EXACT]", "IN:GET_RECURRING_DATE_TIME]",
+                "[SL:PERSON_REMINDED", "[IN:SEND_MESSAGE", "IN:REPLY_MESSAGE]", "[IN:GET_CONTACT", "[SL:AMOUNT",
+                "SL:CONTACT_RELATED]", "SL:FREQUENCY]", "SL:DATE_TIME]", "[SL:RECURRING_DATE_TIME", "[SL:CONTENT_EXACT",
+                "[IN:GET_MESSAGE", "[SL:DATE_TIME", "SL:ATTENDEE]", "IN:GET_CONTACT]", "SL:RECURRING_DATE_TIME]",
+                "[SL:FREQUENCY", "[IN:CREATE_REMINDER", "[SL:CONTACT_RELATED", "[IN:REPLY_MESSAGE",
+                "[SL:ATTENDEE_EVENT", "[SL:ORDINAL", "[SL:ATTENDEE", "SL:PERSON_REMINDED]", "SL:AMOUNT]", "SL:CONTACT]",
+                "SL:TYPE_RELATION]", "IN:GET_EVENT]", "[SL:TYPE_RELATION", "[IN:GET_EVENT"]
+    event = ["[SL:CATEGORY_LOCATION", "SL:CATEGORY_LOCATION]", "[SL:ORGANIZER_EVENT", "SL:ORGANIZER_EVENT]",
+             "[SL:CATEGORY_EVENT", "SL:CATEGORY_EVENT]", "[IN:GET_LOCATION", "IN:GET_LOCATION]", "[SL:ORDINAL",
+             "SL:ORDINAL]", "[SL:NAME_EVENT", "SL:NAME_EVENT]", "[SL:LOCATION", "SL:LOCATION]", "[SL:LOCATION_MODIFIER",
+             "SL:LOCATION_MODIFIER]", "[SL:DATE_TIME", "SL:DATE_TIME]", "[SL:ATTRIBUTE_EVENT", "SL:ATTRIBUTE_EVENT]",
+             "[SL:POINT_ON_MAP", "SL:POINT_ON_MAP]", "[IN:GET_EVENT", "IN:GET_EVENT]", ]
+    domain_label = {"weather": weather, "event": event, "reminder": reminder}
+
+    label = data['pred']
+    for word in label.split():
+        if word != ']' and word not in data['question'] and word not in domain_label[domain]:
+            return False
+
+    return True
+
 def get_unlabel_data(unlabel_train_loader, model,tokenizer, save_path: str, domain:str, p_rate: float):
     
     # 用于暂存所有样本及其置信度
@@ -243,8 +273,6 @@ def get_unlabel_data(unlabel_train_loader, model,tokenizer, save_path: str, doma
         for item in test_data:
             if item['pred'] == item['label']:
                 true1 += 1
-        file_any.write(f"{p1}的比例下：\t{true1}/{len(test_data)}\n")
-        file_any.flush()
         
         
     # 写入文件
