@@ -6,7 +6,11 @@ import torch.nn as nn
 import heapq
 
 from torch import device
+from torch.utils.data import DataLoader
 from transformers import TrainingArguments, Trainer
+
+import json
+import jsonlines
 
 from utils.dataset import mycollate_trainer, self_train_collate, AssertionExample, SelfTrainDataset
 
@@ -146,19 +150,19 @@ class SelfTrainTrainer(Trainer):
             for example in new_examples:
                 example.weight /= sum_scores
 
-    def calc_weighted_loss(loss_fct, outputs, batch, scores):
-        inputs, labels = batch["input_ids"], batch["labels"]
-        loss_per_token = loss_fct(outputs.logits.view(-1, model.config.vocab_size), labels.view(-1))
-
-        # 由于每个样例的长度不同，需要计算每个样例的平均loss
-        loss_per_token = loss_per_token.view(inputs.size(0), -1)
-        loss_per_example = loss_per_token.sum(dim=1) / (labels != tokenizer.pad_token_id).sum(dim=1)
-
-        whole_loss = sum([l * s for l, s in zip(loss_per_example, scores)]) / len(scores)
-        # 打印每个样例的loss
-        #     for i, loss in enumerate(loss_per_example):
-        # ImportError}: {loss.item()}")
-        return whole_loss
+    # def calc_weighted_loss(loss_fct, outputs, batch, scores):
+    #     inputs, labels = batch["input_ids"], batch["labels"]
+    #     loss_per_token = loss_fct(outputs.logits.view(-1, model.config.vocab_size), labels.view(-1))
+    #
+    #     # 由于每个样例的长度不同，需要计算每个样例的平均loss
+    #     loss_per_token = loss_per_token.view(inputs.size(0), -1)
+    #     loss_per_example = loss_per_token.sum(dim=1) / (labels != tokenizer.pad_token_id).sum(dim=1)
+    #
+    #     whole_loss = sum([l * s for l, s in zip(loss_per_example, scores)]) / len(scores)
+    #     # 打印每个样例的loss
+    #     #     for i, loss in enumerate(loss_per_example):
+    #     # ImportError}: {loss.item()}")
+    #     return whole_loss
 
     def compute_loss(self, model, inputs, return_outputs=False):  ## compute loss这个步骤实际上定义了 forward和loss的计算过程
         score = torch.tensor(inputs.pop("weight"))
@@ -173,6 +177,139 @@ class SelfTrainTrainer(Trainer):
         # # return (torch.masked_select(loss, labels.view(-1, 1) != -1).mean(), outputs) if return_outputs else loss
         # return (
         # loss, {'outputs': outputs}) if return_outputs else loss  # 一定要记得 compute loss的时候！！！outputs要用字典返回
+
+
+from tqdm import tqdm
+import torch.nn.functional as F
+
+
+def unlabel_filter(data, domain):
+    weather = ["[IN:UNSUPPORTED_WEATHER", "[IN:GET_WEATHER", "[IN:GET_SUNSET", "[IN:GET_SUNRISE", "[IN:GET_LOCATION",
+               "[SL:DATE_TIME", "[SL:WEATHER_TEMPERATURE_UNIT", "[SL:LOCATION", "[SL:WEATHER_ATTRIBUTE",
+               "[SL:LOCATION_USER", "[SL:SEARCH_RADIUS", "[SL:LOCATION_MODIFIER"]
+    reminder = ["IN:GET_MESSAGE]", "[SL:CONTACT", "[SL:MUTUAL_EMPLOYER", "[SL:METHOD_RETRIEVAL_REMINDER", "[SL:TODO",
+                "[SL:RECIPIENT", "[IN:DELETE_REMINDER", "[SL:CATEGORY_EVENT", "[IN:GET_REMINDER", "[IN:GET_TODO",
+                "SL:ATTENDEE_EVENT]", "[IN:GET_RECURRING_DATE_TIME", "SL:CONTENT_EXACT]", "IN:GET_RECURRING_DATE_TIME]",
+                "[SL:PERSON_REMINDED", "[IN:SEND_MESSAGE", "IN:REPLY_MESSAGE]", "[IN:GET_CONTACT", "[SL:AMOUNT",
+                "SL:CONTACT_RELATED]", "SL:FREQUENCY]", "SL:DATE_TIME]", "[SL:RECURRING_DATE_TIME", "[SL:CONTENT_EXACT",
+                "[IN:GET_MESSAGE", "[SL:DATE_TIME", "SL:ATTENDEE]", "IN:GET_CONTACT]", "SL:RECURRING_DATE_TIME]",
+                "[SL:FREQUENCY", "[IN:CREATE_REMINDER", "[SL:CONTACT_RELATED", "[IN:REPLY_MESSAGE",
+                "[SL:ATTENDEE_EVENT", "[SL:ORDINAL", "[SL:ATTENDEE", "SL:PERSON_REMINDED]", "SL:AMOUNT]", "SL:CONTACT]",
+                "SL:TYPE_RELATION]", "IN:GET_EVENT]", "[SL:TYPE_RELATION", "[IN:GET_EVENT"]
+    event = ["[SL:CATEGORY_LOCATION", "SL:CATEGORY_LOCATION]", "[SL:ORGANIZER_EVENT", "SL:ORGANIZER_EVENT]",
+             "[SL:CATEGORY_EVENT", "SL:CATEGORY_EVENT]", "[IN:GET_LOCATION", "IN:GET_LOCATION]", "[SL:ORDINAL",
+             "SL:ORDINAL]", "[SL:NAME_EVENT", "SL:NAME_EVENT]", "[SL:LOCATION", "SL:LOCATION]", "[SL:LOCATION_MODIFIER",
+             "SL:LOCATION_MODIFIER]", "[SL:DATE_TIME", "SL:DATE_TIME]", "[SL:ATTRIBUTE_EVENT", "SL:ATTRIBUTE_EVENT]",
+             "[SL:POINT_ON_MAP", "SL:POINT_ON_MAP]", "[IN:GET_EVENT", "IN:GET_EVENT]", ]
+    domain_label = {"weather": weather, "event": event, "reminder": reminder}
+
+    label = data['pred']
+    for word in label.split():
+        if word != ']' and word not in data['question'] and word not in domain_label[domain]:
+            return False
+
+    return True
+
+def get_unlabel_data(unlabel_train_loader, model,tokenizer, save_path: str, domain:str, p_rate: float):
+    
+    # 用于暂存所有样本及其置信度
+    all_data = []
+
+    # 遍历无标签数据的 DataLoader
+    sum = 0
+    true = 0
+    for batch in tqdm(unlabel_train_loader):
+        batch = {k: v.to(device) for k, v in batch.items()}
+        with torch.no_grad():
+            # 关键：需要打开 return_dict_in_generate 和 output_scores
+            outputs = model.generate(
+                batch['input_ids'], 
+                max_length=128,
+                return_dict_in_generate=True,
+                output_scores=True,
+            )
+            # 使用模型的 compute_transition_scores 方法计算转移分数
+            transition_scores = model.copmute_transition_scores(
+                outputs.sequences, outputs.scores, beam_indices=None, normalize_logits=False
+            )
+            # 在第 0 个维度上归一化
+            # transition_scores = F.softmax(transition_scores, dim=0)
+            confidence_scores = transition_scores.sum(dim=1)
+            # 计算每条生成序列的置信度
+            # outputs.scores 是一个列表，长度等于生成的 token 步数
+            # 每个元素 shape = [batch_size, vocab_size]
+            batch_size = batch['input_ids'].shape[0]
+            for b_idx in range(batch_size):
+                # 解码输入序列和生成的序列（可根据需要 skip_special_tokens 等参数）
+                input_text = tokenizer.decode(batch["input_ids"][b_idx], skip_special_tokens=True)
+                pred_text = tokenizer.decode(outputs.sequences[b_idx], skip_special_tokens=True)
+                conf = confidence_scores[b_idx].item()
+
+                data_dict = {
+                    "question": input_text,
+                    "pred": pred_text,
+                    "confidence": conf
+                }
+                if unlabel_filter(data_dict,domain):
+                    all_data.append(data_dict)
+    
+    # 排序并取置信度处于前 30% 的数据
+    all_data = sorted(all_data, key=lambda x: x["confidence"], reverse=True)
+    top_n = int(len(all_data) * p_rate)
+    top_data = all_data[:top_n]
+
+    true0 = 0
+    for item in top_data:
+        if item['pred'] == item['label']:
+            true0 += 1
+    if true0 / len(top_data) > 0.85:
+        p_rate += 0.1
+        if p_rate >= 1:
+            p_rate = 1
+    
+    p_lst = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    for p1 in p_lst:
+        top_n1 = int(len(all_data) * p1)
+        test_data = all_data[:top_n1]
+        # 看每個區間下面的分數
+        true1 = 0
+        for item in test_data:
+            if item['pred'] == item['label']:
+                true1 += 1
+        
+        
+    # 写入文件
+    with open(save_path, 'w', encoding='utf-8') as f:
+        for item in top_data:
+            json_line = json.dumps(item, ensure_ascii=False)
+            f.write(json_line + '\n')
+    
+    return p_rate
+
+
+def get_selftrain_model(tokenizer, unlabel_path: str):
+    train_data = []
+    with jsonlines.open(unlabel_path) as reader:
+        for line in reader:
+            source_text = line['question']
+            target_text = line['pred']
+            # 对输入文本进行编码
+            source_encoding = tokenizer(source_text, truncation=True, padding='max_length', max_length=128, return_tensors="pt")
+            input_ids = source_encoding["input_ids"]
+            attention_mask = source_encoding["attention_mask"]
+
+            # 对目标文本进行编码
+            target_encoding = tokenizer(target_text, truncation=True, padding='max_length', max_length=128, return_tensors="pt")
+            labels = target_encoding["input_ids"]
+
+            train_data.append({
+                "input_ids": input_ids,
+                "attention_mask": attention_mask,
+                "labels": labels
+            })
+
+    return train_data
+
 
 def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     """
@@ -222,22 +359,34 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
             model = trainer.model
             model.to(args.device)
 
-        print("初步训练完成")
+            print("初步训练完成")
 
-        # 2. 用基础模型预测unlabeled数据集
-        self_trainer = SelfTrainTrainer(model=model,
-                                        train_args=selftrain_args,
-                                        data_collator=self_train_collate,
-                                        train_dataset=unlabeled_dataset,
-                                        tokenizer=tokenizer,
-                                        optimizers=(optimizer, None))
 
-        unlabeled_dataset.eval()
-        self_trainer.get_soft_label_dataloader()
+            # 自训练
+            unlabel_train_loader = DataLoader(unlabeled_dataset, batch_size=128, collate_fn=mycollate_trainer)
+            p_rate = 0.2
+            unlabel_path = ""
+            # 得到数据
+            p_rate = get_unlabel_data(unlabel_train_loader, model,tokenizer, unlabel_path,"weather",p_rate)
+            # 自训练
+            unlabel_train_dataset = get_selftrain_model(tokenizer, unlabel_path)
+            selftrain_args = TrainingArguments(
+                output_dir=f"{args.save_dir}/normal",
+                num_train_epochs=25,
+                per_device_train_batch_size=128,
+                learning_rate=args.lr,
+                do_eval=False,
+                no_cuda=False
+            )
 
-        unlabeled_dataset.train(tokenizer, args.max_length)
-        self_trainer.train()
-        
-        model = self_trainer.model
+            # 定义Trainer实例
+            selftrainer = Trainer(
+                model=model,
+                args=selftrain_args,
+                data_collator=mycollate_trainer,
+                train_dataset=unlabel_train_dataset
+            )
+            # 开始自训练
+            selftrainer.train()
 
-        model.save_pretrained(f"/data/lbq/models/mt5_1000_{epoch}")
+            model.save_pretrained(f"/data/lbq/models/mt5_1000_{epoch}")
