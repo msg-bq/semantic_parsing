@@ -332,7 +332,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
 
 
             # 自训练
-            unlabel_train_loader = DataLoader(unlabel_dataset, batch_size=128, collate_fn=mycollate_trainer)
+            unlabel_train_loader = DataLoader(unlabeled_dataset, batch_size=128, collate_fn=mycollate_trainer)
             p_rate = 0.2
             unlabel_path = ""
             # 得到数据
@@ -343,7 +343,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                 output_dir=f"{args.save_dir}/normal",
                 num_train_epochs=25,
                 per_device_train_batch_size=128,
-                learning_rate=lr,
+                learning_rate=args.lr,
                 do_eval=False,
                 no_cuda=False
             )
