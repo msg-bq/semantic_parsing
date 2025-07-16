@@ -38,7 +38,7 @@ def args_parse():
     parser.add_argument("--train_dataset_dir", type=str, default="./data/dev",
                     help="train dataset dir")
 
-    parser.add_argument("--unlabel_dataset_dir", type=str, default="./data/dev",
+    parser.add_argument("--unlabel_dataset_path", type=str, default="./data/dev",
                     help="unlabel dataset dir")
 
     parser.add_argument("--test_dataset_dir", type=str, default="./data/dev",
@@ -47,12 +47,15 @@ def args_parse():
     parser.add_argument("--task", type=str, default="self-train", choices=["preliminary", "self-train"],
                     help="省得分文件了")
 
+    parser.add_argument("--close_selftrain", type=bool, default=False,
+                        help="如果当前选项为True且task为self-train，则只训练基础模型，不进行自训练")
+
     parser.add_argument("--model_dir", type=str,
                         default="/data/pretrained_models/t5-base",#"/data/pretrained_models/t5-base",
     #,"/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again"
                     help="model dir")
 
-    parser.add_argument("--save_dir", type=str, default="/data/lbq/models/mt5-base",
+    parser.add_argument("--save_dir", type=str, default="/home/lbq/data/semantic_parsing_711/output",
                     help="save dir")
 
     parser.add_argument("--experiment_name", type=str, default="Default", choices=["Default"], # 这个比如10样例、100样例等
@@ -61,7 +64,7 @@ def args_parse():
     parser.add_argument("--optimizer", type=str, default="Adam",
                     help="optimizer")
 
-    parser.add_argument("--lr", type=float, default=3e-5,
+    parser.add_argument("--lr", type=float, default=5e-5,
                     help="learning rate")
 
     parser.add_argument("--sf_lr", type=float, default=1e-5,
@@ -73,10 +76,10 @@ def args_parse():
     parser.add_argument("--device", type=str, default="cpu",
                     help="device")
 
-    parser.add_argument("--epoch", type=int, default=3,
+    parser.add_argument("--epoch", type=int, default=30,
                     help="epoch")
 
-    parser.add_argument("--batch_size", type=int, default=1,
+    parser.add_argument("--batch_size", type=int, default=128,
                     help="batch size")
 
     parser.add_argument("--max_length", type=int, default=512,
@@ -150,7 +153,8 @@ def get_dataset(tokenizer, args) -> dict:
             dataset[key] = tokenizer_dataset(tokenizer, preprocess_dataset(dataset[key]))
 
         # self train需要正常训练测试+一个无标签数据集，所以需要额外一个读入或者无标签的读入是从训练集or验证集里拆出来的
-        dataset["unlabeled"] = read_unlabeled_dataset(args.unlabel_dataset_dir)
+        if not args.close_selftrain:
+            dataset["unlabeled"] = read_unlabeled_dataset(args.unlabel_dataset_path)
         # 然后self train还有个保存和读入topk的环节，但这个应该也是边训边存
 
         # dataset["unlabeled"] = dataset["unlabeled"]["input_ids"]
@@ -180,6 +184,11 @@ def get_dataset_path():
     dataset_types = ['top', 'our_data', 'our_add_top']
     exp_settings = ['SPIS25', 'SPIS50', 'full']
 
+    gpus = 4  # torch count_devices是因为预先生成安全一些
+    batch_small = round(8 / gpus)
+    batch_middle = round(64 / gpus)
+    batch_large = round(128 / gpus)
+
     data_dir = r'./original_data'
     data_dir = os.path.abspath(data_dir)
 
@@ -191,7 +200,16 @@ def get_dataset_path():
                 else:
                     data_path = os.path.join(data_dir, task, dataset_type, exp_setting)
 
-                yield data_path
+                if dataset_type == 'top':
+                    batchsize = batch_small
+                elif exp_setting == 'full':
+                    batchsize = batch_large
+                else:
+                    batchsize = batch_middle
+
+                unlabeled_path = os.path.join(data_dir, f"{task}_unlabel_train.tsv")
+
+                yield data_path, batchsize, unlabeled_path
 
 
 def main():
@@ -201,10 +219,19 @@ def main():
     model.to(args.device)
     tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
 
-    for path in get_dataset_path():
+    for path, batchsize, unlabeled_path in get_dataset_path():
         args.train_dataset_dir = path
-        args.unlabel_dataset_dir = path
+        args.unlabel_dataset_path = unlabeled_path
         args.test_dataset_dir = path
+
+        args.batch_size = batchsize
+
+        args.close_selftrain = True
+        # fixme: args.output (或者就不改了，每次测一下直接覆盖)
+        # fixme: 开不开self train的都要来一遍
+        # batchsize
+
+
 
         dataset = get_dataset(tokenizer, args)
 

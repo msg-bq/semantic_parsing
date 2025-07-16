@@ -328,8 +328,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                                    do_eval=True if "eval" in dataset else False,
                                    no_cuda=False if args.device == "cuda" else True)
 
-    unlabeled_dataset = dataset["unlabeled"]  # 我们假设这里是个question_list
-    # unlabeled_dataset = SelfTrainDataset(question_list=unlabeled_dataset)
+
 
     selftrain_args = SelfTrainingArguments(output_dir=args.save_dir,
                                            num_train_epochs=args.selftrain_iteration,  # 这个指每个self_train里面的epoch
@@ -361,7 +360,11 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
 
             print("初步训练完成")
 
+            if args.close_selftrain:
+                break
 
+            unlabeled_dataset = dataset["unlabeled"]  # 我们假设这里是个question_list
+            # unlabeled_dataset = SelfTrainDataset(question_list=unlabeled_dataset)
             # 自训练
             unlabel_train_loader = DataLoader(unlabeled_dataset, batch_size=128, collate_fn=mycollate_trainer)
             p_rate = 0.2
