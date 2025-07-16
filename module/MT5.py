@@ -1835,7 +1835,7 @@ class MT5ForConditionalGeneration(MT5PreTrainedModel):
         self.pointNet = PointAttention()
         # /home/lzx/T5-base-lora/tokenizer2/
         # /home/lzx/T5-base/model_cl_multi/mt5-base-trained-final-save
-        self.tokenizer = AutoTokenizer.from_pretrained("/data/lbq/models/mt5-base-trained-final-500+500-2-7_again") #("/data/lbq/models/mt5-base-trained-final-500+500-2-7_again") # ("/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again")#
+        self.tokenizer = AutoTokenizer.from_pretrained("/data/pretrained_models/t5-base") #("/data/pretrained_models/t5-base") # ("/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again")#
         # Model parallel
         self.model_parallel = False
         self.device_map = None

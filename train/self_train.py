@@ -374,7 +374,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
                 output_dir=f"{args.save_dir}/normal",
                 num_train_epochs=25,
                 per_device_train_batch_size=128,
-                learning_rate=args.lr,
+                learning_rate=args.sf_lr,
                 do_eval=False,
                 no_cuda=False
             )

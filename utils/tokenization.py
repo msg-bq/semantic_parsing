@@ -6,7 +6,7 @@ from .data_preprocess import PreliminaryDataset, ptr_change
 from .text_utils import add_space_after_chinese
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-tokenizer1 = AutoTokenizer.from_pretrained("/data/lbq/models/mt5-base-trained-final-500+500-2-7_again")#("/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again")#("/data/lbq/models/mt5-base-trained-final-500+500-2-7_again")#("/data/lbq/models/mt5-base-trained-final-500+500-2-7_again")#
+tokenizer1 = AutoTokenizer.from_pretrained("/data/pretrained_models/t5-base")
 
 def delete_blank(tokenized_inputs, max_seq=512):
     new_tokenized_inputs = defaultdict(list)
@@ -53,7 +53,7 @@ def tokenize_function_zcl(examples, tokenizer):
     global tokenizer1
     tokenizer = tokenizer1
     tokenized_inputs = tokenizer(examples['utterance'], padding='max_length', truncation=True, max_length=128, return_tensors="pt")
-    tokenized_labels = tokenizer(examples['seqlogical'], padding='max_length', truncation=True, max_length=128, return_tensors="pt")
+    tokenized_labels = tokenizer(examples['semantic_parse'], padding='max_length', truncation=True, max_length=128, return_tensors="pt")
 
     tokenized_inputs['labels'] = tokenized_labels['input_ids']
     return tokenized_inputs

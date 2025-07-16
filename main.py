@@ -32,7 +32,7 @@ def args_parse():
     parser.add_argument('--config', type=str, default='config.yaml',
                     help='config file, 只使用单层的嵌套')
 
-    parser.add_argument("--dataset", type=str, default="zcl",
+    parser.add_argument("--dataset", type=str, default="topv2",
                         choices=["ours", "topv2", "zcl", "zcl_mixed"])
 
     parser.add_argument("--train_dataset_dir", type=str, default="./data/dev",
@@ -48,7 +48,7 @@ def args_parse():
                     help="省得分文件了")
 
     parser.add_argument("--model_dir", type=str,
-                        default="/data/lbq/models/mt5-base-trained-final-500+500-2-7_again",#"/data/lbq/models/mt5-base-trained-final-500+500-2-7_again",
+                        default="/data/pretrained_models/t5-base",#"/data/pretrained_models/t5-base",
     #,"/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again"
                     help="model dir")
 
@@ -63,6 +63,9 @@ def args_parse():
 
     parser.add_argument("--lr", type=float, default=3e-5,
                     help="learning rate")
+
+    parser.add_argument("--sf_lr", type=float, default=1e-5,
+                    help="learning rate for self-train")
 
     parser.add_argument("--criterion", type=str, default="CrossEntropyLoss",
                     help="criterion")
@@ -143,6 +146,7 @@ def get_dataset(tokenizer, args) -> dict:
         # 非预实验的时候，有个拆分或者按某个实验标准进行分割的过程，不过这个放在别处也行
 
         for key in dataset:
+            print('key', key)
             dataset[key] = tokenizer_dataset(tokenizer, preprocess_dataset(dataset[key]))
 
         # self train需要正常训练测试+一个无标签数据集，所以需要额外一个读入或者无标签的读入是从训练集or验证集里拆出来的
@@ -171,6 +175,24 @@ def get_criterion(args):
     raise ValueError(f"Unknown criterion: {args.criterion}")
 
 
+def get_dataset_path():
+    tasks = ['event', 'reminder', 'weather']
+    dataset_types = ['top', 'our_data', 'our_add_top']
+    exp_settings = ['SPIS25', 'SPIS50', 'full']
+
+    data_dir = r'./original_data'
+    data_dir = os.path.abspath(data_dir)
+
+    for task in tasks:
+        for dataset_type in dataset_types:
+            for exp_setting in exp_settings:
+                if dataset_type == 'our_data':
+                    data_path = os.path.join(data_dir, task, dataset_type)
+                else:
+                    data_path = os.path.join(data_dir, task, dataset_type, exp_setting)
+
+                yield data_path
+
 
 def main():
     args = args_parse()
@@ -179,19 +201,23 @@ def main():
     model.to(args.device)
     tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
 
-    dataset = get_dataset(tokenizer, args)
+    for path in get_dataset_path():
+        args.train_dataset_dir = path
+        args.unlabel_dataset_dir = path
+        args.test_dataset_dir = path
 
-    optimizer = get_optimizer(args.optimizer, model, args)
-    criterion = get_criterion(args)
+        dataset = get_dataset(tokenizer, args)
 
+        optimizer = get_optimizer(args.optimizer, model, args)
+        criterion = get_criterion(args)
 
-    if args.task == "preliminary":
-        for op in dataset:
-            print("算子是", op)
-            train_model_preliminary(model, optimizer, dataset[op], args)
+        if args.task == "preliminary":
+            for op in dataset:
+                print("算子是", op)
+                train_model_preliminary(model, optimizer, dataset[op], args)
 
-    elif args.task == "self-train":
-        train_model_self_train(model, tokenizer, optimizer, dataset, args)
+        elif args.task == "self-train":
+            train_model_self_train(model, tokenizer, optimizer, dataset, args)
 
 if __name__ == '__main__':
     main()

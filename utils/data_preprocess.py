@@ -88,7 +88,7 @@ def read_dataset(directory_path: str) -> DatasetDict:
 
 @DatasetsReaderNameSpace.register("self-train_zcl")
 def read_dataset(directory_path: str) -> DatasetDict:
-    dataset1000 = load_dataset("/data/lbq/datasets/1000spis", split='train')
+    dataset1000 = load_dataset(directory_path, split='train')
     # dataset1000 = load_dataset("/home/lzx/old_selftrain/data/weather/1000spis", split='train')
     dataset = dataset1000.train_test_split(test_size=0.5)
     return {"train": dataset["train"]}
@@ -96,15 +96,15 @@ def read_dataset(directory_path: str) -> DatasetDict:
 @DatasetsReaderNameSpace.register("self-train_zcl_mixed")
 def read_dataset(directory_path: str) -> DatasetDict:
     def filter_function(example):
-        return example["seqlogical"].find("[IN:UNSUPPORTED_WEATHER") != -1
+        return example["semantic_parse"].find("[IN:UNSUPPORTED_WEATHER") != -1
 
-    dataset = load_dataset("/data/lbq/datasets/1000spis", split="train")
+    dataset = load_dataset(directory_path, split="train")
     dataset1 = dataset.filter(filter_function)
     dataset1 = dataset1.train_test_split(test_size=0.5)
 
     # 再度入一个TopV2的，取0.2
     def filter_function(example):
-        return example["seqlogical"].find("[IN:UNSUPPORTED_WEATHER") == -1
+        return example["semantic_parse"].find("[IN:UNSUPPORTED_WEATHER") == -1
 
     dataset2 = dataset.filter(filter_function)
     dataset2 = dataset2.train_test_split(test_size=0.8)
@@ -113,7 +113,7 @@ def read_dataset(directory_path: str) -> DatasetDict:
     with open("/data/lbq/datasets/train_weather.json", 'r') as file:
         dataset3 = json.load(file)
     data_dict = {
-        "seqlogical": [item["expression"] for item in dataset3],
+        "semantic_parse": [item["expression"] for item in dataset3],
         "utterance": [item["sentence"] for item in dataset3],
     }
 
@@ -276,7 +276,7 @@ def ptr_change(examples):
                 changed_item.append(f"@ptr_{cnt}")
                 cnt += 1
 
-        examples["semantic_parse"][i] = ' '.join(changed_item)
+        examples["semantic_parse"] = ' '.join(changed_item)
     return examples
 
 #zcl
@@ -284,7 +284,7 @@ def ptr_change_zcl(examples):
     """
     将semantic_parse里面的的词，换成utterance里对应的ptr_x
     """
-    st = examples["seqlogical"]
+    st = examples["semantic_parse"]
     changed_item = []
     # ut_list = ut.split(' ')
     cnt = 1
@@ -300,7 +300,7 @@ def ptr_change_zcl(examples):
             changed_item.append(f"@ptr_{cnt}")
             cnt += 1
 
-    examples["seqlogical"] = ' '.join(changed_item)
+    examples["semantic_parse"] = ' '.join(changed_item)
     return examples
 @DatasetsProcessorNameSpace.register("zcl")
 def ptr_change(examples):
@@ -313,6 +313,10 @@ def ptr_change(examples):
 @DatasetsProcessorNameSpace.register("Default")
 def filter_function(example):
     return example.expression.find("：]") == -1
+
+@DatasetsProcessorNameSpace.register("topv2")
+def filter_function(example):
+    return example['semantic_parse'].find("：]") == -1
 
 @DatasetsProcessorNameSpace.register("zcl") # weather
 def filter_function(example):
