@@ -319,6 +319,10 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     4. 用topk数据集fine-tune基础模型
     5. 重复2-4
     """
+    # print("###", len(dataset["train"]))
+    # for d in dataset["train"]:
+    #     print(d)
+
     train_args = TrainingArguments(output_dir=args.save_dir,
                                    num_train_epochs=1,#args.epoch,  # 这个指每个self_train里面的epoch
                                    per_device_train_batch_size=args.batch_size,
@@ -349,8 +353,8 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
             trainer = Trainer(model=model,
                               args=train_args,
                               data_collator=mycollate_trainer, # 要么给自己的，要么在定义trainer后面单独写一个data_collator=None，不然代码里有默认collate
-                              train_dataset=dataset["train"][:10],
-                              eval_dataset=dataset["train"][:10],#dataset["eval"] if "eval" in dataset else None,
+                              train_dataset=dataset["train"],
+                              eval_dataset=dataset["validation"] if "validation" in dataset else None,
                               tokenizer=tokenizer,
                               optimizers=(optimizer, None)) # 缺了学习率调度器
 

@@ -184,7 +184,7 @@ def get_dataset_path():
     dataset_types = ['top', 'our_data', 'our_add_top']
     exp_settings = ['SPIS25', 'SPIS50', 'full']
 
-    gpus = 4  # torch count_devices是因为预先生成安全一些
+    gpus = 1  # torch count_devices是因为预先生成安全一些
     batch_small = round(8 / gpus)
     batch_middle = round(64 / gpus)
     batch_large = round(128 / gpus)
@@ -245,6 +245,8 @@ def main():
 
         elif args.task == "self-train":
             train_model_self_train(model, tokenizer, optimizer, dataset, args)
+
+
 
 if __name__ == '__main__':
     main()
