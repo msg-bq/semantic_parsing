@@ -1,9 +1,15 @@
 import argparse
 from collections import defaultdict
+from datetime import datetime
 from typing import Union, Tuple
 
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "6"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+
+from datasets import load_dataset
+
+from test_model import test_model
+
 
 import torch
 import yaml
@@ -246,7 +252,40 @@ def main():
         elif args.task == "self-train":
             train_model_self_train(model, tokenizer, optimizer, dataset, args)
 
+        dataset = load_dataset(path)
+        acc, f1 = test_model(model, tokenizer, dataset, device='cpu')
+        # 保存指标到文件
+        _save_metrics_to_file(acc, f1, args, path)
+        print((path, acc, f1))
 
+
+def _save_metrics_to_file(acc, f1, args, dataset_path):
+    """
+    将acc和f1指标存入文件
+    :param acc: 准确率
+    :param f1: F1分数
+    :param args: 命令行参数
+    :param dataset_path: 当前数据集路径（用于区分不同实验）
+    """
+    # 确保保存目录存在
+    os.makedirs(args.save_dir, exist_ok=True)
+
+    # 生成带时间戳的文件名（避免重复）
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"metrics_{args.experiment_name}_{timestamp}.txt"
+    file_path = os.path.join(args.save_dir, filename)
+
+    # 写入指标内容（包含关键上下文信息）
+    with open(file_path, "a", encoding="utf-8") as f:
+        f.write(f"===== 实验指标记录 =====\n")
+        f.write(f"时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"实验名称: {args.experiment_name}\n")
+        f.write(f"数据集路径: {dataset_path}\n")
+        f.write(f"批次大小: {args.batch_size}\n")
+        f.write(f"任务类型: {args.task}\n")
+        f.write(f"准确率(Accuracy): {acc:.4f}\n")
+        f.write(f"F1分数: {f1:.4f}\n")
+        f.write(f"========================\n\n")
 
 if __name__ == '__main__':
     main()
