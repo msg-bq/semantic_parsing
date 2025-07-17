@@ -323,33 +323,45 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     # for d in dataset["train"]:
     #     print(d)
 
-    train_args = TrainingArguments(output_dir=args.save_dir,
-                                   num_train_epochs=1,#args.epoch,  # 这个指每个self_train里面的epoch
-                                   per_device_train_batch_size=args.batch_size,
-                                   save_steps=1000,
-                                   learning_rate=args.lr,
-                                   evaluation_strategy="epoch",
-                                   do_eval=True if "eval" in dataset else False,
-                                   no_cuda=False if args.device == "cuda" else True)
 
 
 
-    selftrain_args = SelfTrainingArguments(output_dir=args.save_dir,
-                                           num_train_epochs=args.selftrain_iteration,  # 这个指每个self_train里面的epoch
-                                           per_device_train_batch_size=args.batch_size,
-                                           save_steps=1000,
-                                           learning_rate=args.lr,
-                                           evaluation_strategy="epoch",
-                                           selftrain_topk=2,
-                                           no_cuda=False if args.device == "cuda" else True)
+
+    # selftrain_args = SelfTrainingArguments(output_dir=args.save_dir,
+    #                                        num_train_epochs=args.selftrain_iteration,  # 这个指每个self_train里面的epoch
+    #                                        per_device_train_batch_size=args.batch_size,
+    #                                        save_steps=1000,
+    #                                        learning_rate=args.lr,
+    #                                        evaluation_strategy="epoch",
+    #                                        selftrain_topk=2,
+    #                                        no_cuda=False if args.device == "cuda" else True)
 
     # model.resize_token_embeddings(len(tokenizer))
 
-    for epoch in range(3):
+    for epoch in range(25):
         if args.given_model: # 如果基础模型已经训过了，就先训self
             args.given_model = False
         else:
             # 1. 先训练基础模型
+            if epoch != 0:
+                train_args = TrainingArguments(output_dir=args.save_dir,
+                                               num_train_epochs=25,  # 300个epoch的ft + 25*（10个selftrain + 25个ft）
+                                               per_device_train_batch_size=args.batch_size,
+                                               save_steps=1000,
+                                               learning_rate=args.lr,
+                                               evaluation_strategy="epoch",
+                                               do_eval=True if "eval" in dataset else False,
+                                               no_cuda=False if args.device == "cuda" else True)
+            else:
+                train_args = TrainingArguments(output_dir=args.save_dir,
+                                               num_train_epochs=args.epoch,
+                                               per_device_train_batch_size=args.batch_size,
+                                               save_steps=1000,
+                                               learning_rate=args.lr,
+                                               evaluation_strategy="epoch",
+                                               do_eval=True if "eval" in dataset else False,
+                                               no_cuda=False if args.device == "cuda" else True)
+
             trainer = Trainer(model=model,
                               args=train_args,
                               data_collator=mycollate_trainer, # 要么给自己的，要么在定义trainer后面单独写一个data_collator=None，不然代码里有默认collate
@@ -364,36 +376,36 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
 
             print("初步训练完成")
 
-            if args.close_selftrain:
-                break
+        if args.close_selftrain:
+            break
 
-            unlabeled_dataset = dataset["unlabeled"]  # 我们假设这里是个question_list
-            # unlabeled_dataset = SelfTrainDataset(question_list=unlabeled_dataset)
-            # 自训练
-            unlabel_train_loader = DataLoader(unlabeled_dataset, batch_size=128, collate_fn=mycollate_trainer)
-            p_rate = 0.2
-            unlabel_path = ""
-            # 得到数据
-            p_rate = get_unlabel_data(unlabel_train_loader, model,tokenizer, unlabel_path,"weather",p_rate)
-            # 自训练
-            unlabel_train_dataset = get_selftrain_model(tokenizer, unlabel_path)
-            selftrain_args = TrainingArguments(
-                output_dir=f"{args.save_dir}/normal",
-                num_train_epochs=25,
-                per_device_train_batch_size=128,
-                learning_rate=args.sf_lr,
-                do_eval=False,
-                no_cuda=False
-            )
+        unlabeled_dataset = dataset["unlabeled"]  # 我们假设这里是个question_list
+        # unlabeled_dataset = SelfTrainDataset(question_list=unlabeled_dataset)
+        # 自训练
+        unlabel_train_loader = DataLoader(unlabeled_dataset, batch_size=128, collate_fn=mycollate_trainer)
+        p_rate = 0.2
+        unlabel_path = ""
+        # 得到数据
+        p_rate = get_unlabel_data(unlabel_train_loader, model,tokenizer, unlabel_path,"weather",p_rate)
+        # 自训练
+        unlabel_train_dataset = get_selftrain_model(tokenizer, unlabel_path)
+        selftrain_args = TrainingArguments(
+            output_dir=f"{args.save_dir}/normal",
+            num_train_epochs=args.selftrain_iteration,
+            per_device_train_batch_size=128,
+            learning_rate=args.sf_lr,
+            do_eval=False,
+            no_cuda=False
+        )
 
-            # 定义Trainer实例
-            selftrainer = Trainer(
-                model=model,
-                args=selftrain_args,
-                data_collator=mycollate_trainer,
-                train_dataset=unlabel_train_dataset
-            )
-            # 开始自训练
-            selftrainer.train()
+        # 定义Trainer实例
+        selftrainer = Trainer(
+            model=model,
+            args=selftrain_args,
+            data_collator=mycollate_trainer,
+            train_dataset=unlabel_train_dataset
+        )
+        # 开始自训练
+        selftrainer.train()
 
-            model.save_pretrained(f"/data/lbq/models/mt5_1000_{epoch}")
+        model.save_pretrained(f"/data/lbq/models/mt5_1000_{epoch}")

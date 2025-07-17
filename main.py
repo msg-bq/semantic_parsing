@@ -108,13 +108,13 @@ def args_parse():
     parser.add_argument("--seed", type=int, default=192,
                     help="random seed")
 
-    parser.add_argument("--selftrain_iteration", type=int, default=3,
+    parser.add_argument("--selftrain_iteration", type=int, default=10,
                         help="self train的迭代次数")
 
     parser.add_argument("--selftrain_topk", type=int, default=5,
                         help="self train的topk")
 
-    parser.add_argument("--given_model", type=bool, default=True,
+    parser.add_argument("--given_model", type=bool, default=False,
                         help="是否给定模型，如果是的话就直接训self train")
 
     args = parser.parse_args()
@@ -235,8 +235,6 @@ def main():
         # fixme: args.output (或者就不改了，每次测一下直接覆盖)
         # fixme: 开不开self train的都要来一遍
         # batchsize
-
-
 
         dataset = get_dataset(tokenizer, args)
 
