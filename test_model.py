@@ -221,15 +221,15 @@ def test_model(model, tokenizer, dataset, args=None, device=None):
     predict_slot_lst_len = 0
     label_lst_len = 0
     # DataLoader 用于批量测试
-    template = "<|im_start|>user\n{content}<|im_end|>\n<|im_start|>assistant\n"
-    for data in dataset["validation"]:
-        print(data)
-        data["semantic_parse"] = template.format(content=data["semantic_parse"])
+    # template = "<|im_start|>user\n{content}<|im_end|>\n<|im_start|>assistant\n"
+    # for data in dataset["validation"]:
+    #     print(data)
+    #     data["semantic_parse"] = template.format(content=data["semantic_parse"])
 
     for key in dataset:
         dataset[key] = tokenizer_dataset(tokenizer, preprocess_dataset(dataset[key]))
 
-    test_loader = DataLoader(dataset["validation"], batch_size=8, collate_fn=mycollate_trainer)  # 你可以调整 batch_size
+    test_loader = DataLoader(dataset["validation"], batch_size=128, collate_fn=mycollate_trainer)  # 你可以调整 batch_size
 
     for i, batch in enumerate(test_loader):
         batch = {k: v.to(device) for k, v in batch.items()}
@@ -267,9 +267,9 @@ def test_model(model, tokenizer, dataset, args=None, device=None):
             correct += num_correct_sentences
 
     accuracy = correct / data_length
-    acc = true_predict / predict_slot_lst_len
-    recall = true_predict / label_lst_len
-    f1_score = 2 * acc * recall / (acc + recall)
+    acc = true_predict / predict_slot_lst_len if predict_slot_lst_len > 0 else 0
+    recall = true_predict / label_lst_len if label_lst_len > 0 else 0
+    f1_score = 2 * acc * recall / (acc + recall) if (acc + recall) > 0 else 0
     print(f"f1-score:{f1_score}")
     return accuracy, f1_score
 
@@ -284,6 +284,9 @@ def test_model(model, tokenizer, dataset, args=None, device=None):
 
 def _extract_pred(s: str) -> str:
     s = s.strip()
+    if not s:
+        return s
+
     if s[0] != '[':
         warnings.warn("s[0] must be a [")
         return s
@@ -327,7 +330,7 @@ def test_all_models(model_output_dir, model_name, save_path, **kwargs) -> list[s
                 model = AutoModelForCausalLM.from_pretrained(model_dir).cuda()
 
                 data_path = os.path.join(preprocessed_data_save_dir, task, dataset_type, exp_setting)
-                dataset = load_dataset(data_path)
+                dataset = load_dataset(data_path)  # fixme: 这里缺少处理
 
                 acc, f1 = test_model(model, tokenizer, dataset, device='cuda')
 

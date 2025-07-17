@@ -21,7 +21,6 @@ from train.self_train import train_model_self_train
 from utils.data_preprocess import read_dataset, select_dataset, preprocess_dataset, split_dataset, \
     PreliminaryDataset, read_unlabeled_dataset
 import utils.tokenization
-from module.MT5 import MT5ForConditionalGeneration
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 # from transformers import AutoModel
 
@@ -70,7 +69,7 @@ def args_parse():
     parser.add_argument("--optimizer", type=str, default="Adam",
                     help="optimizer")
 
-    parser.add_argument("--lr", type=float, default=5e-5,
+    parser.add_argument("--lr", type=float, default=1e-5,
                     help="learning rate")
 
     parser.add_argument("--sf_lr", type=float, default=1e-5,
@@ -79,10 +78,10 @@ def args_parse():
     parser.add_argument("--criterion", type=str, default="CrossEntropyLoss",
                     help="criterion")
 
-    parser.add_argument("--device", type=str, default="cpu",
+    parser.add_argument("--device", type=str, default="cuda",
                     help="device")
 
-    parser.add_argument("--epoch", type=int, default=30,
+    parser.add_argument("--epoch", type=int, default=300,
                     help="epoch")
 
     parser.add_argument("--batch_size", type=int, default=128,
@@ -221,7 +220,7 @@ def get_dataset_path():
 def main():
     args = args_parse()
 
-    model = MT5ForConditionalGeneration.from_pretrained(args.model_dir)
+    model = AutoModelForSeq2SeqLM.from_pretrained(args.model_dir)
     model.to(args.device)
     tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
 
@@ -252,8 +251,8 @@ def main():
         elif args.task == "self-train":
             train_model_self_train(model, tokenizer, optimizer, dataset, args)
 
-        dataset = load_dataset(path)
-        acc, f1 = test_model(model, tokenizer, dataset, device='cpu')
+        dataset = preprocess_dataset(load_dataset(path))
+        acc, f1 = test_model(model, tokenizer, dataset, device='cuda')
         # 保存指标到文件
         _save_metrics_to_file(acc, f1, args, path)
         print((path, acc, f1))
