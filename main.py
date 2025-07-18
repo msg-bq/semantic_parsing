@@ -1,10 +1,13 @@
 import argparse
-from collections import defaultdict
 from datetime import datetime
-from typing import Union, Tuple
 
 import os
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+
+
+from train.ray_train import tune_hyperparameters_ray
+
 
 from datasets import load_dataset
 
@@ -247,7 +250,8 @@ def main():
                 train_model_preliminary(model, optimizer, dataset[op], args)
 
         elif args.task == "self-train":
-            train_model_self_train(model, tokenizer, optimizer, dataset, args)
+            # train_model_self_train(model, tokenizer, optimizer, dataset, args)
+            tune_hyperparameters_ray(tokenizer, dataset, args, args.save_dir, optimizer, model)
 
         dataset = preprocess_dataset(load_dataset(path))
         acc, f1 = test_model(model, tokenizer, dataset, device='cuda')
