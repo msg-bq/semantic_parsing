@@ -39,10 +39,10 @@ def tune_hyperparameters_ray(tokenizer, dataset, args, model_save_path, optimize
 
     # 定义超参数搜索空间
     config = {
-        "batch_size": tune.grid_search([128]),
-        "learn_rate": tune.grid_search([1e-5]),
-        "max_length": tune.grid_search([128]),
-        "epoch": tune.grid_search([300])
+        "batch_size": tune.grid_search([args.batch_size]),
+        "learn_rate": tune.grid_search([args.lr]),
+        "max_length": tune.grid_search([args.max_length]),
+        "epoch": tune.grid_search([args.epoch])
     }
 
     # 设置一个 CLI 报告器，可以在命令行中看到进度

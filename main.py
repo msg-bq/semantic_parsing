@@ -84,13 +84,13 @@ def args_parse():
     parser.add_argument("--device", type=str, default="cuda",
                     help="device")
 
-    parser.add_argument("--epoch", type=int, default=300,
+    parser.add_argument("--epoch", type=int, default=3,
                     help="epoch")
 
     parser.add_argument("--batch_size", type=int, default=128,
                     help="batch size")
 
-    parser.add_argument("--max_length", type=int, default=512,
+    parser.add_argument("--max_length", type=int, default=128,
                     help="max length")
 
     parser.add_argument("--operator_num", type=int, default=5,
