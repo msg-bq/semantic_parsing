@@ -2,6 +2,8 @@ import os
 import warnings
 
 import sys
+from typing import Literal
+
 sys.path.append('/usr/src/app/semantic_parsing/code')  # 按理说不需要，但服务器有短暂的时间出现索引错误，稳妥起见补一个ad hoc的处理
 
 import yaml
@@ -210,7 +212,7 @@ def remove_prepositions(text):
     return " ".join(filtered_words)
 
 
-def test_model(model, tokenizer, dataset, args=None, device=None):
+def test_model(model, tokenizer, dataset, args=None, device=None, train_machine: Literal['our', 'ray'] = 'our'):
     # 在 GPU 上测试（如果可用）
     if args != None:
         device = args.device
@@ -226,8 +228,9 @@ def test_model(model, tokenizer, dataset, args=None, device=None):
     #     print(data)
     #     data["semantic_parse"] = template.format(content=data["semantic_parse"])
 
-    for key in dataset:
-        dataset[key] = tokenizer_dataset(tokenizer, preprocess_dataset(dataset[key]))
+    if train_machine == 'our':
+        for key in dataset:
+            dataset[key] = tokenizer_dataset(tokenizer, preprocess_dataset(dataset[key]))
 
     test_loader = DataLoader(dataset["validation"], batch_size=128, collate_fn=mycollate_trainer)  # 你可以调整 batch_size
 

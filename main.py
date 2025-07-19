@@ -90,7 +90,7 @@ def args_parse():
     parser.add_argument("--batch_size", type=int, default=128,
                     help="batch size")
 
-    parser.add_argument("--max_length", type=int, default=512,
+    parser.add_argument("--max_length", type=int, default=128,
                     help="max length")
 
     parser.add_argument("--operator_num", type=int, default=5,
@@ -258,6 +258,7 @@ def main():
         # 保存指标到文件
         _save_metrics_to_file(acc, f1, args, path)
         print((path, acc, f1))
+        break
 
 
 def _save_metrics_to_file(acc, f1, args, dataset_path):

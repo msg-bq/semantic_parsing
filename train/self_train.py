@@ -1,3 +1,4 @@
+import os
 from typing import Dict
 
 import numpy as np
@@ -344,23 +345,55 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
         else:
             # 1. 先训练基础模型
             if epoch != 0:
-                train_args = TrainingArguments(output_dir=args.save_dir,
-                                               num_train_epochs=25,  # 300个epoch的ft + 25*（10个selftrain + 25个ft）
-                                               per_device_train_batch_size=args.batch_size,
-                                               save_steps=1000,
-                                               learning_rate=args.lr,
-                                               evaluation_strategy="epoch",
-                                               do_eval=True if "eval" in dataset else False,
-                                               no_cuda=False if args.device == "cuda" else True)
+                # train_args = TrainingArguments(output_dir=args.save_dir,
+                #                                num_train_epochs=25,  # 300个epoch的ft + 25*（10个selftrain + 25个ft）
+                #                                per_device_train_batch_size=args.batch_size,
+                #                                save_steps=1000,
+                #                                learning_rate=args.lr,
+                #                                evaluation_strategy="epoch",
+                #                                do_eval=True if "eval" in dataset else False,
+                #                                no_cuda=False if args.device == "cuda" else True,
+                #                                fp16=True,
+                #                                )
+                train_args = TrainingArguments(
+                    output_dir=args.save_dir,
+                    num_train_epochs=args.epoch,
+                    per_device_train_batch_size=args.batch_size,
+                    save_steps=1000,
+                    save_total_limit=1,
+                    learning_rate=args.lr,
+                    evaluation_strategy="epoch",
+                    do_eval=True if "eval" in dataset else False,
+                    no_cuda=False if args.device == "cuda" else True,
+                    dataloader_num_workers=1,  # 根据gpu数量调整
+                    fp16=True,  # 如果你有显存足够，可以开启fp16加速训练
+                    local_rank=int(os.environ.get("LOCAL_RANK", -1)),  # 设置用于分布式训练
+                )
             else:
-                train_args = TrainingArguments(output_dir=args.save_dir,
-                                               num_train_epochs=args.epoch,
-                                               per_device_train_batch_size=args.batch_size,
-                                               save_steps=1000,
-                                               learning_rate=args.lr,
-                                               evaluation_strategy="epoch",
-                                               do_eval=True if "eval" in dataset else False,
-                                               no_cuda=False if args.device == "cuda" else True)
+                # train_args = TrainingArguments(output_dir=args.save_dir,
+                #                                num_train_epochs=args.epoch,
+                #                                per_device_train_batch_size=args.batch_size,
+                #                                save_total_limit=1,
+                #                                save_steps=1000,
+                #                                learning_rate=args.lr,
+                #                                evaluation_strategy="epoch",
+                #                                do_eval=True if "eval" in dataset else False,
+                #                                no_cuda=False if args.device == "cuda" else True,
+                #                                fp16=True,)
+                train_args = TrainingArguments(
+                    output_dir=args.save_dir,
+                    num_train_epochs=args.epoch,
+                    per_device_train_batch_size=args.batch_size,
+                    save_steps=1000,
+                    save_total_limit=1,
+                    learning_rate=args.lr,
+                    evaluation_strategy="epoch",
+                    do_eval=True if "eval" in dataset else False,
+                    no_cuda=False if args.device == "cuda" else True,
+                    dataloader_num_workers=1,  # 根据gpu数量调整
+                    fp16=True,  # 如果你有显存足够，可以开启fp16加速训练
+                    local_rank=int(os.environ.get("LOCAL_RANK", -1)),  # 设置用于分布式训练
+                )
 
             trainer = Trainer(model=model,
                               args=train_args,
@@ -377,6 +410,7 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
             print("初步训练完成")
 
         if args.close_selftrain:
+            return model
             break
 
         unlabeled_dataset = dataset["unlabeled"]  # 我们假设这里是个question_list
@@ -409,3 +443,5 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
         selftrainer.train()
 
         model.save_pretrained(f"/data/lbq/models/mt5_1000_{epoch}")
+
+    return model
