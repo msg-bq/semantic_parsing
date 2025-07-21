@@ -1,11 +1,22 @@
 import ray
 from ray import tune
 from ray.tune import CLIReporter
+from torch import optim
 
 from transformers import AutoModelForSeq2SeqLM
 
 from test_model import test_model
 from .self_train import train_model_self_train
+
+
+def get_optimizer(optimizer, model, args):
+    arguments = ['lr']
+    input_args = {arg: getattr(args, arg) for arg in arguments}
+
+    if optimizer == 'Adam':
+        return optim.Adam(model.parameters(), **input_args)
+
+    raise ValueError(f"Unknown optimizer: {optimizer}")
 
 
 def train_tune(config, args, tokenizer, dataset, optimizer, model):
@@ -17,6 +28,9 @@ def train_tune(config, args, tokenizer, dataset, optimizer, model):
     args.learn_rate = config["learn_rate"]
     args.max_length = config["max_length"]
     args.epoch = config["epoch"]
+
+    # 构造优化器（注意每个试验内部新建 optimizer）
+    optimizer = get_optimizer(args.optimizer, model, args)
 
     # 训练模型
     model = train_model_self_train(model, tokenizer, optimizer, dataset, args)

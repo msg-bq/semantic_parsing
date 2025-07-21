@@ -59,7 +59,7 @@ def args_parse():
                         help="如果当前选项为True且task为self-train，则只训练基础模型，不进行自训练")
 
     parser.add_argument("--model_dir", type=str,
-                        default="/data/pretrained_models/t5-base",#"/data/pretrained_models/t5-base",
+                        default="/home/lbq/data/t5_no_event/t5_no_event",#"/data/pretrained_models/t5-base",
     #,"/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again"
                     help="model dir")
 
@@ -84,10 +84,10 @@ def args_parse():
     parser.add_argument("--device", type=str, default="cuda",
                     help="device")
 
-    parser.add_argument("--epoch", type=int, default=3,
+    parser.add_argument("--epoch", type=int, default=300,
                     help="epoch")
 
-    parser.add_argument("--batch_size", type=int, default=128,
+    parser.add_argument("--batch_size", type=int, default=8,
                     help="batch size")
 
     parser.add_argument("--max_length", type=int, default=128,

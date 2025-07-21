@@ -312,6 +312,143 @@ def get_selftrain_model(tokenizer, unlabel_path: str):
     return train_data
 
 
+# def train_model_self_train(model, tokenizer, optimizer, dataset, args):
+#     """
+#     1. 先训练基础模型
+#     2. 用基础模型预测unlabeled数据集
+#     3. 选择topk数据集
+#     4. 用topk数据集fine-tune基础模型
+#     5. 重复2-4
+#     """
+#     # print("###", len(dataset["train"]))
+#     # for d in dataset["train"]:
+#     #     print(d)
+#
+#
+#
+#
+#
+#     # selftrain_args = SelfTrainingArguments(output_dir=args.save_dir,
+#     #                                        num_train_epochs=args.selftrain_iteration,  # 这个指每个self_train里面的epoch
+#     #                                        per_device_train_batch_size=args.batch_size,
+#     #                                        save_steps=1000,
+#     #                                        learning_rate=args.lr,
+#     #                                        evaluation_strategy="epoch",
+#     #                                        selftrain_topk=2,
+#     #                                        no_cuda=False if args.device == "cuda" else True)
+#
+#     # model.resize_token_embeddings(len(tokenizer))
+#
+#     for epoch in range(25):
+#         if args.given_model: # 如果基础模型已经训过了，就先训self
+#             args.given_model = False
+#         else:
+#             # 1. 先训练基础模型
+#             if epoch != 0:
+#                 # train_args = TrainingArguments(output_dir=args.save_dir,
+#                 #                                num_train_epochs=25,  # 300个epoch的ft + 25*（10个selftrain + 25个ft）
+#                 #                                per_device_train_batch_size=args.batch_size,
+#                 #                                save_steps=1000,
+#                 #                                learning_rate=args.lr,
+#                 #                                evaluation_strategy="epoch",
+#                 #                                do_eval=True if "eval" in dataset else False,
+#                 #                                no_cuda=False if args.device == "cuda" else True,
+#                 #                                fp16=True,
+#                 #                                )
+#                 train_args = TrainingArguments(
+#                     output_dir=args.save_dir,
+#                     num_train_epochs=args.epoch,
+#                     per_device_train_batch_size=args.batch_size,
+#                     save_steps=1000,
+#                     save_total_limit=1,
+#                     learning_rate=args.lr,
+#                     evaluation_strategy="epoch",
+#                     do_eval=True if "eval" in dataset else False,
+#                     no_cuda=False if args.device == "cuda" else True,
+#                     dataloader_num_workers=1,  # 根据gpu数量调整
+#                     fp16=True,  # 如果你有显存足够，可以开启fp16加速训练
+#                     local_rank=int(os.environ.get("LOCAL_RANK", -1)),  # 设置用于分布式训练
+#                 )
+#             else:
+#                 # train_args = TrainingArguments(output_dir=args.save_dir,
+#                 #                                num_train_epochs=args.epoch,
+#                 #                                per_device_train_batch_size=args.batch_size,
+#                 #                                save_total_limit=1,
+#                 #                                save_steps=1000,
+#                 #                                learning_rate=args.lr,
+#                 #                                evaluation_strategy="epoch",
+#                 #                                do_eval=True if "eval" in dataset else False,
+#                 #                                no_cuda=False if args.device == "cuda" else True,
+#                 #                                fp16=True,)
+#                 train_args = TrainingArguments(
+#                     output_dir=args.save_dir,
+#                     num_train_epochs=args.epoch,
+#                     per_device_train_batch_size=args.batch_size,
+#                     save_steps=1000,
+#                     save_total_limit=1,
+#                     learning_rate=args.lr,
+#                     evaluation_strategy="epoch",
+#                     do_eval=True if "eval" in dataset else False,
+#                     no_cuda=False if args.device == "cuda" else True,
+#                     dataloader_num_workers=1,  # 根据gpu数量调整
+#                     fp16=True,  # 如果你有显存足够，可以开启fp16加速训练
+#                     local_rank=int(os.environ.get("LOCAL_RANK", -1)),  # 设置用于分布式训练
+#                 )
+#
+#             trainer = Trainer(model=model,
+#                               args=train_args,
+#                               data_collator=mycollate_trainer, # 要么给自己的，要么在定义trainer后面单独写一个data_collator=None，不然代码里有默认collate
+#                               train_dataset=dataset["train"],
+#                               eval_dataset=dataset["validation"] if "validation" in dataset else None,
+#                               tokenizer=tokenizer,
+#                               optimizers=(optimizer, None)) # 缺了学习率调度器
+#
+#             trainer.train()
+#             model = trainer.model
+#             model.to(args.device)
+#
+#             print("初步训练完成")
+#
+#         if args.close_selftrain:
+#             return model
+#
+#         unlabeled_dataset = dataset["unlabeled"]  # 我们假设这里是个question_list
+#         # unlabeled_dataset = SelfTrainDataset(question_list=unlabeled_dataset)
+#         # 自训练
+#         unlabel_train_loader = DataLoader(unlabeled_dataset, batch_size=128, collate_fn=mycollate_trainer)
+#         p_rate = 0.2
+#         unlabel_path = ""
+#         # 得到数据
+#         p_rate = get_unlabel_data(unlabel_train_loader, model,tokenizer, unlabel_path,"weather",p_rate)
+#         # 自训练
+#         unlabel_train_dataset = get_selftrain_model(tokenizer, unlabel_path)
+#         selftrain_args = TrainingArguments(
+#             output_dir=f"{args.save_dir}/normal",
+#             num_train_epochs=args.selftrain_iteration,
+#             per_device_train_batch_size=128,
+#             learning_rate=args.sf_lr,
+#             do_eval=False,
+#             no_cuda=False
+#         )
+#
+#         # 定义Trainer实例
+#         selftrainer = Trainer(
+#             model=model,
+#             args=selftrain_args,
+#             data_collator=mycollate_trainer,
+#             train_dataset=unlabel_train_dataset
+#         )
+#         # 开始自训练
+#         selftrainer.train()
+#
+#         model = selftrainer.model
+#         model.save_pretrained(f"/data/lbq/models/mt5_1000_{epoch}")
+#
+#     return model
+
+
+tokenizer1 = None
+
 def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     """
     1. 先训练基础模型
@@ -320,128 +457,35 @@ def train_model_self_train(model, tokenizer, optimizer, dataset, args):
     4. 用topk数据集fine-tune基础模型
     5. 重复2-4
     """
-    # print("###", len(dataset["train"]))
-    # for d in dataset["train"]:
-    #     print(d)
+    from transformers import AutoTokenizer, AdamW, get_scheduler
+    global tokenizer1
+    tokenizer1 = tokenizer
 
+    train_args = TrainingArguments(
+        output_dir=args.save_dir,
+        num_train_epochs=args.epoch,
+        per_device_train_batch_size=args.batch_size,
+        save_steps=1000,
+        save_total_limit=1,
+        learning_rate=args.lr,
+        evaluation_strategy="epoch",
+        do_eval=True if "eval" in dataset else False,
+        no_cuda=False if args.device == "cuda" else True,
+        dataloader_num_workers=1,  # 根据gpu数量调整
+        fp16=True,  # 如果你有显存足够，可以开启fp16加速训练
+        local_rank=int(os.environ.get("LOCAL_RANK", -1)),  # 设置用于分布式训练
+    )
 
+    trainer = Trainer(model=model,
+                      args=train_args,
+                      data_collator=mycollate_trainer,  # 要么给自己的，要么在定义trainer后面单独写一个data_collator=None，不然代码里有默认collate
+                      train_dataset=dataset["train"],
+                      eval_dataset=dataset["validation"],  # dataset["eval"] if "eval" in dataset else None,
+                      tokenizer=tokenizer,
+                      optimizers=(optimizer, None))  # 缺了学习率调度器
 
-
-
-    # selftrain_args = SelfTrainingArguments(output_dir=args.save_dir,
-    #                                        num_train_epochs=args.selftrain_iteration,  # 这个指每个self_train里面的epoch
-    #                                        per_device_train_batch_size=args.batch_size,
-    #                                        save_steps=1000,
-    #                                        learning_rate=args.lr,
-    #                                        evaluation_strategy="epoch",
-    #                                        selftrain_topk=2,
-    #                                        no_cuda=False if args.device == "cuda" else True)
-
-    # model.resize_token_embeddings(len(tokenizer))
-
-    for epoch in range(25):
-        if args.given_model: # 如果基础模型已经训过了，就先训self
-            args.given_model = False
-        else:
-            # 1. 先训练基础模型
-            if epoch != 0:
-                # train_args = TrainingArguments(output_dir=args.save_dir,
-                #                                num_train_epochs=25,  # 300个epoch的ft + 25*（10个selftrain + 25个ft）
-                #                                per_device_train_batch_size=args.batch_size,
-                #                                save_steps=1000,
-                #                                learning_rate=args.lr,
-                #                                evaluation_strategy="epoch",
-                #                                do_eval=True if "eval" in dataset else False,
-                #                                no_cuda=False if args.device == "cuda" else True,
-                #                                fp16=True,
-                #                                )
-                train_args = TrainingArguments(
-                    output_dir=args.save_dir,
-                    num_train_epochs=args.epoch,
-                    per_device_train_batch_size=args.batch_size,
-                    save_steps=1000,
-                    save_total_limit=1,
-                    learning_rate=args.lr,
-                    evaluation_strategy="epoch",
-                    do_eval=True if "eval" in dataset else False,
-                    no_cuda=False if args.device == "cuda" else True,
-                    dataloader_num_workers=1,  # 根据gpu数量调整
-                    fp16=True,  # 如果你有显存足够，可以开启fp16加速训练
-                    local_rank=int(os.environ.get("LOCAL_RANK", -1)),  # 设置用于分布式训练
-                )
-            else:
-                # train_args = TrainingArguments(output_dir=args.save_dir,
-                #                                num_train_epochs=args.epoch,
-                #                                per_device_train_batch_size=args.batch_size,
-                #                                save_total_limit=1,
-                #                                save_steps=1000,
-                #                                learning_rate=args.lr,
-                #                                evaluation_strategy="epoch",
-                #                                do_eval=True if "eval" in dataset else False,
-                #                                no_cuda=False if args.device == "cuda" else True,
-                #                                fp16=True,)
-                train_args = TrainingArguments(
-                    output_dir=args.save_dir,
-                    num_train_epochs=args.epoch,
-                    per_device_train_batch_size=args.batch_size,
-                    save_steps=1000,
-                    save_total_limit=1,
-                    learning_rate=args.lr,
-                    evaluation_strategy="epoch",
-                    do_eval=True if "eval" in dataset else False,
-                    no_cuda=False if args.device == "cuda" else True,
-                    dataloader_num_workers=1,  # 根据gpu数量调整
-                    fp16=True,  # 如果你有显存足够，可以开启fp16加速训练
-                    local_rank=int(os.environ.get("LOCAL_RANK", -1)),  # 设置用于分布式训练
-                )
-
-            trainer = Trainer(model=model,
-                              args=train_args,
-                              data_collator=mycollate_trainer, # 要么给自己的，要么在定义trainer后面单独写一个data_collator=None，不然代码里有默认collate
-                              train_dataset=dataset["train"],
-                              eval_dataset=dataset["validation"] if "validation" in dataset else None,
-                              tokenizer=tokenizer,
-                              optimizers=(optimizer, None)) # 缺了学习率调度器
-
-            trainer.train()
-            model = trainer.model
-            model.to(args.device)
-
-            print("初步训练完成")
-
-        if args.close_selftrain:
-            return model
-            break
-
-        unlabeled_dataset = dataset["unlabeled"]  # 我们假设这里是个question_list
-        # unlabeled_dataset = SelfTrainDataset(question_list=unlabeled_dataset)
-        # 自训练
-        unlabel_train_loader = DataLoader(unlabeled_dataset, batch_size=128, collate_fn=mycollate_trainer)
-        p_rate = 0.2
-        unlabel_path = ""
-        # 得到数据
-        p_rate = get_unlabel_data(unlabel_train_loader, model,tokenizer, unlabel_path,"weather",p_rate)
-        # 自训练
-        unlabel_train_dataset = get_selftrain_model(tokenizer, unlabel_path)
-        selftrain_args = TrainingArguments(
-            output_dir=f"{args.save_dir}/normal",
-            num_train_epochs=args.selftrain_iteration,
-            per_device_train_batch_size=128,
-            learning_rate=args.sf_lr,
-            do_eval=False,
-            no_cuda=False
-        )
-
-        # 定义Trainer实例
-        selftrainer = Trainer(
-            model=model,
-            args=selftrain_args,
-            data_collator=mycollate_trainer,
-            train_dataset=unlabel_train_dataset
-        )
-        # 开始自训练
-        selftrainer.train()
-
-        model.save_pretrained(f"/data/lbq/models/mt5_1000_{epoch}")
+    trainer.train()
+    model = trainer.model
+    model.to(args.device)
 
     return model
