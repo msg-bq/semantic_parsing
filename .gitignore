@@ -12,3 +12,8 @@
 /.idea
 *.xml
 /generate_dataset/build_labels/instance_funcs/llm_instance_datadir
+.idea/workspace.xml
+/original_data
+/data
+/.idea
+/utils/__pycache__
