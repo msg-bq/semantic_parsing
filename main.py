@@ -59,7 +59,7 @@ def args_parse():
                         help="如果当前选项为True且task为self-train，则只训练基础模型，不进行自训练")
 
     parser.add_argument("--model_dir", type=str,
-                        default="/home/lbq/data/t5_no_event/t5_no_event",#"/data/pretrained_models/t5-base",
+                        default="/data/pretrained_models/t5-base",#"/data/pretrained_models/t5-base",
     #,"/home/lzx/T5-base/model3/mt5-base-trained-final-500+500-2-7_again"
                     help="model dir")
 
@@ -87,7 +87,7 @@ def args_parse():
     parser.add_argument("--epoch", type=int, default=300,
                     help="epoch")
 
-    parser.add_argument("--batch_size", type=int, default=8,
+    parser.add_argument("--batch_size", type=int, default=128,
                     help="batch size")
 
     parser.add_argument("--max_length", type=int, default=128,
@@ -223,10 +223,6 @@ def get_dataset_path():
 def main():
     args = args_parse()
 
-    model = AutoModelForSeq2SeqLM.from_pretrained(args.model_dir)
-    model.to(args.device)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
-
     for path, batchsize, unlabeled_path in get_dataset_path():
         args.train_dataset_dir = path
         args.unlabel_dataset_path = unlabeled_path
@@ -238,6 +234,10 @@ def main():
         # fixme: args.output (或者就不改了，每次测一下直接覆盖)
         # fixme: 开不开self train的都要来一遍
         # batchsize
+
+        model = AutoModelForSeq2SeqLM.from_pretrained(args.model_dir)
+        model.to(args.device)
+        tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
 
         dataset = get_dataset(tokenizer, args)
 
@@ -253,12 +253,13 @@ def main():
             # train_model_self_train(model, tokenizer, optimizer, dataset, args)
             tune_hyperparameters_ray(tokenizer, dataset, args, args.save_dir, optimizer, model)
 
+        # break
         dataset = preprocess_dataset(load_dataset(path))
-        acc, f1 = test_model(model, tokenizer, dataset, device='cuda')
+        # acc, f1 = test_model(model, tokenizer, dataset, id_sign='main', device='cuda')
         # 保存指标到文件
-        _save_metrics_to_file(acc, f1, args, path)
-        print((path, acc, f1))
-        break
+        # _save_metrics_to_file(acc, f1, args, path)
+        # print((path, acc, f1))
+        # break
 
 
 def _save_metrics_to_file(acc, f1, args, dataset_path):
@@ -266,7 +267,7 @@ def _save_metrics_to_file(acc, f1, args, dataset_path):
     将acc和f1指标存入文件
     :param acc: 准确率
     :param f1: F1分数
-    :param args: 命令行参数
+    :param args: 命令行参数+
     :param dataset_path: 当前数据集路径（用于区分不同实验）
     """
     # 确保保存目录存在

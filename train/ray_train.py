@@ -1,11 +1,12 @@
 import ray
+from datasets import load_dataset
 from ray import tune
 from ray.tune import CLIReporter
 from torch import optim
 
 from transformers import AutoModelForSeq2SeqLM
 
-from test_model import test_model
+from test_model import test_model, preprocess_dataset
 from .self_train import train_model_self_train
 
 
@@ -35,11 +36,17 @@ def train_tune(config, args, tokenizer, dataset, optimizer, model):
     # 训练模型
     model = train_model_self_train(model, tokenizer, optimizer, dataset, args)
 
+    # 加载测试模型
+    dataset = preprocess_dataset(load_dataset(args.train_dataset_dir))
+
     # 在训练后评估模型
-    accuracy, avg_loss = test_model(model, tokenizer, dataset, args, train_machine='ray')
+    accuracy, f1 = test_model(model, tokenizer, dataset, args, id_sign='train_tune', train_machine='ray')
+
+    from main import _save_metrics_to_file
+    _save_metrics_to_file(accuracy, f1, args, args.train_dataset_dir)
 
     # 报告指标给 Ray Tune（Ray Tune 会根据这些指标进行调度和选择最佳试验）
-    tune.report({"accuracy": accuracy, "avg_loss": avg_loss})
+    tune.report({"accuracy": accuracy, "f1": f1})
 
 
 

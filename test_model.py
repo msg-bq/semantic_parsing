@@ -212,7 +212,7 @@ def remove_prepositions(text):
     return " ".join(filtered_words)
 
 
-def test_model(model, tokenizer, dataset, args=None, device=None, train_machine: Literal['our', 'ray'] = 'our'):
+def test_model(model, tokenizer, dataset, args=None, device=None, id_sign="", train_machine: Literal['our', 'ray'] = 'our'):
     # 在 GPU 上测试（如果可用）
     if args != None:
         device = args.device
@@ -273,7 +273,7 @@ def test_model(model, tokenizer, dataset, args=None, device=None, train_machine:
     acc = true_predict / predict_slot_lst_len if predict_slot_lst_len > 0 else 0
     recall = true_predict / label_lst_len if label_lst_len > 0 else 0
     f1_score = 2 * acc * recall / (acc + recall) if (acc + recall) > 0 else 0
-    print(f"f1-score:{f1_score}")
+    print(f"本轮结果({id_sign}): {accuracy, f1_score}")
     return accuracy, f1_score
 
 
