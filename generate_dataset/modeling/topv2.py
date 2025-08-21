@@ -31,114 +31,20 @@ get_location = BaseOperator(
     description="get location"
 )
 
-is_growth_enterprise = BaseOperator(
-    name="is_growth_enterprise",
-    input_type=["COMPANY_NAME", "DATE_TIME"],
-    output_type="Determine whether the company is a growth enterprise",
-    description="Determine whether the company is a growth enterprise"
-)
-
-industry_development_trend = BaseOperator(
-    name="industry_development_trend",
-    input_type=["INDUSTRY_NAME", "DATE_TIME"],
-    output_type="Industry Development Trends",
-    description="Industry Development Trends"
-)
-get_company_competitors = BaseOperator(
-    name="get_company_competitors",
-    input_type=["COMPANY_NAME", "DATE_TIME"],
-    output_type="company's competitors",
-    description="company's competitors"
-)
-
-get_raw_material_price_and_ratio = BaseOperator(
-    name="get_raw_material_price_and_ratio",
-    input_type=["PRODUCT_NAME", "DATE_TIME"],
-    output_type="Raw materials and their proportion for obtaining the product",
-    description="Raw materials and their proportion for obtaining the product"
-)
-get_industry_chain_product = BaseOperator(
-    name="get_industry_chain_product",
-    input_type=["INDUSTRY_NAME", "DATE_TIME"],
-    output_type="main chain products in the industry",
-    description="main chain products in the industry"
-)
-get_company_profitability = BaseOperator(
-    name="get_company_profitability",
-    input_type=["COMPANY_NAME", "DATE_TIME"],
-    output_type="company profitability",
-    description="company profitability"
-)
-
-get_financial_metric = BaseOperator(
-    name="get_financial_metric",
-    input_type=["METRIC", "COMPANY_NAME", "DATE_TIME"],
-    output_type="obtain financial indicator values",
-    description="obtain financial indicator values"
-)
-
-get_financial_metric_change_situation = BaseOperator(
-    name="get_financial_metric_change_situation",
-    input_type=["METRIC", "COMPANY_NAME", "BEGIN_DATE", "END_DATE"],
-    output_type="obtain changes in financial indicator values",
-    description="obtain changes in financial indicator values"
-)
-
-get_financial_metric_change_rate = BaseOperator(
-    name="get_financial_metric_change_rate",
-    input_type=["METRIC", "COMPANY_NAME", "BEGIN_DATE", "END_DATE"],
-    output_type="Obtain the rate of change of financial indicator values",
-    description="Obtain the rate of change of financial indicator values"
-)
-
-get_exchange_rate = BaseOperator(
-    name="get_exchange_rate",
-    input_type=["ORIGINAL_CURRENCY_NAME", "TARGET_CURRENCY_NAME"],
-    output_type="Obtain exchange rate information",
-    description="Obtain exchange rate information"
-)
-
-get_cookbook = BaseOperator(
-    name="get_cookbook",
-    input_type=["FOOD_NAME", "MAX_CALORIES_NUM", "COPIES_NUM"],
-    output_type="Get recipe information",
-    description="Get recipe information"
-)
-
-get_movies = BaseOperator(
-    name="get_movies",
-    input_type=["MOVIE_KEYWORD", "DATE_TIME"],
-    output_type="Get detailed information about the movie",
-    description="Get detailed information about the movie"
-)
-
-get_news = BaseOperator(
-    name="get_news",
-    input_type=["QUERY_KEYWORD", "DATE_TIME", "LOCATION"],
-    output_type="news information",
-    description="news information"
-)
-
-get_stock_price = BaseOperator(
-    name="get_stock_price",
-    input_type=["COMPANY_NAME", "COMPANY_CODE"],
-    output_type="stock price information",
-    description="stock price information"
-)
 #
 get_event = BaseOperator(
     name="GET_EVENT",
-    input_type=["CATEGORY_EVENT", "DATE_TIME", "LOCATION", "ATTRIBUTE_EVENT", "NAME_EVENT", "ORDINAL", "ORGANIZER_EVENT"],
+    input_type=["CATEGORY_EVENT", "DATE_TIME", "LOCATION", "ATTRIBUTE_EVENT", "NAME_EVENT", "ORDINAL"],
     output_type="event or activity information",
     description="get event or activity information\t[SL:CATEGORY_EVENT: event category\t[SL:DATE_TIME: event occurrence time\t[SL:LOCATION: event occurrence location"
-                "\t[SL:ATTRIBUTE_EVENT: some attribute with the event\t[SL:NAME_EVENT: event name\t[SL:ORDINAL: the ordinal number of the selected reminder or pointing towards the future"
+                "\t[SL:ATTRIBUTE_EVENT: some attribute with the event\t[SL:NAME_EVENT: event name\t[SL:ORDINAL: reminder something to do"
 )
 
 create_reminder = BaseOperator(
     name="CREATE_REMINDER",
     input_type=["PERSON_REMINDED", "REMINDER_DATE_TIME", "TODO", "RECURRING_DATE_TIME"],
     output_type="create reminder",
-    description="create reminder.\t[SL:PERSON_REMINDED: the reminded target\t[SL:REMINDER_DATE_TIME: reminder date time\t[SL:TODO: reminder of things to do\t[SL:ORDINAL: reminder of things to do\t[SL:RECURRING_DATE_TIME: number and duration of recurring"
+    description="create reminder.\t[SL:PERSON_REMINDED: the reminded target\t[SL:REMINDER_DATE_TIME: reminder date time\t[SL:TODO: reminder of things to do\t[SL:ORDINAL: the ordinal number of the selected reminder\t[SL:RECURRING_DATE_TIME: number and duration of recurring"
 )
 
 delete_reminder = BaseOperator(
@@ -187,7 +93,7 @@ get_todo = BaseOperator(
     name="GET_TODO",
     input_type=["TODO_ANOTHER", "TODO_DATE_TIME", "ATTENDEE"],
     output_type="get todo information",
-    description="get todo information\t[SL:TODO_ANOTHER: reminder of things to do\t[SL:TODO_DATE_TIME:todo occurrence time\t[SL:ATTENDEE:todo occurrence time\t[SL:ATTENDEE:attendee"
+    description="get todo information\t[SL:TODO_ANOTHER: reminder of things to do\t[SL:TODO_DATE_TIME:todo occurrence time\t[SL:ATTENDEE:todo occurrence time"
 )
 
 get_contact = BaseOperator(
